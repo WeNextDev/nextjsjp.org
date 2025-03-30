@@ -1,0 +1,42 @@
+---
+title: staticGeneration*
+description: Next.jsアプリケーションでスタティック生成を設定する方法を学びます。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/staticGeneration
+---
+
+`staticGeneration*` オプションを使用すると、高度なユースケースのためにスタティック生成プロセスを設定できます。
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    staticGenerationRetryCount: 1,
+    staticGenerationMaxConcurrency: 8,
+    staticGenerationMinPagesPerWorker: 25,
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+const nextConfig = {
+  experimental: {
+    staticGenerationRetryCount: 1,
+    staticGenerationMaxConcurrency: 8,
+    staticGenerationMinPagesPerWorker: 25,
+  },
+}
+
+export default nextConfig
+```
+
+## 設定オプション
+
+以下のオプションが利用可能です：
+
+- `staticGenerationRetryCount`: ビルドを失敗とする前に、ページ生成の失敗を再試行する回数。
+- `staticGenerationMaxConcurrency`: ワーカーごとに処理するページの最大数。
+- `staticGenerationMinPagesPerWorker`: 新しいワーカーを開始する前に処理するページの最小数。

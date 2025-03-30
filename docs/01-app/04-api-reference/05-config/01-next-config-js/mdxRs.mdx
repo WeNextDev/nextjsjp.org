@@ -1,0 +1,22 @@
+---
+title: mdxRs
+description: App Routerで新しいRustコンパイラを使用してMDXファイルをコンパイルします。
+version: experimental。
+slug: /docs/app/api-reference/config/next-config-js/mdxRs
+---
+
+`@next/mdx`との実験的な使用。新しいRustコンパイラを使用してMDXファイルをコンパイルします。
+
+```js filename="next.config.js"
+const withMDX = require('@next/mdx')()
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  pageExtensions: ['ts', 'tsx', 'mdx'],
+  experimental: {
+    mdxRs: true,
+  },
+}
+
+module.exports = withMDX(nextConfig)
+```

@@ -1,0 +1,96 @@
+---
+title: インストルメンテーション
+description: Next.jsアプリのサーバー起動時にコードを実行するためのインストルメンテーションの使用方法を学ぶ
+related:
+  title: インストルメンテーションについてさらに詳しく学ぶ
+  links:
+    - app/api-reference/file-conventions/instrumentation
+slug: /docs/app/building-your-application/optimizing/instrumentation
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されます。`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用して、Pagesルーターに固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+インストルメンテーションは、モニタリングおよびロギングツールをアプリケーションに統合するためにコードを使用するプロセスです。これにより、アプリケーションのパフォーマンスと動作を追跡し、本番環境で問題をデバッグできます。
+
+## 規約
+
+インストルメンテーションを設定するには、プロジェクトの**ルートディレクトリ**に`instrumentation.ts|js`ファイルを作成します（[`src`](/docs/app/building-your-application/configuring/src-directory)フォルダを使用している場合はそのフォルダ内に作成）。
+
+次に、ファイル内に`register`関数をエクスポートします。この関数は、新しいNext.jsサーバーインスタンスが起動されるときに**一度だけ**呼び出されます。
+
+例えば、Next.jsを[OpenTelemetry](https://opentelemetry.io/)と[@vercel/otel](https://vercel.com/docs/observability/otel-overview)と共に使用するには：
+
+```ts filename="instrumentation.ts" switcher
+import { registerOTel } from '@vercel/otel'
+
+export function register() {
+  registerOTel('next-app')
+}
+```
+
+```js filename="instrumentation.js" switcher
+import { registerOTel } from '@vercel/otel'
+
+export function register() {
+  registerOTel('next-app')
+}
+```
+
+完全な実装については、[Next.js with OpenTelemetryの例](https://github.com/vercel/next.js/tree/canary/examples/with-opentelemetry)を参照してください。
+
+> **補足**：
+>
+> - `instrumentation`ファイルは、プロジェクトのルートに配置し、`app`または`pages`ディレクトリ内には配置しないでください。`src`フォルダを使用している場合は、`pages`と`app`と同じ場所に配置します。
+> - [`pageExtensions`設定オプション](/docs/app/api-reference/config/next-config-js/pageExtensions)を使用してサフィックスを追加する場合、`instrumentation`のファイル名も合わせて更新する必要があります。
+
+## 例
+
+### 副作用のあるファイルのインポート
+
+コードの副作用のために、ファイルをインポートすることが有用な場合があります。例えば、グローバル変数のセットを定義するファイルをインポートしますが、コード内で明示的にそのインポートしたファイルを使用しないことがあります。それでも、パッケージが宣言したグローバル変数にアクセスできます。
+
+`register`関数内でJavaScriptの`import`構文を使用してファイルをインポートすることをお勧めします。以下の例は、`register`関数での`import`の基本的な使用法を示しています：
+
+```ts filename="instrumentation.ts" switcher
+export async function register() {
+  await import('package-with-side-effect')
+}
+```
+
+```js filename="instrumentation.js" switcher
+export async function register() {
+  await import('package-with-side-effect')
+}
+```
+
+> **補足**：
+>
+> ファイルのインポートは、ファイルの先頭ではなく、`register`関数内から行うことをお勧めします。これにより、コード内のすべての副作用を1か所にまとめることができ、ファイルの先頭でグローバルにインポートすることによる意図しない結果を回避できます。
+
+### ランタイム固有のコードのインポート
+
+Next.jsは全ての環境で`register`を呼び出すため、特定のランタイム（[EdgeまたはNode.js](/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes)など）をサポートしないコードは条件付きでインポートすることが重要です。現在の環境を取得するには、`NEXT_RUNTIME`環境変数を使用できます：
+
+```ts filename="instrumentation.ts" switcher
+export async function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await import('./instrumentation-node')
+  }
+
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    await import('./instrumentation-edge')
+  }
+}
+```
+
+```js filename="instrumentation.js" switcher
+export async function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await import('./instrumentation-node')
+  }
+
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    await import('./instrumentation-edge')
+  }
+}
+```

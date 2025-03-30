@@ -1,0 +1,24 @@
+---
+title: bundlePagesRouterDependencies
+description: Pages Routerの自動依存関係バンドルを有効化
+slug: /docs/pages/api-reference/config/next-config-js/bundlePagesRouterDependencies
+---
+
+Pages Routerアプリケーションのサーバーサイド依存関係の自動バンドルを有効化します。App Routerの自動依存関係バンドルと一致します。
+
+```js filename="next.config.js"
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  bundlePagesRouterDependencies: true,
+}
+
+module.exports = nextConfig
+```
+
+[`serverExternalPackages`](/docs/pages/api-reference/config/next-config-js/serverExternalPackages)オプションを使用して、特定のパッケージをバンドルから明示的に除外できます。
+
+## バージョン履歴
+
+| バージョン   | 変更点                                                                                                   |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `v15.0.0` | 実験的段階から安定版に移行。`bundlePagesExternals`から`bundlePagesRouterDependencies`に名称変更 |

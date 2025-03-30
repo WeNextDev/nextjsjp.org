@@ -1,0 +1,20 @@
+---
+title: generateBuildId
+description: アプリケーションが提供される現在のビルドを識別するために使用されるビルドIDを設定します。
+slug: /docs/app/api-reference/config/next-config-js/generateBuildId
+---
+
+{/* このドキュメントの内容はappとpagesルーターで共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター特有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+Next.jsは`next build`中にIDを生成し、アプリケーションのどのバージョンが提供されているかを識別します。同じビルドを使用して複数のコンテナを起動する必要があります。
+
+環境の各ステージで再ビルドする場合、コンテナ間で使用する一貫したビルドIDを生成する必要があります。`next.config.js`で`generateBuildId`コマンドを使用します：
+
+```jsx filename="next.config.js"
+module.exports = {
+  generateBuildId: async () => {
+    // これは任意の値、最新のgitハッシュを使用
+    return process.env.GIT_HASH
+  },
+}
+```

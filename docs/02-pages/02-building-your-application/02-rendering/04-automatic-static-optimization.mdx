@@ -1,0 +1,49 @@
+---
+title: 自動静的最適化
+description: Next.jsは可能な限りアプリを静的HTMLに自動最適化します。その仕組みをここで学びます。
+slug: /docs/pages/building-your-application/rendering/automatic-static-optimization
+---
+
+Next.jsは、ブロッキングデータ要件がない場合、ページが静的（プリレンダリング可能）であると自動的に判断します。この判断は、ページに`getServerSideProps`と`getInitialProps`がないことによって行われます。
+
+この機能により、Next.jsは**サーバーレンダリングされたページと静的に生成されたページの両方**を含むハイブリッドアプリケーションを生成できます。
+
+> **補足**: 静的に生成されたページも反応的です。Next.jsはクライアント側でアプリケーションをハイドレーションし、完全なインタラクティブ性を提供します。
+
+この機能の主な利点の1つは、最適化されたページがサーバー側の計算を必要とせず、複数のCDNロケーションからエンドユーザーに即座にストリーミングできることです。結果として、ユーザーに対して_非常に高速_な読み込み体験を提供します。
+
+## 仕組み
+
+ページに`getServerSideProps`または`getInitialProps`が存在する場合、Next.jsはページをオンデマンド、リクエストごとにレンダリングするよう切り替えます（[サーバーサイドレンダリング](/docs/pages/building-your-application/rendering/server-side-rendering)を意味します）。
+
+上記に該当しない場合、Next.jsはページを静的HTMLにプリレンダリングすることで、自動的にページを**静的に最適化**します。
+
+プリレンダリング中、ルーターの`query`オブジェクトは空になります。これは、このフェーズでは`query`情報を提供できないためです。ハイドレーション後、Next.jsはアプリケーションを更新して、`query`オブジェクトにルートパラメータを提供します。
+
+ハイドレーション後に`query`が更新され、別のレンダリングがトリガーされるケースは以下の通りです：
+
+- ページが[動的ルート](/docs/pages/building-your-application/routing/dynamic-routes)である。
+- ページにURLにクエリ値がある。
+- `next.config.js`で[リライト](/docs/pages/api-reference/config/next-config-js/rewrites)が設定されている（これらはパースおよび提供が必要なパラメータを持つ可能性がある）。
+
+クエリが完全に更新され、使用可能かどうかを判断するには、[`next/router`](/docs/pages/api-reference/functions/use-router#router-object)の`isReady`フィールドを活用できます。
+
+> **補足**: [`getStaticProps`](/docs/pages/building-your-application/data-fetching/get-static-props)を使用しているページに追加された[動的ルート](/docs/pages/building-your-application/routing/dynamic-routes)のパラメータは、常に`query`オブジェクト内で利用可能です。
+
+`next build`は、静的に最適化されたページに対して`.html`ファイルを出力します。例えば、`pages/about.js`ページの結果は次のようになります：
+
+```bash filename="Terminal"
+.next/server/pages/about.html
+```
+
+ページに`getServerSideProps`を追加すると、次のようにJavaScriptになります：
+
+```bash filename="Terminal"
+.next/server/pages/about.js
+```
+
+## 注意点
+
+- `getInitialProps`を持つ[カスタム`App`](/docs/pages/building-your-application/routing/custom-app)がある場合、[静的生成](/docs/pages/building-your-application/data-fetching/get-static-props)のないページでこの最適化は無効になります。
+- `getInitialProps`を持つ[カスタム`Document`](/docs/pages/building-your-application/routing/custom-document)がある場合、ページがサーバーサイドレンダリングされると想定する前に`ctx.req`が定義されているかを確認してください。プリレンダリングされたページでは`ctx.req`は`undefined`になります。
+- ルーターの`isReady`フィールドが`true`になるまで、レンダリングツリーで[`next/router`](/docs/pages/api-reference/functions/use-router#router-object)の`asPath`値を使用しないでください。静的に最適化されたページは、サーバーではなくクライアント上でのみ`asPath`を認識するため、プロパティとして使用すると不一致エラーを引き起こす可能性があります。[`active-class-name`の例](https://github.com/vercel/next.js/tree/canary/examples/active-class-name)は、`asPath`をプロパティとして使用する1つの方法を示しています。

@@ -1,0 +1,93 @@
+---
+title: URLインポート
+description: 外部URLからモジュールをインポートするようにNext.jsを設定します。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/urlImports
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーターに固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+URL インポートは、（ローカルディスクではなく）外部サーバーから直接モジュールをインポートできる実験的な機能です。
+
+> **警告**: マシン上でダウンロードして実行するドメインは、信頼できるものだけを使用してください。この機能が安定とマークされるまで、慎重に判断してください。
+
+オプトインするには、`next.config.js`内で許可されたURLプレフィックスを追加します：
+
+```js filename="next.config.js"
+module.exports = {
+  experimental: {
+    urlImports: ['https://example.com/assets/', 'https://cdn.skypack.dev'],
+  },
+}
+```
+
+その後、URLから直接モジュールをインポートできます：
+
+```js
+import { a, b, c } from 'https://example.com/assets/some/module.js'
+```
+
+URL インポートは、通常のパッケージインポートが使用できるすべての場所で使用できます。
+
+## セキュリティモデル
+
+この機能は、**セキュリティを最優先**として設計されています。まず、URL インポートを明示的に許可するドメインを強制する実験的フラグを追加しました。[Edge Runtime](/docs/app/api-reference/edge)を使用してブラウザサンドボックスで実行するようにURL インポートを制限することをさらに進めています。
+
+## ロックファイル
+
+URL インポートを使用する場合、Next.jsはロックファイルとフェッチされたアセットを含む`next.lock`ディレクトリを作成します。
+このディレクトリは`.gitignore`で無視せず、**Gitにコミットする必要があります**。
+
+- `next dev`を実行すると、Next.jsは新しく見つかったすべてのURL インポートをロックファイルにダウンロードして追加します。
+- `next build`を実行すると、Next.jsはロックファイルのみを使用して本番用アプリケーションをビルドします。
+
+通常、ネットワークリクエストは不要で、古いロックファイルはビルドを失敗させます。
+`Cache-Control: no-cache`で応答するリソースは1つの例外です。
+これらのリソースはロックファイルに`no-cache`エントリを持ち、各ビルド時にネットワークから常にフェッチされます。
+
+## 例
+
+### Skypack
+
+```js
+import confetti from 'https://cdn.skypack.dev/canvas-confetti'
+import { useEffect } from 'react'
+
+export default () => {
+  useEffect(() => {
+    confetti()
+  })
+  return <p>Hello</p>
+}
+```
+
+### 静的画像インポート
+
+```js
+import Image from 'next/image'
+import logo from 'https://example.com/assets/logo.png'
+
+export default () => (
+  <div>
+    <Image src={logo} placeholder="blur" />
+  </div>
+)
+```
+
+### CSSでのURL
+
+```css
+.className {
+  background: url('https://example.com/assets/hero.jpg');
+}
+```
+
+### アセットインポート
+
+```js
+const logo = new URL('https://example.com/assets/file.txt', import.meta.url)
+
+console.log(logo.pathname)
+
+// prints "/_next/static/media/file.a9727b5d.txt"
+```

@@ -1,0 +1,51 @@
+---
+title: public での静的アセット
+nav_title: 静的アセット
+description: Next.jsは、publicディレクトリで画像などの静的ファイルを提供できます。その仕組みについてここで学べます。
+slug: /docs/app/building-your-application/optimizing/static-assets
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターの両方で共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pages Router固有のコンテンツを追加できます。共有コンテンツは、コンポーネントでラップしないでください。 */}
+
+Next.jsは、ルートディレクトリの`public`という名前のフォルダ内に、画像などの静的ファイルを提供できます。`public`内のファイルは、ベースURL（`/`）から始まるコードで参照できます。
+
+例えば、`public/avatars/me.png`ファイルは、`/avatars/me.png`パスにアクセスすることで表示できます。その画像を表示するコードは次のようになります：
+
+```jsx filename="avatar.js"
+import Image from 'next/image'
+
+export function Avatar({ id, alt }) {
+  return <Image src={`/avatars/${id}.png`} alt={alt} width="64" height="64" />
+}
+
+export function AvatarOfMe() {
+  return <Avatar id="me" alt="A portrait of me" />
+}
+```
+
+## キャッシング
+
+Next.jsは、`public`フォルダのアセットが変更される可能性があるため、安全にキャッシュできません。適用されるデフォルトのキャッシュヘッダーは：
+
+```jsx
+Cache-Control: public, max-age=0
+```
+
+## Robots、ファビコン、その他
+
+<PagesOnly>
+
+このフォルダは、`robots.txt`、`favicon.ico`、Google サイト検証、その他の静的ファイル（`.html`を含む）にも便利です。ただし、`pages/`ディレクトリ内のファイルと同じ名前の静的ファイルがないことを確認してください。これにより、エラーが発生する可能性があります。[詳細を読む](/docs/messages/conflicting-public-file-page)。
+
+</PagesOnly>
+
+<AppOnly>
+
+`robots.txt`、`favicon.ico`などの静的メタデータファイルについては、`app`フォルダ内の[特別なメタデータファイル](/docs/app/api-reference/file-conventions/metadata)を使用する必要があります。
+
+</AppOnly>
+
+> 補足：
+>
+> - ディレクトリ名は`public`でなければなりません。名前は変更できず、静的アセットを提供するディレクトリはこれのみです。
+> - [ビルド時](/docs/app/api-reference/cli/next#next-build-options)に`public`ディレクトリにあるアセットのみが、Next.jsによって提供されます。リクエスト時に追加されたファイルは利用できません。永続的なファイル保存には、[Vercel Blob](https://vercel.com/docs/storage/vercel-blob?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)のようなサードパーティサービスの使用をお勧めします。

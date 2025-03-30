@@ -1,0 +1,64 @@
+---
+title: 実装例
+slug: /docs/app/examples
+description: Next.jsを使用した一般的なUIパターンやユースケースの実装方法を学ぶ
+---
+
+### データフェッチング
+
+- [`fetch` APIの使用](/docs/app/building-your-application/data-fetching/fetching#fetching-data-on-the-server-with-the-fetch-api)
+- [ORMまたはデータベースクライアントの使用](/docs/app/building-your-application/data-fetching/fetching#fetching-data-on-the-server-with-an-orm-or-database)
+- [サーバーでの検索パラメータの読み取り](/docs/app/api-reference/file-conventions/page)
+- [クライアントでの検索パラメータの読み取り](/docs/app/api-reference/functions/use-search-params)
+
+### データの再検証
+
+- [一定時間後にデータを再検証するためのISRの使用](/docs/app/building-your-application/data-fetching/incremental-static-regeneration#time-based-revalidation)
+- [オンデマンドでデータを再検証するためのISRの使用](/docs/app/building-your-application/data-fetching/incremental-static-regeneration#on-demand-revalidation-with-revalidatepath)
+
+### フォーム
+
+- [フォーム送信中のペンディング状態の表示](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#pending-states)
+- [サーバーサイドのフォームバリデーション](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#server-side-form-validation)
+- [予期されるエラーの処理](/docs/app/building-your-application/routing/error-handling#handling-expected-errors-from-server-actions)
+- [予期しない例外の処理](/docs/app/building-your-application/routing/error-handling#uncaught-exceptions)
+- [楽観的UIアップデートの表示](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#optimistic-updates)
+- [プログラムによるフォーム送信](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#programmatic-form-submission)
+
+### サーバーアクション
+
+- [追加の値の渡し方](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#passing-additional-arguments)
+- [データの再検証](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#revalidating-data)
+- [リダイレクト](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#redirecting)
+- [Cookieの設定](/docs/app/api-reference/functions/cookies#setting-a-cookie)
+- [Cookieの削除](/docs/app/api-reference/functions/cookies#deleting-cookies)
+
+### メタデータ
+
+- [RSSフィードの作成](/docs/app/building-your-application/routing/route-handlers#non-ui-responses)
+- [Open Graph画像の作成](/docs/app/api-reference/file-conventions/metadata/opengraph-image)
+- [サイトマップの作成](/docs/app/api-reference/file-conventions/metadata/sitemap)
+- [robots.txtファイルの作成](/docs/app/api-reference/file-conventions/metadata/robots)
+- [カスタム404ページの作成](/docs/app/api-reference/file-conventions/not-found)
+- [カスタム500ページの作成](/docs/app/api-reference/file-conventions/error)
+
+### 認証
+
+- [サインアップフォームの作成](/docs/app/building-your-application/authentication#sign-up-and-login-functionality)
+- [ステートレスなCookieベースのセッション管理](/docs/app/building-your-application/authentication#stateless-sessions)
+- [ステートフルなデータベースバックアップのセッション管理](/docs/app/building-your-application/authentication#database-sessions)
+- [認可の管理](/docs/app/building-your-application/authentication#authorization)
+
+### テスト
+
+- [Vitest](/docs/app/building-your-application/testing/vitest)
+- [Jest](/docs/app/building-your-application/testing/jest)
+- [Playwright](/docs/app/building-your-application/testing/playwright)
+- [Cypress](/docs/app/building-your-application/testing/cypress)
+
+### デプロイ
+
+- [Dockerfileの作成](/docs/app/building-your-application/deploying#docker-image)
+- [静的エクスポートの作成（SPA）](/docs/app/building-your-application/deploying/static-exports)
+- [セルフホスティング時のキャッシュ設定](/docs/app/building-your-application/deploying#configuring-caching)
+- [セルフホスティング時の画像最適化の設定](/docs/app/building-your-application/deploying#image-optimization)

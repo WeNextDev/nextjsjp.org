@@ -1,0 +1,138 @@
+---
+title: draftMode
+description: draftModeファンクションのAPIリファレンス。
+related:
+  title: 次のステップ
+  description: ステップバイステップのガイドでDraft Modeの使い方を学びます。
+  links:
+    - app/building-your-application/configuring/draft-mode
+slug: /docs/app/api-reference/functions/draft-mode
+---
+
+`draftMode`は、[Draft Mode](/docs/app/building-your-application/configuring/draft-mode)の有効化、無効化、および[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)でDraft Modeが有効かどうかを確認できる**非同期**関数です。
+
+```tsx filename="app/page.ts" switcher
+import { draftMode } from 'next/headers'
+
+export default async function Page() {
+  const { isEnabled } = await draftMode()
+}
+```
+
+```jsx filename="app/page.js" switcher
+import { draftMode } from 'next/headers'
+
+export default async function Page() {
+  const { isEnabled } = await draftMode()
+}
+```
+
+## リファレンス
+
+以下のメソッドとプロパティが利用可能です：
+
+| メソッド     | 説明                                                                       |
+| ----------- | --------------------------------------------------------------------------------- |
+| `isEnabled` | Draft Modeが有効かどうかを示すブール値。                          |
+| `enable()`  | ルートハンドラでクッキー（`__prerender_bypass`）を設定してDraft Modeを有効にします。 |
+| `disable()` | ルートハンドラでクッキーを削除してDraft Modeを無効にします。                      |
+
+## 補足
+
+- `draftMode`は**非同期**関数でプロミスを返します。`async/await`またはReactの[`use`](https://react.dev/reference/react/use)関数を使用する必要があります。
+  - バージョン14以前では、`draftMode`は同期関数でした。下位互換性のため、Next.js 15では引き続き同期的にアクセスできますが、この動作は将来的に非推奨になります。
+- `next build`を実行するたびに新しいバイパスクッキー値が生成されます。これにより、バイパスクッキーを推測できないようにします。
+- HTTPでDraft Modeをローカルにテストするには、ブラウザがサードパーティのクッキーとローカルストレージへのアクセスを許可する必要があります。
+
+## 例
+
+### Draft Modeの有効化
+
+Draft Modeを有効にするには、新しい[ルートハンドラ](/docs/app/building-your-application/routing/route-handlers)を作成し、`enable()`メソッドを呼び出します：
+
+```tsx filename="app/draft/route.ts" switcher
+import { draftMode } from 'next/headers'
+
+export async function GET(request: Request) {
+  const draft = await draftMode()
+  draft.enable()
+  return new Response('Draft mode is enabled')
+}
+```
+
+```js filename="app/draft/route.js" switcher
+import { draftMode } from 'next/headers'
+
+export async function GET(request) {
+  const draft = await draftMode()
+  draft.enable()
+  return new Response('Draft mode is enabled')
+}
+```
+
+### Draft Modeの無効化
+
+デフォルトでは、Draft Modeセッションはブラウザを閉じると終了します。
+
+Draft Modeを手動で無効にするには、[ルートハンドラ](/docs/app/building-your-application/routing/route-handlers)で`disable()`メソッドを呼び出します：
+
+```tsx filename="app/draft/route.ts" switcher
+import { draftMode } from 'next/headers'
+
+export async function GET(request: Request) {
+  const draft = await draftMode()
+  draft.enable()
+  return new Response('Draft mode is disabled')
+}
+```
+
+```js filename="app/draft/route.js" switcher
+import { draftMode } from 'next/headers'
+
+export async function GET(request) {
+  const draft = await draftMode()
+  draft.enable()
+  return new Response('Draft mode is disabled')
+}
+```
+
+次に、ルートハンドラを呼び出すリクエストを送信します。[`<Link>`コンポーネント](/docs/app/api-reference/components/link)を使用してルートを呼び出す場合は、プリフェッチ時に誤ってクッキーが削除されないように`prefetch={false}`を渡す必要があります。
+
+### Draft Modeが有効かどうかの確認
+
+サーバーコンポーネントで`isEnabled`プロパティを使用してDraft Modeが有効かどうかを確認できます：
+
+```tsx filename="app/page.ts" switcher
+import { draftMode } from 'next/headers'
+
+export default async function Page() {
+  const { isEnabled } = await draftMode()
+  return (
+    <main>
+      <h1>My Blog Post</h1>
+      <p>Draft Mode is currently {isEnabled ? 'Enabled' : 'Disabled'}</p>
+    </main>
+  )
+}
+```
+
+```jsx filename="app/page.js" switcher
+import { draftMode } from 'next/headers'
+
+export default async function Page() {
+  const { isEnabled } = await draftMode()
+  return (
+    <main>
+      <h1>My Blog Post</h1>
+      <p>Draft Mode is currently {isEnabled ? 'Enabled' : 'Disabled'}</p>
+    </main>
+  )
+}
+```
+
+## バージョン履歴
+
+| バージョン   | 変更点                                                                                                                     |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `v15.0.0-RC` | `draftMode`が非同期関数になりました。[コードモッド](/docs/app/building-your-application/upgrading/codemods#150)が利用可能です。 |
+| `v13.4.0`    | `draftMode`が導入されました。                                                                                                     |

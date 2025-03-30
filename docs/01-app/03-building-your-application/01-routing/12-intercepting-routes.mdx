@@ -1,0 +1,84 @@
+---
+title: ルートの傍受
+description: 現在のレイアウト内で新しいルートを読み込み、ブラウザのURLをマスクする、モーダルなどの高度なルーティングパターンに便利な機能。
+related:
+  title: 次のステップ
+  description: 傍受およびパラレルルートを使用したモーダルの使い方を学ぶ。
+  links:
+    - app/building-your-application/routing/parallel-routes
+slug: /docs/app/building-your-application/routing/intercepting-routes
+---
+
+ルートの傍受により、現在のレイアウト内でアプリケーションの別の部分からルートを読み込むことができます。このルーティングパラダイムは、ユーザーが異なるコンテキストに切り替えることなく、ルートのコンテンツを表示したい場合に役立ちます。
+
+例えば、フィード内の写真をクリックすると、写真をモーダルでオーバーレイ表示できます。この場合、Next.jsは `/photo/123` ルートを傍受し、URLをマスクし、`/feed` の上にオーバーレイします。
+
+<Image
+  alt="ルートの傍受によるソフトナビゲーション"
+  srcLight="/light/intercepting-routes-soft-navigate.png"
+  srcDark="/dark/intercepting-routes-soft-navigate.png"
+  width="1600"
+  height="617"
+/>
+
+しかし、共有可能なURLをクリックしたり、ページをリフレッシュしたりして写真に移動する場合、モーダルではなく写真ページ全体をレンダリングする必要があります。ルートの傍受は行われません。
+
+<Image
+  alt="ルートの傍受によるハードナビゲーション"
+  srcLight="/light/intercepting-routes-hard-navigate.png"
+  srcDark="/dark/intercepting-routes-hard-navigate.png"
+  width="1600"
+  height="604"
+/>
+
+## 規約
+
+ルートの傍受は、相対パス規約 `../` に似た `(..)` 規約で定義できますが、セグメント用です。
+
+以下を使用できます：
+
+- `(.)` で**同じレベル**のセグメントと一致
+- `(..)` で**1レベル上**のセグメントと一致
+- `(..)(..)` で**2レベル上**のセグメントと一致
+- `(...)` で `app` ディレクトリの**ルート**からのセグメントと一致
+
+例えば、`feed` セグメント内から `photo` セグメントを傍受するには、`(..)photo` ディレクトリを作成します。
+
+<Image
+  alt="ルートの傍受フォルダ構造"
+  srcLight="/light/intercepted-routes-files.png"
+  srcDark="/dark/intercepted-routes-files.png"
+  width="1600"
+  height="604"
+/>
+
+> 注意：`(..)` 規約はファイルシステムではなく、**ルートセグメント**に基づいています。
+
+## 例
+
+### モーダル
+
+ルートの傍受は[パラレルルート](/docs/app/building-your-application/routing/parallel-routes)と組み合わせてモーダルを作成できます。これにより、モーダル構築時の一般的な課題を解決できます：
+
+- モーダルコンテンツを**URLで共有可能**にする。
+- ページをリフレッシュしたときに、モーダルを閉じるのではなく**コンテキストを保持**する。
+- 前のルートに戻るのではなく、**後方ナビゲーション時にモーダルを閉じる**。
+- **前方ナビゲーション時にモーダルを再開く**。
+
+クライアントサイドナビゲーションでギャラリーから写真モーダルを開くか、共有可能なURLから直接写真ページに移動できる、以下のUIパターンを考えてみましょう：
+
+<Image
+  alt="ルートの傍受モーダル例"
+  srcLight="/light/intercepted-routes-modal-example.png"
+  srcDark="/dark/intercepted-routes-modal-example.png"
+  width="1600"
+  height="976"
+/>
+
+上記の例では、`@modal` はスロットであり**セグメントではない**ため、`photo` セグメントへのパスは `(..)` マッチャーを使用できます。これは、ファイルシステム上は2レベル上にあっても、`photo` ルートは実際には1セグメントレベル上にあることを意味します。
+
+詳細なステップバイステップの例については[パラレルルート](/docs/app/building-your-application/routing/parallel-routes#modals)のドキュメントを、または[画像ギャラリーの例](https://github.com/vercel-labs/nextgram)を参照してください。
+
+> **補足：**
+>
+> - 他の例としては、トップナビバーにログインモーダルを開きながら専用の `/login` ページを持つこと、またはサイドモーダルにショッピングカートを開くことなどがあります。

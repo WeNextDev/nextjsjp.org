@@ -1,0 +1,31 @@
+---
+title: useLightningcss
+description: Lightning CSSの実験的サポートを有効にします。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/useLightningcss
+---
+
+[Lightning CSS](https://lightningcss.dev)、Rustで書かれた高速なCSSバンドラーとミニファイアの実験的サポート。
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    useLightningcss: true,
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    useLightningcss: true,
+  },
+}
+
+module.exports = nextConfig
+```

@@ -1,0 +1,56 @@
+---
+title: template.js
+description: template.jsファイルのAPIリファレンス。
+slug: /docs/app/api-reference/file-conventions/template
+---
+
+**テンプレート**ファイルは、[レイアウト](/docs/app/building-your-application/routing/layouts-and-templates#layouts)と似ており、レイアウトまたはページをラップします。ルート間で状態を維持するレイアウトとは異なり、テンプレートは一意のキーが与えられるため、子のクライアントコンポーネントはナビゲーション時に状態をリセットします。
+
+```tsx filename="app/template.tsx" switcher
+export default function Template({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>
+}
+```
+
+```jsx filename="app/template.jsx" switcher
+export default function Template({ children }) {
+  return <div>{children}</div>
+}
+```
+
+<Image
+  alt="template.js 特殊ファイル"
+  srcLight="/light/template-special-file.png"
+  srcDark="/dark/template-special-file.png"
+  width="1600"
+  height="444"
+/>
+
+あまり一般的ではありませんが、以下の機能が必要な場合にテンプレートをレイアウトの代わりに使用することを選択できます：
+
+- `useEffect`（ページビューのログなど）と`useState`（ページごとのフィードバックフォームなど）に依存する機能。
+- デフォルトのフレームワーク動作を変更する場合。例えば、レイアウト内のSuspenseバウンダリーは、最初にレイアウトが読み込まれた時にのみフォールバックを表示し、ページ切り替え時には表示しません。テンプレートの場合、フォールバックは各ナビゲーション時に表示されます。
+
+## Props
+
+### `children`（必須）
+
+テンプレートは`children`プロップを受け取ります。例：
+
+```jsx filename="Output"
+<Layout>
+  {/* テンプレートには自動的に一意のキーが与えられることに注意 */}
+  <Template key={routeParam}>{children}</Template>
+</Layout>
+```
+
+> **補足**：
+>
+> - デフォルトでは、`template`は[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)ですが、`"use client"`ディレクティブを通じて[クライアントコンポーネント](/docs/app/building-your-application/rendering/client-components)としても使用できます。
+> - ユーザーが同じ`template`を共有するルート間を移動する場合、コンポーネントの新しいインスタンスがマウントされ、DOMエレメントが再作成され、クライアントコンポーネントの状態は保持**されず**、エフェクトが再同期されます。
+
+## バージョン履歴
+
+| バージョン   | 変更点                |
+| --------- | ---------------------- |
+| `v13.0.0` | `template`導入時期。 |

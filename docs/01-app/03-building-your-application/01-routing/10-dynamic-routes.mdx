@@ -1,0 +1,141 @@
+---
+title: 動的ルート
+description: 動的ルートは、動的データからルートセグメントをプログラム的に生成するために使用できます。
+related:
+  title: 次のステップ
+  description: 次に何をすべきかについての詳細情報として、以下のセクションをお勧めします
+  links:
+    - app/building-your-application/routing/linking-and-navigating
+    - app/api-reference/functions/generate-static-params
+slug: /docs/app/building-your-application/routing/dynamic-routes
+---
+
+セグメント名を事前に正確に知らず、動的データからルートを作成したい場合、リクエスト時に埋められる、または[ビルド時にプリレンダリングされる](#generating-static-params)動的セグメントを使用できます。
+
+## 規約
+
+動的セグメントは、フォルダー名を角括弧で囲むことで作成できます：`[folderName]`。例えば、`[id]`や`[slug]`などです。
+
+動的セグメントは、[`layout`](/docs/app/api-reference/file-conventions/layout)、[`page`](/docs/app/api-reference/file-conventions/page)、[`route`](/docs/app/building-your-application/routing/route-handlers)、[`generateMetadata`](/docs/app/api-reference/functions/generate-metadata#generatemetadata-function)関数に`params`プロップとして渡されます。
+
+## 例
+
+例えば、ブログには`app/blog/[slug]/page.js`のようなルートを含めることができ、`[slug]`はブログ投稿の動的セグメントです。
+
+```tsx filename="app/blog/[slug]/page.tsx" switcher
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const slug = (await params).slug
+  return <div>My Post: {slug}</div>
+}
+```
+
+```jsx filename="app/blog/[slug]/page.js" switcher
+export default async function Page({ params }) {
+  const slug = (await params).slug
+  return <div>My Post: {slug}</div>
+}
+```
+
+| ルート                      | 例のURL | `params`        |
+| ------------------------- | ----------- | --------------- |
+| `app/blog/[slug]/page.js` | `/blog/a`   | `{ slug: 'a' }` |
+| `app/blog/[slug]/page.js` | `/blog/b`   | `{ slug: 'b' }` |
+| `app/blog/[slug]/page.js` | `/blog/c`   | `{ slug: 'c' }` |
+
+セグメントのパラメータを生成する方法については、[generateStaticParams()](#generating-static-params)ページを参照してください。
+
+## 補足
+
+- `params` プロパティはプロミスであるため、値にアクセスするには async/await または React の use 関数を使用する必要があります。
+  - バージョン14以前では、`params` は同期的なプロパティでした。後方互換性を確保するため、Next.js 15でも同期的にアクセスすることは可能ですが、この動作は将来的に非推奨となります。
+- 動的セグメントは `pages` ディレクトリの[動的ルート](/docs/pages/building-your-application/routing/dynamic-routes)と同等のものです。
+
+## 静的パラメータの生成
+
+`generateStaticParams`関数は、[動的ルートセグメント](/docs/app/building-your-application/routing/dynamic-routes)と組み合わせて使用し、リクエスト時にオンデマンドで生成するのではなく、ビルド時にルートを[**静的に生成**](/docs/app/building-your-application/rendering/server-components#static-rendering-default)できます。
+
+```tsx filename="app/blog/[slug]/page.tsx" switcher
+export async function generateStaticParams() {
+  const posts = await fetch('https://.../posts').then((res) => res.json())
+
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
+}
+```
+
+```jsx filename="app/blog/[slug]/page.js" switcher
+export async function generateStaticParams() {
+  const posts = await fetch('https://.../posts').then((res) => res.json())
+
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
+}
+```
+
+`generateStaticParams`関数の主な利点は、データの賢明な取得です。`generateStaticParams`関数内で`fetch`リクエストを使用してコンテンツを取得する場合、リクエストは[自動的にメモ化](/docs/app/building-your-application/caching#request-memoization)されます。これは、複数の`generateStaticParams`、レイアウト、ページ間で同じ引数を持つ`fetch`リクエストが1回しか行われないことを意味し、ビルド時間を短縮します。
+
+`pages`ディレクトリから移行する場合は、[移行ガイド](/docs/app/building-your-application/upgrading/app-router-migration#dynamic-paths-getstaticpaths)を使用してください。
+
+詳細情報と高度な使用例については、[`generateStaticParams`サーバー関数のドキュメント](/docs/app/api-reference/functions/generate-static-params)を参照してください。
+
+## キャッチオールセグメント
+
+動的セグメントは、角括弧内に省略記号を追加することで、**後続のセグメントをキャッチオール**するように拡張できます：`[...folderName]`。
+
+例えば、`app/shop/[...slug]/page.js`は`/shop/clothes`にマッチするだけでなく、`/shop/clothes/tops`、`/shop/clothes/tops/t-shirts`などにもマッチします。
+
+| ルート                         | 例のURL   | `params`                    |
+| ---------------------------- | ------------- | --------------------------- |
+| `app/shop/[...slug]/page.js` | `/shop/a`     | `{ slug: ['a'] }`           |
+| `app/shop/[...slug]/page.js` | `/shop/a/b`   | `{ slug: ['a', 'b'] }`      |
+| `app/shop/[...slug]/page.js` | `/shop/a/b/c` | `{ slug: ['a', 'b', 'c'] }` |
+
+## オプションのキャッチオールセグメント
+
+キャッチオールセグメントは、パラメータを二重の角括弧に含めることで**オプション**にできます：`[[...folderName]]`。
+
+例えば、`app/shop/[[...slug]]/page.js`は、`/shop/clothes`、`/shop/clothes/tops`、`/shop/clothes/tops/t-shirts`に加えて、`/shop`**にも**マッチします。
+
+**キャッチオール**と**オプションのキャッチオール**セグメントの違いは、オプションの場合、パラメータのないルート（上記の例では`/shop`）もマッチする点です。
+
+| ルート                           | 例のURL   | `params`                    |
+| ------------------------------ | ------------- | --------------------------- |
+| `app/shop/[[...slug]]/page.js` | `/shop`       | `{ slug: undefined }`       |
+| `app/shop/[[...slug]]/page.js` | `/shop/a`     | `{ slug: ['a'] }`           |
+| `app/shop/[[...slug]]/page.js` | `/shop/a/b`   | `{ slug: ['a', 'b'] }`      |
+| `app/shop/[[...slug]]/page.js` | `/shop/a/b/c` | `{ slug: ['a', 'b', 'c'] }` |
+
+## TypeScript
+
+TypeScriptを使用する場合、設定されたルートセグメントに応じて`params`の型を追加できます。
+
+```tsx filename="app/blog/[slug]/page.tsx" switcher
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  return <h1>My Page</h1>
+}
+```
+
+```jsx filename="app/blog/[slug]/page.js" switcher
+export default async function Page({ params }) {
+  return <h1>My Page</h1>
+}
+```
+
+| ルート                                | `params`の型定義                         |
+| ----------------------------------- | ---------------------------------------- |
+| `app/blog/[slug]/page.js`           | `{ slug: string }`                       |
+| `app/shop/[...slug]/page.js`        | `{ slug: string[] }`                     |
+| `app/shop/[[...slug]]/page.js`      | `{ slug?: string[] }`                    |
+| `app/[categoryId]/[itemId]/page.js` | `{ categoryId: string, itemId: string }` |
+
+> **補足**: これは将来的に、[TypeScriptプラグイン](/docs/app/api-reference/config/typescript#ide-plugin) によって自動的に行われる可能性があります。

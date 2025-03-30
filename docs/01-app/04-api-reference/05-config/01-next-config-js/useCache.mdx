@@ -1,0 +1,30 @@
+---
+title: useCache
+description: Next.jsでuseCacheフラグを有効にする方法について学びます。
+version: canary
+slug: /docs/app/api-reference/config/next-config-js/useCache
+---
+
+`useCache`フラグはNext.jsの実験的機能で、[`dynamicIO`](/docs/app/api-reference/config/next-config-js/dynamicIO)とは独立して[`use cache`ディレクティブ](/docs/app/api-reference/directives/use-cache)を使用できるようにします。この機能を有効にすると、`dynamicIO`が無効になっていても、アプリケーション内で`use cache`を使用できます。
+
+## 使用方法
+
+`useCache`フラグを有効にするには、`next.config.ts`ファイルの`experimental`セクションで`true`に設定します：
+
+```ts filename="next.config.ts"
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    useCache: true,
+  },
+}
+
+export default nextConfig
+```
+
+`useCache`が有効になると、以下のキャッシュ関数と設定を使用できます：
+
+- [`use cache`ディレクティブ](/docs/app/api-reference/directives/use-cache)
+- [`cacheLife`関数](/docs/app/api-reference/config/next-config-js/cacheLife)と`use cache`の組み合わせ
+- [`cacheTag`関数](/docs/app/api-reference/functions/cacheTag)

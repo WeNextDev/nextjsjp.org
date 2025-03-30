@@ -1,0 +1,37 @@
+---
+title: サーバーコンポーネントのHMRキャッシュ
+description: Server Componentsでのfetchレスポンスをホットモジュール更新リクエスト間でキャッシュするかどうかを設定します。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/serverComponentsHmrCache
+---
+
+実験的な `serverComponentsHmrCache` オプションを使用すると、ローカル開発時にホットモジュール置換（HMR）更新間で Server Components の `fetch` レスポンスをキャッシュできます。これにより、レスポンスが高速化され、APIコールのコストが削減されます。
+
+デフォルトでは、HMRキャッシュは `cache: 'no-store'` オプションを含むすべての `fetch` リクエストに適用されます。これは、キャッシュされていないリクエストがHMR更新間で新しいデータを表示しないことを意味します。ただし、ナビゲーションや完全なページリロード時にはキャッシュがクリアされます。
+
+`next.config.js` ファイルで `serverComponentsHmrCache` を `false` に設定することで、HMRキャッシュを無効にできます：
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    serverComponentsHmrCache: false, // デフォルトは true
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverComponentsHmrCache: false, // デフォルトは true
+  },
+}
+
+module.exports = nextConfig
+```
+
+> **補足:** より良い可観測性のために、開発中にfetchキャッシュのヒットとミスをコンソールにログ出力する [`logging.fetches`](/docs/app/api-reference/config/next-config-js/logging) オプションの使用をお勧めします。

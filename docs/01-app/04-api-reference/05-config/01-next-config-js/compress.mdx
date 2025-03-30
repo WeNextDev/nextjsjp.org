@@ -1,0 +1,36 @@
+---
+title: 圧縮
+description: Next.jsは、レンダリングされたコンテンツと静的ファイルをgzip圧縮し、これはサーバーターゲットでのみ動作します。詳細はこちらをご覧ください。
+slug: /docs/app/api-reference/config/next-config-js/compress
+---
+
+{/* このドキュメントの内容は、appとpagesルーターの両方で共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントで囲まないでください。 */}
+
+デフォルトでは、Next.jsは`next start`またはカスタムサーバーを使用する際に、`gzip`を使用してレンダリングされたコンテンツと静的ファイルを圧縮します。これは、圧縮が設定されていないアプリケーションに対する最適化です。アプリケーション内でカスタムサーバーを介して圧縮が_すでに_設定されている場合、Next.jsは圧縮を追加しません。
+
+> **補足:**
+>
+> - [Vercel](https://vercel.com/docs/edge-network/compression)でアプリケーションをホストする場合、圧縮は最初に`brotli`、次に`gzip`を使用します。
+> - [`Accept-Encoding`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding)（ブラウザが受け入れるオプション）と[`Content-Encoding`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding）（現在使用中）ヘッダーを確認することで、圧縮が有効かどうか、どのアルゴリズムが使用されているかを確認できます。
+
+## 圧縮の無効化
+
+**圧縮**を無効にするには、`compress`設定オプションを`false`に設定します：
+
+```js filename="next.config.js"
+module.exports = {
+  compress: false,
+}
+```
+
+サーバーで圧縮が設定されていない限り、圧縮を無効にすることはお勧めできません。圧縮は帯域幅の使用量を削減し、アプリケーションのパフォーマンスを向上させるためです。
+
+## 圧縮アルゴリズムの変更
+
+圧縮アルゴリズムを変更するには、カスタムサーバーを設定し、`next.config.js`ファイルで`compress`オプションを`false`に設定する必要があります。
+
+例えば、[nginx](https://nginx.org/)を使用していて`brotli`に切り替えたい場合は、`compress`オプションを`false`に設定して、ngixに圧縮を処理させます。
+
+> **補足:**
+>
+> - VercelのNext.jsアプリケーションの場合、圧縮はNext.jsではなく、VercelのEdgeネットワークによって処理されます。詳細については、[Vercelドキュメント](https://vercel.com/docs/edge-network/compression)を参照してください。

@@ -1,0 +1,86 @@
+---
+title: Turbopack
+description: Turbopackは、JavaScriptとTypeScriptに最適化された、Rustで書かれ、Next.jsに組み込まれたインクリメンタルバンドラーです。
+slug: /docs/app/api-reference/turbopack
+---
+
+{/* このドキュメントの内容はappとpagesルーターの間で共有されています。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+[Turbopack](https://turbo.build/pack)は、JavaScriptとTypeScriptに最適化された、Rustで書かれ、Next.jsに組み込まれたインクリメンタルバンドラーです。Turbopackは、Next.jsの`pages`ディレクトリと`app`ディレクトリの両方で、より高速なローカル開発のために使用できます。
+
+Turbopackを有効にするには、Next.js開発サーバーを実行する際に`--turbopack`フラグを使用します。
+
+```json filename="package.json" highlight={3}
+{
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  }
+}
+```
+
+## リファレンス
+
+### サポートされている機能
+
+Next.jsのTurbopackは、ほとんどのユーザーにとって設定不要で使用でき、より高度なユースケースのために拡張することができます。Turbopackでサポートされている機能の詳細については、[APIリファレンス](/docs/app/api-reference/config/next-config-js/turbo)を参照してください。
+
+### サポートされていない機能
+
+Turbopackは現在`next dev`のみをサポートしており、`next build`はサポートしていません。安定性に近づくにつれて、ビルドのサポートに取り組んでいます。
+
+以下の機能は現在サポートされていません：
+
+- Turbopackは[Lightning CSS](https://lightningcss.dev/)を活用していますが、これは一部の使用頻度の低いCSS Modules機能をサポートしていません
+  - スタンドアロンの疑似クラスとしての`:local`と`:global`。関数バリアントのみがサポートされています（例：`:global(a)`）。
+  - CSS変数に取って代わられた@valueルール。
+  - `:import`と`:export`のICSSルール。
+- [`//`のような無効なCSSコメント構文](https://stackoverflow.com/questions/51843506/are-double-slash-comments-valid-in-css)
+  - CSSコメントは仕様に従って`/* コメント */`として記述する必要があります。
+  - Sassなどのプリプロセッサーはこのようなコメントの代替構文をサポートしています。
+- `next.config.js`での[`webpack()`](/docs/app/api-reference/config/next-config-js/webpack)設定
+  - TurbopackはWebpackに代わるものであり、webpack設定はサポートされていません。
+  - Turbopackを設定するには、[ドキュメント](/docs/app/api-reference/config/next-config-js/turbo)を参照してください。
+  - [Webpackローダー](/docs/app/api-reference/config/next-config-js/turbo#configuring-webpack-loaders)のサブセットがTurbopackでサポートされています。
+- Babel（`.babelrc`）
+  - Turbopackはすべてのトランスパイルと最適化に[SWC](/docs/architecture/nextjs-compiler#why-swc)コンパイラーを活用しています。これはBabelがデフォルトで含まれていないことを意味します。
+  - `.babelrc`ファイルがある場合、Next.jsには一般的なBabelプラグインがSWC変換として含まれているため、もはや必要ない可能性があります。詳細は[コンパイラーのドキュメント](/docs/architecture/nextjs-compiler#supported-features)で確認できます。
+  - 特定のユースケースがカバーされていないことを確認した後もBabelを使用する必要がある場合は、Turbopackの[カスタムwebpackローダーのサポート](/docs/app/api-reference/config/next-config-js/turbo#configuring-webpack-loaders)を活用して`babel-loader`を含めることができます。
+- App Routerでのルートレイアウトの自動作成。
+  - この動作は現在サポートされていません。入力ファイルを変更するため、代わりに目的の場所にルートレイアウトを手動で追加するよう促すエラーが表示されます。
+- `@next/font`（レガシーフォントサポート）。
+  - `@next/font`は`next/font`に代わって非推奨となっています。[`next/font`](/docs/app/building-your-application/optimizing/fonts)はTurbopackで完全にサポートされています。
+- [Relay変換](/docs/architecture/nextjs-compiler#relay)
+  - 将来的に実装する予定です。
+- `pages/_document.tsx`での`.css`インポートのブロック
+  - 現在、webpackを使用したNext.jsでは`pages/_document.tsx`での`.css`ファイルのインポートをブロックしています
+  - 将来的にこの警告を実装する予定です。
+- [`experimental.typedRoutes`](/docs/app/api-reference/config/next-config-js/typedRoutes)
+  - 将来的に実装する予定です。
+- `experimental.nextScriptWorkers`
+  - 将来的に実装する予定です。
+- `experimental.sri.algorithm`
+  - 将来的に実装する予定です。
+- `experimental.fallbackNodePolyfills`
+  - 将来的に実装する予定です。
+- `experimental.esmExternals`
+  - 現在、TurbopackによるNext.jsでレガシーesmExternals設定をサポートする予定はありません。
+- [AMP](/docs/pages/building-your-application/configuring/amp)。
+  - 現在、TurbopackによるNext.jsでAMPをサポートする予定はありません。
+- Yarn PnP
+  - 現在、TurbopackによるNext.jsでYarn PnPをサポートする予定はありません。
+- [`experimental.urlImports`](/docs/app/api-reference/config/next-config-js/urlImports)
+  - 現在、TurbopackによるNext.jsで`experimental.urlImports`をサポートする予定はありません。
+- [`:import`と`:export`のICSSルール](https://github.com/css-modules/icss)
+  - Turbopackが使用するCSSパーサーである[Lightning CSS](https://lightningcss.dev/css-modules.html)がこれらのルールをサポートしていないため、現在TurbopackによるNext.jsで`:import`と`:export`のICSSルールをサポートする予定はありません。
+- エッジランタイムでの`unstable_allowDynamic`設定
+
+## 例
+
+### トレースファイルの生成
+
+トレースファイルにより、Next.jsチームはパフォーマンスメトリクスとメモリ使用量を調査・改善することができます。トレースファイルを生成するには、`next dev --turbopack`コマンドに`NEXT_TURBOPACK_TRACING=1`を追加します。これにより`.next/trace-turbopack`ファイルが生成されます。
+
+Turbopackのパフォーマンスとメモリ使用量に関する問題を報告する際は、[GitHub](https://github.com/vercel/next.js)の問題にトレースファイルを含めてください。

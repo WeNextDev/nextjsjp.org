@@ -1,0 +1,71 @@
+---
+title: クライアントサイドでのデータフェッチ
+description: クライアントサイドのデータフェッチについて学び、キャッシング、再検証、フォーカストラッキング、インターバルでの再フェッチなどを処理するデータフェッチReactフックライブラリであるSWRの使用方法を理解する
+slug: /docs/pages/building-your-application/data-fetching/client-side
+---
+
+クライアントサイドのデータフェッチは、ページがSEOインデックス作成を必要としない場合、データを事前にレンダリングする必要がない場合、またはページのコンテンツを頻繁に更新する必要がある場合に役立ちます。サーバーサイドレンダリングAPIとは異なり、クライアントサイドのデータフェッチはコンポーネントレベルで使用できます。
+
+ページレベルで実行される場合、データは実行時にフェッチされ、データの変更に応じてページのコンテンツが更新されます。コンポーネントレベルで使用される場合、データはコンポーネントのマウント時にフェッチされ、データの変更に応じてコンポーネントのコンテンツが更新されます。
+
+クライアントサイドのデータフェッチはアプリケーションのパフォーマンスとページの読み込み速度に影響を与える可能性があることに注意することが重要です。これは、データフェッチがコンポーネントまたはページのマウント時に行われ、データがキャッシュされないためです。
+
+## useEffectを使用したクライアントサイドのデータフェッチ
+
+以下の例は、useEffectフックを使用してクライアントサイドでデータをフェッチする方法を示しています。
+
+```jsx
+import { useState, useEffect } from 'react'
+
+function Profile() {
+  const [data, setData] = useState(null)
+  const [isLoading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/profile-data')
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data)
+        setLoading(false)
+      })
+  }, [])
+
+  if (isLoading) return <p>読み込み中...</p>
+  if (!data) return <p>プロフィールデータがありません</p>
+
+  return (
+    <div>
+      <h1>{data.name}</h1>
+      <p>{data.bio}</p>
+    </div>
+  )
+}
+```
+
+## SWRを使用したクライアントサイドのデータフェッチ
+
+Next.jsチームは、データフェッチ用のReactフックライブラリである[**SWR**](https://swr.vercel.app/)を作成しました。クライアントサイドでデータをフェッチする場合は、**強く推奨**されます。キャッシング、再検証、フォーカストラッキング、インターバルでの再フェッチなどを処理します。
+
+上記と同じ例を使用して、SWRを使用してプロフィールデータをフェッチできます。SWRは自動的にデータをキャッシュし、データが古くなった場合に再検証します。
+
+SWRの使用の詳細については、[SWRドキュメント](https://swr.vercel.app/docs/getting-started)を確認してください。
+
+```jsx
+import useSWR from 'swr'
+
+const fetcher = (...args) => fetch(...args).then((res) => res.json())
+
+function Profile() {
+  const { data, error } = useSWR('/api/profile-data', fetcher)
+
+  if (error) return <div>読み込みに失敗しました</div>
+  if (!data) return <div>読み込み中...</div>
+
+  return (
+    <div>
+      <h1>{data.name}</h1>
+      <p>{data.bio}</p>
+    </div>
+  )
+}
+```

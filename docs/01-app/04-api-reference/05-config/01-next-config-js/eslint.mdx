@@ -1,0 +1,22 @@
+---
+title: eslint
+description: Next.jsはデフォルトでビルド時にESLintのエラーと警告を報告します。ここでこの挙動を無効にする方法を学びます。
+slug: /docs/app/api-reference/config/next-config-js/eslint
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されます。`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+プロジェクト内でESLintが検出された場合、Next.jsはエラーが存在すると**本番ビルド**（`next build`）を失敗させます。
+
+アプリケーションにESLintエラーがある場合でもNext.jsに本番コードを生成させたい場合は、組み込みのリンティングステップを完全に無効にできます。これは、ワークフローの別の部分（例：CIやプレコミットフック）で既にESLintを実行するように設定している場合を除いて、推奨されません。
+
+`next.config.js`を開き、`eslint`設定で`ignoreDuringBuilds`オプションを有効にします：
+
+```js filename="next.config.js"
+module.exports = {
+  eslint: {
+    // 警告: これにより、プロジェクトにESLintエラーがある場合でも、本番ビルドが正常に完了できるようになります。
+    ignoreDuringBuilds: true,
+  },
+}
+```

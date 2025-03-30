@@ -1,0 +1,72 @@
+---
+title: logging
+description: Next.jsを開発モードで実行する際のデータフェッチのコンソールログ設定方法。
+slug: /docs/app/api-reference/config/next-config-js/logging
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーター間で共有されています。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+## オプション
+
+### フェッチング
+
+Next.jsを開発モードで実行する際に、ログレベルや完全なURLをコンソールに表示するかどうかを設定できます。
+
+現在、`logging`は`fetch` APIを使用したデータ取得にのみ適用されます。Next.js内の他のログにはまだ適用されません。
+
+```js filename="next.config.js"
+module.exports = {
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
+}
+```
+
+[Server Components HMRキャッシュ](/docs/app/api-reference/config/next-config-js/serverComponentsHmrCache)から復元された`fetch`リクエストは、デフォルトではログに記録されません。ただし、`logging.fetches.hmrRefreshes`を`true`に設定することでこれを有効にできます。
+
+```js filename="next.config.js"
+module.exports = {
+  logging: {
+    fetches: {
+      hmrRefreshes: true,
+    },
+  },
+}
+```
+
+### 受信リクエスト
+
+デフォルトでは、開発中のすべての受信リクエストがコンソールに記録されます。`incomingRequests`オプションを使用して、無視するリクエストを決定できます。
+これは開発時のみログに記録されるため、このオプションは本番ビルドには影響しません。
+
+```js filename="next.config.js"
+module.exports = {
+  logging: {
+    incomingRequests: {
+      ignore: [/\api\/v1\/health/],
+    },
+  },
+}
+```
+
+または、`incomingRequests`を`false`に設定することで、受信リクエストのログ記録を無効にできます。
+
+```js filename="next.config.js"
+module.exports = {
+  logging: {
+    incomingRequests: false,
+  },
+}
+```
+
+### ログの無効化
+
+また、`logging`を`false`に設定することで、開発ログを無効にすることもできます。
+
+```js filename="next.config.js"
+module.exports = {
+  logging: false,
+}
+```

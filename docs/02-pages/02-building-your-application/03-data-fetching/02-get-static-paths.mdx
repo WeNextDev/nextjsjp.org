@@ -1,0 +1,142 @@
+---
+title: getStaticPaths
+description: "`getStaticPaths`を使用してデータをフェッチし、静的ページを生成します。Next.jsでのデータフェッチングに関するこのAPIについて詳しく学びます。"
+slug: /docs/pages/building-your-application/data-fetching/get-static-paths
+---
+
+ページが[動的ルート](/docs/pages/building-your-application/routing/dynamic-routes)を持ち、`getStaticProps`を使用している場合、静的に生成するパスのリストを定義する必要があります。
+
+動的ルートを使用するページから`getStaticPaths`（静的サイト生成）と呼ばれる関数をエクスポートすると、Next.jsは`getStaticPaths`で指定されたすべてのパスを静的に事前レンダリングします。
+
+```tsx filename="pages/repo/[name].tsx" switcher
+import type {
+  InferGetStaticPropsType,
+  GetStaticProps,
+  GetStaticPaths,
+} from 'next'
+
+type Repo = {
+  name: string
+  stargazers_count: number
+}
+
+export const getStaticPaths = (async () => {
+  return {
+    paths: [
+      {
+        params: {
+          name: 'next.js',
+        },
+      }, // 以下の「paths」セクションを参照
+    ],
+    fallback: true, // falseまたは"blocking"
+  }
+}) satisfies GetStaticPaths
+
+export const getStaticProps = (async (context) => {
+  const res = await fetch('https://api.github.com/repos/vercel/next.js')
+  const repo = await res.json()
+  return { props: { repo } }
+}) satisfies GetStaticProps<{
+  repo: Repo
+}>
+
+export default function Page({
+  repo,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+  return repo.stargazers_count
+}
+```
+
+```jsx filename="pages/repo/[name].js" switcher
+export async function getStaticPaths() {
+  return {
+    paths: [
+      {
+        params: {
+          name: 'next.js',
+        },
+      }, // 以下の「paths」セクションを参照
+    ],
+    fallback: true, // falseまたは"blocking"
+  }
+}
+
+export async function getStaticProps() {
+  const res = await fetch('https://api.github.com/repos/vercel/next.js')
+  const repo = await res.json()
+  return { props: { repo } }
+}
+
+export default function Page({ repo }) {
+  return repo.stargazers_count
+}
+```
+
+[`getStaticPaths` APIリファレンス](/docs/pages/api-reference/functions/get-static-paths)では、`getStaticPaths`で使用できるすべてのパラメータとプロパティについて説明しています。
+
+## getStaticPathsをいつ使用するべきか
+
+以下の条件に該当する動的ルートを使用するページを静的に事前レンダリングする場合、`getStaticPaths`を使用する必要があります：
+
+- データがヘッドレスCMSから取得される
+- データがデータベースから取得される
+- データがファイルシステムから取得される
+- データが公開キャッシュ可能（ユーザー固有ではない）
+- ページをSEOのために事前レンダリングし、非常に高速にする必要がある — `getStaticProps`は`HTML`と`JSON`ファイルを生成し、どちらもパフォーマンスのためにCDNでキャッシュできる
+
+## getStaticPathsはいつ実行されるか
+
+`getStaticPaths`は本番環境でのビルド時にのみ実行され、実行時には呼び出されません。`getStaticPaths`内に記述されたコードがクライアント側のバンドルから削除されることを[このツール](https://next-code-elimination.vercel.app/)で検証できます。
+
+### getStaticPropsはgetStaticPathsとどのように連携するか
+
+- `getStaticProps`はビルド時に返された任意の`paths`に対して`next build`中に実行されます
+- `getStaticProps`は`fallback: true`を使用する場合にバックグラウンドで実行されます
+- `getStaticProps`は`fallback: blocking`を使用する場合、最初のレンダリング前に呼び出されます
+
+## getStaticPathsをどこで使用できるか
+
+- `getStaticPaths`は`getStaticProps`と**必ず**一緒に使用する必要があります
+- `getStaticPaths`は[`getServerSideProps`](/docs/pages/building-your-application/data-fetching/get-server-side-props)と**一緒に使用できません**
+- `getStaticProps`を使用する[動的ルート](/docs/pages/building-your-application/routing/dynamic-routes)から`getStaticPaths`をエクスポートできます
+- `getStaticPaths`は非ページファイル（例：`components`フォルダ）から**エクスポートできません**
+- `getStaticPaths`はページコンポーネントのプロパティとしてではなく、スタンドアロン関数としてエクスポートする必要があります
+
+## 開発環境では毎回リクエスト時に実行
+
+開発環境（`next dev`）では、`getStaticPaths`は毎回のリクエストで呼び出されます。
+
+## パスをオンデマンドで生成
+
+`getStaticPaths`により、[`fallback`](/docs/pages/api-reference/functions/get-static-paths#fallback-blocking)を使用してオンデマンドではなく、ビルド中に生成されるページを制御できます。ビルド中により多くのページを生成すると、ビルドが遅くなります。
+
+`paths`に空の配列を返すことで、すべてのページの生成をオンデマンドに延期できます。これは、Next.jsアプリケーションを複数の環境にデプロイする際に特に役立ちます。例えば、プレビュー用にすべてのページをオンデマンドで生成することで、より高速なビルドを実現できます（本番ビルドは除く）。これは、何百、何千もの静的ページを持つサイトに役立ちます。
+
+```jsx filename="pages/posts/[id].js"
+export async function getStaticPaths() {
+  // これがtrueの場合（プレビュー環境）、
+  // 静的ページを事前レンダリングしない
+  // （高速なビルド、ただし初期ページ読み込みは遅い）
+  if (process.env.SKIP_BUILD_STATIC_GENERATION) {
+    return {
+      paths: [],
+      fallback: 'blocking',
+    }
+  }
+
+  // 外部APIエンドポイントを呼び出して投稿を取得
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  // 投稿に基づいて事前レンダリングするパスを取得
+  // 本番環境では、すべてのページを事前レンダリング
+  // （遅いビルド、ただし初期ページ読み込みは高速）
+  const paths = posts.map((post) => ({
+    params: { id: post.id },
+  }))
+
+  // { fallback: false }は他のルートが404になることを意味する
+  return { paths, fallback: false }
+}
+```

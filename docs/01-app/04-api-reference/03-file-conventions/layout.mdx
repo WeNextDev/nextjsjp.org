@@ -1,0 +1,260 @@
+---
+title: layout.js
+description: layout.jsファイルのAPIリファレンス。
+slug: /docs/app/api-reference/file-conventions/layout
+---
+
+`layout` ファイルはNext.jsアプリケーションでレイアウトを定義するために使用されます。
+
+```tsx filename="app/dashboard/layout.tsx" switcher
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <section>{children}</section>
+}
+```
+
+```jsx filename="app/dashboard/layout.js" switcher
+export default function DashboardLayout({ children }) {
+  return <section>{children}</section>
+}
+```
+
+**ルートレイアウト**はルート `app` ディレクトリの最上位レイアウトです。これは `<html>` および `<body>` タグとその他のグローバルに共有されるUIを定義するために使用されます。
+
+```tsx filename="app/layout.tsx" switcher
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+## リファレンス
+
+### Props
+
+#### `children` (必須)
+
+レイアウトコンポーネントは `children` プロパティを受け取り、使用する必要があります。レンダリング中、`children` にはレイアウトがラップしているルートセグメントが入ります。これらは主に子[レイアウト](/docs/app/api-reference/file-conventions/page)（存在する場合）または[ページ](/docs/app/api-reference/file-conventions/page)のコンポーネントですが、[Loading](/docs/app/building-your-application/routing/loading-ui-and-streaming)や[Error](/docs/app/building-your-application/routing/error-handling)などの特殊ファイルが該当する場合もあります。
+
+#### `params` (オプション)
+
+ルートセグメントからそのレイアウトまでの[動的ルートパラメータ](/docs/app/building-your-application/routing/dynamic-routes)オブジェクトを含むオブジェクトに解決されるプロミスです。
+
+```tsx filename="app/dashboard/[team]/layout.tsx" switcher
+export default async function Layout({
+  params,
+}: {
+  params: Promise<{ team: string }>
+}) {
+  const team = (await params).team
+}
+```
+
+```jsx filename="app/dashboard/[team]/layout.js" switcher
+export default async function Layout({ params }) {
+  const team = (await params).team
+}
+```
+
+| ルート例                          | URL            | `params`                          |
+| --------------------------------- | -------------- | ---------------------------------- |
+| `app/dashboard/[team]/layout.js`  | `/dashboard/1` | `Promise<{ team: '1' }>`           |
+| `app/shop/[tag]/[item]/layout.js` | `/shop/1/2`    | `Promise<{ tag: '1', item: '2' }>` |
+| `app/blog/[...slug]/layout.js`    | `/blog/1/2`    | `Promise<{ slug: ['1', '2'] }>`    |
+
+- `params` プロパティはプロミスであるため、値にアクセスするには `async/await` またはReactの[`use`](https://react.dev/reference/react/use)関数を使用する必要があります。
+  - バージョン14以前では、`params` は同期的なプロパティでした。後方互換性を維持するために、Next.js 15でも引き続き同期的にアクセスできますが、この動作は将来的に非推奨となります。
+
+### ルートレイアウト
+
+`app` ディレクトリには必ずルート `app/layout.js` を含める**必要があります**。
+
+```tsx filename="app/layout.tsx" switcher
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+- ルートレイアウトでは必ず `<html>` と `<body>` タグを定義する**必要があります**。
+  - `<title>` や `<meta>` などの `<head>` タグを手動でルートレイアウトに追加**すべきではありません**。代わりに、ストリーミングや `<head>` 要素の重複排除などの高度な要件を自動的に処理する[メタデータAPI](/docs/app/building-your-application/optimizing/metadata)を使用すべきです。
+- [ルートグループ](/docs/app/building-your-application/routing/route-groups)を使用して複数のルートレイアウトを作成できます。
+  - **複数のルートレイアウト間**を移動すると、（クライアントサイドナビゲーションではなく）**フルページロード**が発生します。例えば、`app/(shop)/layout.js` を使用する `/cart` から `app/(marketing)/layout.js` を使用する `/blog` に移動すると、フルページロードが発生します。これは複数のルートレイアウトにのみ**適用されます**。
+
+## 注意事項
+
+### レイアウトは `searchParams` を受け取りません
+
+[ページ](/docs/app/api-reference/file-conventions/page)とは異なり、レイアウトコンポーネントは `searchParams` プロパティを**受け取りません**。これは、共有レイアウトがナビゲーション中に[再レンダリングされない](/docs/app/building-your-application/routing/linking-and-navigating#4-partial-rendering)ため、ナビゲーション間で古い `searchParams` が残る可能性があるためです。
+
+クライアントサイドナビゲーションを使用する場合、Next.jsは自動的に2つのルート間の共通レイアウトの下にあるページの部分だけを再レンダリングします。
+
+例えば、以下のディレクトリ構造では、`dashboard/layout.tsx` は `/dashboard/settings` と `/dashboard/analytics` の両方の共通レイアウトです：
+
+<Image
+  alt="dashboard フォルダにlayout.tsxファイルがあり、settingsとanalyticsフォルダにそれぞれページがある構造を示すファイル図"
+  srcLight="/light/shared-dashboard-layout.png"
+  srcDark="/dark/shared-dashboard-layout.png"
+  width="1600"
+  height="687"
+/>
+
+`/dashboard/settings` から `/dashboard/analytics` に移動する場合、`/dashboard/analytics` の `page.tsx` はサーバー上で再レンダリングされますが、`dashboard/layout.tsx` は2つのルート間で共有されるUI要素であるため再レンダリング**されません**。
+
+このパフォーマンス最適化により、レイアウトを共有するページ間のナビゲーションが高速になります。これは、共有レイアウト（独自のデータを取得する可能性がある）を含むルート全体ではなく、ページのデータ取得とレンダリングのみを実行するためです。
+
+`dashboard/layout.tsx` は再レンダリングされないため、レイアウトのServerComponentの `searchParams` プロパティはナビゲーション後に**古くなる**可能性があります。
+
+代わりに、ページの[`searchParams`](/docs/app/api-reference/file-conventions/page#searchparams-optional)プロパティを使用するか、レイアウト内のClientComponentで[`useSearchParams`](/docs/app/api-reference/functions/use-search-params)フックを使用してください。これらは最新の `searchParams` でクライアント上で再レンダリングされます。
+
+### レイアウトは `pathname` にアクセスできません
+
+レイアウトは `pathname` にアクセスできません。これはレイアウトがデフォルトでServerComponentであり、[クライアントサイドナビゲーション中に再レンダリングされない](/docs/app/building-your-application/routing/linking-and-navigating#4-partial-rendering)ため、ナビゲーション間で `pathname` が古くなる可能性があるためです。古くなるのを防ぐためには、Next.jsはルートのすべてのセグメントを再フェッチする必要があり、キャッシュの利点が失われ、ナビゲーション時の[RSCペイロード](/docs/app/building-your-application/rendering/server-components#what-is-the-react-server-component-payload-rsc)のサイズが増加します。
+
+代わりに、pathname に依存するロジックをClientComponentに抽出し、レイアウトにインポートすることができます。ClientComponentはナビゲーション中に再レンダリングされる（ただし再フェッチはされない）ため、[`usePathname`](https://nextjs.org/docs/app/api-reference/functions/use-pathname)などのNext.jsフックを使用して現在のpathnameにアクセスし、古くなるのを防ぐことができます。
+
+```tsx filename="app/dashboard/layout.tsx" switcher
+import { ClientComponent } from '@/app/ui/ClientComponent'
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <ClientComponent />
+      {/* その他のレイアウトUI */}
+      <main>{children}</main>
+    </>
+  )
+}
+```
+
+```jsx filename="app/dashboard/layout.js" switcher
+import { ClientComponent } from '@/app/ui/ClientComponent'
+
+export default function Layout({ children }) {
+  return (
+    <>
+      <ClientComponent />
+      {/* その他のレイアウトUI */}
+      <main>{children}</main>
+    </>
+  )
+}
+```
+
+一般的な `pathname` パターンは[`params`](#params-optional)プロパティを使用しても実装できます。
+
+詳細については[例](/docs/app/building-your-application/routing/layouts-and-templates#examples)セクションを参照してください。
+
+## 例
+
+### `params` に基づいてコンテンツを表示する
+
+[動的ルートセグメント](/docs/app/building-your-application/routing/dynamic-routes)を使用して、`params` プロパティに基づいて特定のコンテンツを表示またはフェッチできます。
+
+```tsx filename="app/dashboard/layout.tsx" switcher
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode
+  params: Promise<{ team: string }>
+}) {
+  const { team } = await params
+
+  return (
+    <section>
+      <header>
+        <h1>{team}のダッシュボードへようこそ</h1>
+      </header>
+      <main>{children}</main>
+    </section>
+  )
+}
+```
+
+```jsx filename="app/dashboard/layout.js" switcher
+export default async function DashboardLayout({ children, params }) {
+  const { team } = await params
+
+  return (
+    <section>
+      <header>
+        <h1>{team}のダッシュボードへようこそ</h1>
+      </header>
+      <main>{children}</main>
+    </section>
+  )
+}
+```
+
+### ClientComponentsで `params` を読み取る
+
+ClientComponent（`async` にできない）で `params` を使用するには、Reactの[`use`](https://react.dev/reference/react/use)関数を使用してプロミスを読み取ることができます：
+
+```tsx filename="app/page.tsx" switcher
+'use client'
+
+import { use } from 'react'
+
+export default function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = use(params)
+}
+```
+
+```js filename="app/page.js" switcher
+'use client'
+
+import { use } from 'react'
+
+export default function Page({ params }) {
+  const { slug } = use(params)
+}
+```
+
+## バージョン履歴
+
+| バージョン    | 変更点                                                                                                     |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| `v15.0.0-RC` | `params` がプロミスになりました。[コードモッド](/docs/app/building-your-application/upgrading/codemods#150)が利用可能です。 |
+| `v13.0.0`    | `layout` が導入されました。                                                                                  |

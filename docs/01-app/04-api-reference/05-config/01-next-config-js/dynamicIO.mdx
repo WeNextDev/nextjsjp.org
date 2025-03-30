@@ -1,0 +1,38 @@
+---
+title: dynamicIO
+description: Next.jsで dynamicIO フラグを有効にする方法を学びます。
+version: canary
+slug: /docs/app/api-reference/config/next-config-js/dynamicIO
+---
+
+`dynamicIO` フラグは、App Router内のデータフェッチ操作を、明示的にキャッシュされない限りプリレンダリングから除外する、Next.jsの実験的な機能です。これは、サーバーコンポーネントでの動的データフェッチのパフォーマンスを最適化する際に役立ちます。
+
+プリレンダリングされたキャッシュからではなく、実行時に新鮮なデータフェッチが必要なアプリケーションに適しています。
+
+[`use cache`](/docs/app/api-reference/directives/use-cache) と組み合わせて使用することが想定されており、ページ、関数、またはコンポーネントレベルで `use cache` を使用して特定の部分をキャッシュするように定義しない限り、デフォルトで実行時にデータフェッチが行われます。
+
+## 使用方法
+
+`dynamicIO` フラグを有効にするには、`next.config.ts` ファイルの `experimental` セクションで `true` に設定します：
+
+```ts filename="next.config.ts"
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    dynamicIO: true,
+  },
+}
+
+export default nextConfig
+```
+
+`dynamicIO` が有効な場合、以下のキャッシュ関数と設定を使用できます：
+
+- [`use cache` ディレクティブ](/docs/app/api-reference/directives/use-cache)
+- [`use cache` と併用する `cacheLife` 関数](/docs/app/api-reference/config/next-config-js/cacheLife)
+- [`cacheTag` 関数](/docs/app/api-reference/functions/cacheTag)
+
+## 注意点
+
+- `dynamicIO` は実行時に新鮮なデータフェッチを確保することでパフォーマンスを最適化できますが、プリレンダリングされたコンテンツを提供する場合と比較して、追加のレイテンシーを引き起こす可能性があります。

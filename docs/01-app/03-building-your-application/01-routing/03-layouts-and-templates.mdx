@@ -1,0 +1,307 @@
+---
+title: レイアウトとテンプレート
+description: Next.jsで最初の共有レイアウトを作成する。
+slug: /docs/app/building-your-application/routing/layouts-and-templates
+---
+
+特殊ファイル[layout.js](#layouts)と[template.js](#templates)を使用すると、複数のルート間で共有されるUIを作成できます。このページでは、これらの特殊ファイルの使用方法とタイミングについて説明します。
+
+## レイアウト
+
+レイアウトは複数のルート間で**共有**されるUIです。ナビゲーション時、レイアウトは状態を保持し、インタラクティブな状態を維持し、再レンダリングされません。レイアウトは[ネストする](#nesting-layouts)こともできます。
+
+`layout.js`ファイルからReactコンポーネントをデフォルトエクスポートすることで、レイアウトを定義できます。コンポーネントは`children`プロップを受け取る必要があり、これはレンダリング中に子レイアウト（存在する場合）またはページで構成されます。
+
+例えば、以下のレイアウトは`/dashboard`と`/dashboard/settings`ページで共有されます：
+
+<Image
+  alt="layout.js special file"
+  srcLight="/docs/light/layout-special-file.png"
+  srcDark="/docs/dark/layout-special-file.png"
+  width="1600"
+  height="606"
+/>
+
+```tsx filename="app/dashboard/layout.tsx" switcher
+export default function DashboardLayout({
+  children, // ページまたはネストされたレイアウトになります
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <section>
+      {/* 共有UIをここに含めます（ヘッダーやサイドバーなど） */}
+      <nav></nav>
+
+      {children}
+    </section>
+  )
+}
+```
+
+```jsx filename="app/dashboard/layout.js" switcher
+export default function DashboardLayout({
+  children, // ページまたはネストされたレイアウトになります
+}) {
+  return (
+    <section>
+      {/* 共有UIをここに含めます（ヘッダーやサイドバーなど） */}
+      <nav></nav>
+
+      {children}
+    </section>
+  )
+}
+```
+
+### ルートレイアウト（必須）
+
+ルートレイアウトは`app`ディレクトリのトップレベルで定義され、すべてのルートに適用されます。このレイアウトは**必須**であり、`html`タグと`body`タグを含める必要があります。これによりサーバーから返される初期HTMLを変更できます。
+
+```tsx filename="app/layout.tsx" switcher
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {/* レイアウトUI */}
+        <main>{children}</main>
+      </body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        {/* レイアウトUI */}
+        <main>{children}</main>
+      </body>
+    </html>
+  )
+}
+```
+
+### レイアウトのネスト
+
+デフォルトでは、フォルダ階層内のレイアウトは**ネスト**されており、`children`プロップを通じて子レイアウトをラップします。特定のルートセグメント（フォルダ）内に`layout.js`を追加することで、レイアウトをネストできます。
+
+例えば、`/dashboard`ルート用のレイアウトを作成するには、`dashboard`フォルダ内に新しい`layout.js`ファイルを追加します：
+
+<Image
+  alt="Nested Layout"
+  srcLight="/docs/light/nested-layout.png"
+  srcDark="/docs/dark/nested-layout.png"
+  width="1600"
+  height="606"
+/>
+
+```tsx filename="app/dashboard/layout.tsx" switcher
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <section>{children}</section>
+}
+```
+
+```jsx filename="app/dashboard/layout.js" switcher
+export default function DashboardLayout({ children }) {
+  return <section>{children}</section>
+}
+```
+
+上記の2つのレイアウトを組み合わせると、ルートレイアウト（`app/layout.js`）がダッシュボードレイアウト（`app/dashboard/layout.js`）をラップし、それが`app/dashboard/*`内のルートセグメントをラップします。
+
+2つのレイアウトは次のようにネストされます：
+
+<Image
+  alt="Nested Layouts"
+  srcLight="/docs/light/nested-layouts-ui.png"
+  srcDark="/docs/dark/nested-layouts-ui.png"
+  width="1600"
+  height="1026"
+/>
+
+> **補足**：
+>
+> - レイアウトには`.js`、`.jsx`、または`.tsx`ファイル拡張子を使用できます。
+> - ルートレイアウトのみが`<html>`と`<body>`タグを含めることができます。
+> - 同じフォルダに`layout.js`と`page.js`ファイルが定義されている場合、レイアウトはページをラップします。
+> - レイアウトはデフォルトで[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)ですが、[クライアントコンポーネント](/docs/app/building-your-application/rendering/client-components)に設定することもできます。
+> - レイアウトはデータをフェッチできます。詳細については[データフェッチング](/docs/app/building-your-application/data-fetching)セクションをご覧ください。
+> - 親レイアウトとその子の間でデータを渡すことはできません。ただし、同じルートで複数回データをフェッチすることができ、Reactは[リクエストを自動的に重複排除](/docs/app/building-your-application/caching#request-memoization)するためパフォーマンスには影響しません。
+> - レイアウトは`pathname`にアクセスできません（[詳細はこちら](/docs/app/api-reference/file-conventions/layout)）。ただし、インポートされたクライアントコンポーネントは[`usePathname`](/docs/app/api-reference/functions/use-pathname)フックを使用してpathnameにアクセスできます。
+> - レイアウトは自分より下のルートセグメントにアクセスできません。すべてのルートセグメントにアクセスするには、クライアントコンポーネントで[`useSelectedLayoutSegment`](/docs/app/api-reference/functions/use-selected-layout-segment)または[`useSelectedLayoutSegments`](/docs/app/api-reference/functions/use-selected-layout-segments)を使用できます。
+> - [ルートグループ](/docs/app/building-your-application/routing/route-groups)を使用して、特定のルートセグメントを共有レイアウトに含めたり除外したりできます。
+> - [ルートグループ](/docs/app/building-your-application/routing/route-groups)を使用して、複数のルートレイアウトを作成できます。[例はこちら](/docs/app/building-your-application/routing/route-groups#creating-multiple-root-layouts)をご覧ください。
+> - **`pages`ディレクトリからの移行**: ルートレイアウトは[`_app.js`](/docs/pages/building-your-application/routing/custom-app)と[`_document.js`](/docs/pages/building-your-application/routing/custom-document)ファイルを置き換えます。[移行ガイド](/docs/app/building-your-application/upgrading/app-router-migration#migrating-_documentjs-and-_appjs)をご覧ください。
+
+## テンプレート
+
+テンプレートはレイアウトと同様に子レイアウトやページをラップしますが、レイアウトがルート間で保持され状態を維持するのに対し、テンプレートはナビゲーション時に子ごとに新しいインスタンスを作成します。つまり、ユーザーがテンプレートを共有するルート間を移動すると、子の新しいインスタンスがマウントされ、DOM要素が再作成され、クライアントコンポーネントの状態は**保持されず**、エフェクトが再同期されます。
+
+そのような特定の動作が必要な場合、テンプレートはレイアウトよりも適切なオプションになるかもしれません。例えば：
+
+- ナビゲーション時に`useEffect`を再同期する場合。
+- ナビゲーション時に子クライアントコンポーネントの状態をリセットする場合。
+
+テンプレートは`template.js`ファイルからデフォルトのReactコンポーネントをエクスポートすることで定義できます。コンポーネントは`children`プロップを受け取る必要があります。
+
+<Image
+  alt="template.js special file"
+  srcLight="/docs/light/template-special-file.png"
+  srcDark="/docs/dark/template-special-file.png"
+  width="1600"
+  height="444"
+/>
+
+```tsx filename="app/template.tsx" switcher
+export default function Template({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>
+}
+```
+
+```jsx filename="app/template.js" switcher
+export default function Template({ children }) {
+  return <div>{children}</div>
+}
+```
+
+ネストの観点では、`template.js`はレイアウトとその子の間でレンダリングされます。以下は簡略化した出力例です：
+
+```jsx filename="Output"
+<Layout>
+  {/* テンプレートには一意のキーが与えられます */}
+  <Template key={routeParam}>{children}</Template>
+</Layout>
+```
+
+## 例
+
+### メタデータ
+
+[メタデータAPI](/docs/app/building-your-application/optimizing/metadata)を使用して、`title`や`meta`などの`<head>`HTML要素を変更できます。
+
+メタデータは[`layout.js`](/docs/app/api-reference/file-conventions/layout)または[`page.js`](/docs/app/api-reference/file-conventions/page)ファイルで[`metadata`オブジェクト](/docs/app/api-reference/functions/generate-metadata#the-metadata-object)または[`generateMetadata`関数](/docs/app/api-reference/functions/generate-metadata#generatemetadata-function)をエクスポートすることで定義できます。
+
+```tsx filename="app/page.tsx" switcher
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Next.js',
+}
+
+export default function Page() {
+  return '...'
+}
+```
+
+```jsx filename="app/page.js" switcher
+export const metadata = {
+  title: 'Next.js',
+}
+
+export default function Page() {
+  return '...'
+}
+```
+
+> **補足**: ルートレイアウトに`<title>`や`<meta>`などの`<head>`タグを手動で追加する**べきではありません**。代わりに、ストリーミングや`<head>`要素の重複排除などの高度な要件を自動的に処理する[メタデータAPI](/docs/app/api-reference/functions/generate-metadata)を使用してください。
+
+利用可能なメタデータオプションの詳細については、[APIリファレンス](/docs/app/api-reference/functions/generate-metadata)をご覧ください。
+
+### アクティブなナビゲーションリンク
+
+[usePathname()](/docs/app/api-reference/functions/use-pathname)フックを使用して、ナビゲーションリンクがアクティブかどうかを判断できます。
+
+`usePathname()`はクライアントフックであるため、ナビゲーションリンクをクライアントコンポーネントに抽出し、それをレイアウトやテンプレートにインポートする必要があります：
+
+```tsx filename="app/ui/nav-links.tsx" switcher
+'use client'
+
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+
+export function NavLinks() {
+  const pathname = usePathname()
+
+  return (
+    <nav>
+      <Link className={`link ${pathname === '/' ? 'active' : ''}`} href="/">
+        Home
+      </Link>
+
+      <Link
+        className={`link ${pathname === '/about' ? 'active' : ''}`}
+        href="/about"
+      >
+        About
+      </Link>
+    </nav>
+  )
+}
+```
+
+```jsx filename="app/ui/nav-links.js" switcher
+'use client'
+
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+
+export function Links() {
+  const pathname = usePathname()
+
+  return (
+    <nav>
+      <Link className={`link ${pathname === '/' ? 'active' : ''}`} href="/">
+        Home
+      </Link>
+
+      <Link
+        className={`link ${pathname === '/about' ? 'active' : ''}`}
+        href="/about"
+      >
+        About
+      </Link>
+    </nav>
+  )
+}
+```
+
+```tsx filename="app/layout.tsx" switcher
+import { NavLinks } from '@/app/ui/nav-links'
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <NavLinks />
+        <main>{children}</main>
+      </body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+import { NavLinks } from '@/app/ui/nav-links'
+
+export default function Layout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <NavLinks />
+        <main>{children}</main>
+      </body>
+    </html>
+  )
+}
+```

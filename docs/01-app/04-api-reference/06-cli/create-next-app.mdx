@@ -1,0 +1,87 @@
+---
+title: create-next-app
+description: create-next-app CLIを使用して1つのコマンドでNext.jsアプリを作成します。
+slug: /docs/app/api-reference/cli/create-next-app
+---
+
+{/* このドキュメントの内容はappとpagesルーターで共有されています。Pagesルーター特有の内容を追加するには`<PagesOnly>Content</PagesOnly>`コンポーネントを使用できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+`create-next-app` CLIを使用すると、デフォルトテンプレートまたは公開GitHubリポジトリの[サンプル](https://github.com/vercel/next.js/tree/canary/examples)を使用して新しいNext.jsアプリケーションを作成できます。これはNext.jsを始める最も簡単な方法です。
+
+基本的な使用方法：
+
+```bash filename="Terminal"
+npx create-next-app@latest [project-name] [options]
+```
+
+## リファレンス
+
+以下のオプションが利用可能です：
+
+| オプション                              | 説明                                                       |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `-h` または `--help`                    | 利用可能なすべてのオプションを表示                         |
+| `-v` または `--version`                 | バージョン番号を出力                                       |
+| `--no-*`                                | デフォルトオプションを無効化。例：`--no-eslint`            |
+| `--ts` または `--typescript`            | TypeScriptプロジェクトとして初期化（デフォルト）           |
+| `--js` または `--javascript`            | JavaScriptプロジェクトとして初期化                         |
+| `--tailwind`                            | Tailwind CSS設定で初期化（デフォルト）                     |
+| `--eslint`                              | ESLint設定で初期化                                         |
+| `--app`                                 | Appルータープロジェクトとして初期化                        |
+| `--api`                                 | ルートハンドラーのみのプロジェクトを初期化                 |
+| `--src-dir`                             | `src/`ディレクトリ内で初期化                               |
+| `--turbopack`                           | 開発用にデフォルトでTurbopackを有効化                      |
+| `--import-alias <alias-to-configure>`   | 使用するインポートエイリアスを指定（デフォルト "@/\*"）    |
+| `--empty`                               | 空のプロジェクトを初期化                                   |
+| `--use-npm`                             | npmを使用してアプリケーションをブートストラップするよう指定 |
+| `--use-pnpm`                            | pnpmを使用してアプリケーションをブートストラップするよう指定 |
+| `--use-yarn`                            | Yarnを使用してアプリケーションをブートストラップするよう指定 |
+| `--use-bun`                             | Bunを使用してアプリケーションをブートストラップするよう指定 |
+| `-e` または `--example [name] [github-url]` | アプリをブートストラップするためのサンプル             |
+| `--example-path <path-to-example>`      | サンプルへのパスを個別に指定                               |
+| `--reset-preferences`                   | 保存された設定をリセットするよう指定                       |
+| `--skip-install`                        | パッケージのインストールをスキップするよう指定             |
+| `--yes`                                 | すべてのオプションに対して以前の設定またはデフォルトを使用 |
+
+## 例
+
+### デフォルトテンプレートを使用する場合
+
+デフォルトテンプレートを使用して新しいアプリを作成するには、ターミナルで次のコマンドを実行します：
+
+```bash filename="Terminal"
+npx create-next-app@latest
+```
+
+その後、以下のプロンプトが表示されます：
+
+```txt filename="Terminal"
+What is your project named?  my-app
+Would you like to use TypeScript?  No / Yes
+Would you like to use ESLint?  No / Yes
+Would you like to use Tailwind CSS?  No / Yes
+Would you like your code inside a `src/` directory?  No / Yes
+Would you like to use App Router? (recommended)  No / Yes
+Would you like to use Turbopack for `next dev`?  No / Yes
+Would you like to customize the import alias (`@/*` by default)?  No / Yes
+```
+
+プロンプトに答えると、選択した設定で新しいプロジェクトが作成されます。
+
+### 公式Next.jsサンプルを使用する場合
+
+公式Next.jsサンプルを使用して新しいアプリを作成するには、`--example`フラグを使用します：
+
+```bash filename="Terminal"
+npx create-next-app@latest --example [example-name] [your-project-name]
+```
+
+利用可能なすべてのサンプルとセットアップ手順は、[Next.jsリポジトリ](https://github.com/vercel/next.js/tree/canary/examples)で確認できます。
+
+### 任意の公開GitHubサンプルを使用する場合
+
+任意の公開GitHubサンプルを使用して新しいアプリを作成するには、GitHubリポジトリのURLと共に`--example`オプションを使用します：
+
+```bash filename="Terminal"
+npx create-next-app@latest --example "https://github.com/.../" [your-project-name]
+```

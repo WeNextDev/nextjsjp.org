@@ -1,0 +1,185 @@
+---
+title: ローディングUIとストリーミング
+description: Suspenseを基盤として、Loading UIは特定のルートセグメントに対するフォールバックを作成し、コンテンツの準備ができ次第自動的にストリーミングします。
+slug: /docs/app/building-your-application/routing/loading-ui-and-streaming
+---
+
+特殊ファイル`loading.js`は[React Suspense](https://react.dev/reference/react/Suspense)を使用して意味のあるローディングUIを作成するのに役立ちます。この規約により、ルートセグメントのコンテンツがロードされている間、サーバーから[即時ローディング状態](#instant-loading-states)を表示できます。レンダリングが完了すると、新しいコンテンツが自動的に入れ替わります。
+
+<Image
+  alt="Loading UI"
+  srcLight="/docs/light/loading-ui.png"
+  srcDark="/docs/dark/loading-ui.png"
+  width="1600"
+  height="691"
+/>
+
+## 即時ローディング状態
+
+即時ローディング状態とは、ナビゲーション時に即座に表示されるフォールバックUIのことです。スケルトンやスピナーなどのローディングインジケーター、または将来の画面の一部（カバー写真やタイトルなど）を事前にレンダリングできます。これによりユーザーはアプリが応答していることを理解でき、より良いユーザー体験を提供します。
+
+フォルダ内に`loading.js`ファイルを追加することでローディング状態を作成できます。
+
+<Image
+  alt="loading.js special file"
+  srcLight="/docs/light/loading-special-file.png"
+  srcDark="/docs/dark/loading-special-file.png"
+  width="1600"
+  height="606"
+/>
+
+```tsx filename="app/dashboard/loading.tsx" switcher
+export default function Loading() {
+  // You can add any UI inside Loading, including a Skeleton.
+  return <LoadingSkeleton />
+}
+```
+
+```jsx filename="app/dashboard/loading.js" switcher
+export default function Loading() {
+  // You can add any UI inside Loading, including a Skeleton.
+  return <LoadingSkeleton />
+}
+```
+
+同じフォルダ内では、`loading.js`は`layout.js`の内部にネストされます。これにより`page.js`ファイルとその下の子要素は自動的に`<Suspense>`境界でラップされます。
+
+<Image
+  alt="loading.js overview"
+  srcLight="/docs/light/loading-overview.png"
+  srcDark="/docs/dark/loading-overview.png"
+  width="1600"
+  height="768"
+/>
+
+> **補足**:
+>
+> - [サーバー中心のルーティング](/docs/app/building-your-application/routing/linking-and-navigating#how-routing-and-navigation-works)を使用していても、ナビゲーションは即時に行われます。
+> - ナビゲーションは中断可能であり、ルートの変更時に現在のルートのコンテンツが完全にロードされるのを待つ必要はありません。
+> - 新しいルートセグメントがロードされている間も、共有レイアウトはインタラクティブな状態を維持します。
+
+> **推奨**: Next.jsはこの機能を最適化しているため、ルートセグメント（レイアウトとページ）には`loading.js`規約を使用してください。
+
+## Suspenseによるストリーミング
+
+`loading.js`に加えて、独自のUIコンポーネント用にSuspense境界を手動で作成することもできます。App Routerは[Suspense](https://react.dev/reference/react/Suspense)によるストリーミングをサポートしています。
+
+> **補足**:
+>
+> - [一部のブラウザ](https://bugs.webkit.org/show_bug.cgi?id=252413)はストリーミングレスポンスをバッファリングします。レスポンスが1024バイトを超えるまでストリーミングレスポンスが表示されない場合があります。これは通常、「hello world」アプリケーションにのみ影響し、実際のアプリケーションには影響しません。
+
+### ストリーミングとは何か？
+
+ReactとNext.jsでストリーミングがどのように機能するかを理解するには、**サーバーサイドレンダリング（SSR）**とその制限について知ることが役立ちます。
+
+SSRでは、ユーザーがページを見て操作できるようになるまでに、一連のステップを完了する必要があります：
+
+1. まず、特定のページのすべてのデータがサーバー上でフェッチされます。
+2. サーバーはページのHTMLをレンダリングします。
+3. ページのHTML、CSS、JavaScriptがクライアントに送信されます。
+4. 生成されたHTMLとCSSを使用して、非インタラクティブなユーザーインターフェースが表示されます。
+5. 最後に、Reactがユーザーインターフェースを[ハイドレート](https://react.dev/reference/react-dom/client/hydrateRoot#hydrating-server-rendered-html)してインタラクティブにします。
+
+<Image
+  alt="Chart showing Server Rendering without Streaming"
+  srcLight="/docs/light/server-rendering-without-streaming-chart.png"
+  srcDark="/docs/dark/server-rendering-without-streaming-chart.png"
+  width="1600"
+  height="612"
+/>
+
+これらのステップは順次的でブロッキングであり、すべてのデータがフェッチされるまでサーバーはページのHTMLをレンダリングできません。また、クライアント側では、ページ内のすべてのコンポーネントのコードがダウンロードされるまで、ReactはUIをハイドレートできません。
+
+ReactとNext.jsを使用したSSRは、できるだけ早く非インタラクティブなページをユーザーに表示することで、体感的な読み込みパフォーマンスを向上させます。
+
+<Image
+  alt="Server Rendering without Streaming"
+  srcLight="/docs/light/server-rendering-without-streaming.png"
+  srcDark="/docs/dark/server-rendering-without-streaming.png"
+  width="1600"
+  height="748"
+/>
+
+しかし、サーバー上でのすべてのデータフェッチがページの表示前に完了する必要があるため、依然として遅い場合があります。
+
+**ストリーミング**を使用すると、ページのHTMLを小さなチャンクに分解し、それらのチャンクをサーバーからクライアントに段階的に送信できます。
+
+<Image
+  alt="How Server Rendering with Streaming Works"
+  srcLight="/docs/light/server-rendering-with-streaming.png"
+  srcDark="/docs/dark/server-rendering-with-streaming.png"
+  width="1600"
+  height="785"
+/>
+
+これにより、すべてのデータがロードされるのを待たずに、ページの一部を先に表示できるようになります。
+
+ストリーミングはReactのコンポーネントモデルと相性が良いです。各コンポーネントはチャンクとみなすことができるからです。優先度の高いコンポーネント（製品情報など）やデータに依存しないコンポーネント（レイアウトなど）を先に送信でき、Reactは早期にハイドレーションを開始できます。優先度の低いコンポーネント（レビュー、関連商品など）は、データのフェッチ後に同じサーバーリクエストで送信できます。
+
+<Image
+  alt="Chart showing Server Rendering with Streaming"
+  srcLight="/docs/light/server-rendering-with-streaming-chart.png"
+  srcDark="/docs/dark/server-rendering-with-streaming-chart.png"
+  width="1600"
+  height="730"
+/>
+
+ストリーミングは、長いデータリクエストがページのレンダリングをブロックするのを防ぎたい場合に特に有効で、[Time To First Byte (TTFB)](https://web.dev/ttfb/)と[First Contentful Paint (FCP)](https://web.dev/first-contentful-paint/)を短縮できます。また、特に遅いデバイスでの[Time to Interactive (TTI)](https://developer.chrome.com/en/docs/lighthouse/performance/interactive/)の改善にも役立ちます。
+
+### 例
+
+`<Suspense>`は、非同期アクション（データのフェッチなど）を実行するコンポーネントをラップし、そのアクションが実行されている間はフォールバックUI（スケルトン、スピナーなど）を表示し、アクションが完了するとコンポーネントに置き換えるという仕組みです。
+
+```tsx filename="app/dashboard/page.tsx" switcher
+import { Suspense } from 'react'
+import { PostFeed, Weather } from './Components'
+
+export default function Posts() {
+  return (
+    <section>
+      <Suspense fallback={<p>Loading feed...</p>}>
+        <PostFeed />
+      </Suspense>
+      <Suspense fallback={<p>Loading weather...</p>}>
+        <Weather />
+      </Suspense>
+    </section>
+  )
+}
+```
+
+```jsx filename="app/dashboard/page.js" switcher
+import { Suspense } from 'react'
+import { PostFeed, Weather } from './Components'
+
+export default function Posts() {
+  return (
+    <section>
+      <Suspense fallback={<p>Loading feed...</p>}>
+        <PostFeed />
+      </Suspense>
+      <Suspense fallback={<p>Loading weather...</p>}>
+        <Weather />
+      </Suspense>
+    </section>
+  )
+}
+```
+
+Suspenseを使用することで、以下のメリットが得られます：
+
+1. **ストリーミングサーバーレンダリング** - サーバーからクライアントへHTMLを段階的にレンダリングします。
+2. **選択的ハイドレーション** - Reactはユーザーのインタラクションに基づいて、最初にインタラクティブにするコンポーネントの優先順位を決定します。
+
+Suspenseの詳細な例やユースケースについては、[Reactのドキュメント](https://react.dev/reference/react/Suspense)を参照してください。
+
+### SEO
+
+- Next.jsは[`generateMetadata`](/docs/app/api-reference/functions/generate-metadata)内のデータフェッチが完了するまで待ってからUIをクライアントにストリーミングします。これにより、ストリーミングレスポンスの最初の部分に`<head>`タグが含まれることが保証されます。
+- ストリーミングはサーバーレンダリングされるため、SEOに影響はありません。Googleのウェブクローラーにページがどのように表示されるかを確認し、シリアライズされたHTMLを表示するには、Googleの[Rich Results Test](https://search.google.com/test/rich-results)ツールを使用できます（[出典](https://web.dev/rendering-on-the-web/#seo-considerations)）。
+
+### ステータスコード
+
+ストリーミング時には、リクエストが成功したことを示す`200`ステータスコードが返されます。
+
+サーバーは、ストリーミングされるコンテンツ自体の中で、例えば[`redirect`](/docs/app/api-reference/functions/redirect)や[`notFound`](/docs/app/api-reference/functions/not-found)を使用する場合など、クライアントにエラーや問題を伝えることができます。レスポンスヘッダーはすでにクライアントに送信されているため、レスポンスのステータスコードを更新することはできません。これはSEOには影響しません。

@@ -1,0 +1,88 @@
+---
+title: ppr
+description: Next.jsでPartial Prerenderingを有効にする方法を学びます。
+version: experimental
+related:
+  title: Partial Prerenderingについて詳しく学ぶ
+  links:
+    - app/building-your-application/rendering/partial-prerendering
+slug: /docs/app/api-reference/config/next-config-js/ppr
+---
+
+Partial Prerendering（PPR）を使用すると、静的コンポーネントと動的コンポーネントを同じルート内で組み合わせることができます。[PPR](/docs/app/building-your-application/rendering/partial-prerendering)についてさらに詳しく学んでください。
+
+## Partial Prerenderingの使用
+
+### 段階的な導入（バージョン15）
+
+Next.js 15では、`next.config.js`で[`ppr`](/docs/app/api-reference/config/next-config-js/ppr)オプションを`incremental`に設定し、ファイルの先頭で`experimental_ppr`[ルート設定オプション](/docs/app/api-reference/file-conventions/route-segment-config)をエクスポートすることで、[レイアウト](/docs/app/building-your-application/routing/layouts-and-templates)や[ページ](/docs/app/api-reference/file-conventions/page)でPartial Prerenderingを段階的に導入できます。
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    ppr: 'incremental',
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    ppr: 'incremental',
+  },
+}
+
+module.exports = nextConfig
+```
+
+```tsx filename="app/page.tsx" switcher
+import { Suspense } from "react"
+import { StaticComponent, DynamicComponent, Fallback } from "@/app/ui"
+
+export const experimental_ppr = true
+
+export default function Page() {
+  return {
+     <>
+      <StaticComponent />
+      <Suspense fallback={<Fallback />}>
+        <DynamicComponent />
+      </Suspense>
+     </>
+  };
+}
+```
+
+```jsx filename="app/page.js" switcher
+import { Suspense } from "react"
+import { StaticComponent, DynamicComponent, Fallback } from "@/app/ui"
+
+export const experimental_ppr = true
+
+export default function Page() {
+  return {
+     <>
+      <StaticComponent />
+      <Suspense fallback={<Fallback />}>
+        <DynamicComponent />
+      </Suspense>
+     </>
+  };
+}
+```
+
+> **補足**:
+>
+> - `experimental_ppr`が設定されていないルートはデフォルトで`false`となり、PPRを使用してプリレンダリングされません。各ルートで明示的にオプトインする必要があります。
+> - `experimental_ppr`はルートセグメントのすべての子コンポーネント（ネストされたレイアウトとページを含む）に適用されます。すべてのファイルに追加する必要はなく、ルートの最上位セグメントにのみ追加します。
+> - 子セグメントのPPRを無効にするには、子セグメントで`experimental_ppr`を`false`に設定できます。
+
+| バージョン   | 変更点                                     |
+| --------- | ------------------------------------------- |
+| `v15.0.0` | 実験的な`incremental`の値が導入されました |
+| `v14.0.0` | 実験的な`ppr`が導入されました              |

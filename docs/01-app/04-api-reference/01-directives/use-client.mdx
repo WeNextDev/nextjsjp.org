@@ -1,0 +1,90 @@
+---
+title: use client
+description: コンポーネントをクライアント側でレンダリングするための use client ディレクティブの使用方法を学びます。
+slug: /docs/app/api-reference/directives/use-client
+---
+
+`use client` ディレクティブは、コンポーネントを**クライアント側**でレンダリングするよう指定し、状態管理、イベントハンドリング、ブラウザAPIへのアクセスなど、クライアント側のJavaScript機能を必要とするインタラクティブなユーザーインターフェース（UI）を作成する際に使用されます。これはReactの機能です。
+
+## 使用方法
+
+コンポーネントをClient Componentとして指定するには、任意のインポートの前に、ファイルの**先頭に** `use client` ディレクティブを追加します：
+
+```tsx filename="app/components/counter.tsx" highlight={1} switcher
+'use client'
+
+import { useState } from 'react'
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/components/counter.js" highlight={1} switcher
+'use client'
+
+import { useState } from 'react'
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  )
+}
+```
+
+## Server Componentの中にClient Componentを入れ子にする
+
+Server ComponentとClient Componentを組み合わせることで、パフォーマンスと対話性の両方を備えたアプリケーションを構築できます：
+
+1. **Server Components**：静的コンテンツ、データフェッチ、SEOに優しい要素に使用します。
+2. **Client Components**：状態、エフェクト、またはブラウザAPIを必要とするインタラクティブな要素に使用します。
+3. **コンポーネントの構成**：必要に応じてServer ComponentにClient Componentを入れ子にし、サーバーとクライアントのロジックを明確に分離します。
+
+次の例では：
+
+- `Header`は静的コンテンツを処理するServer Componentです。
+- `Counter`はページ内のインタラクティブ性を可能にするClient Componentです。
+
+```tsx filename="app/page.tsx" highlight={2,8} switcher
+import Header from './header'
+import Counter from './counter' // これはClient Componentです
+
+export default function Page() {
+  return (
+    <div>
+      <Header />
+      <Counter />
+    </div>
+  )
+}
+```
+
+```jsx filename="app/page.js" highlight={2,8} switcher
+import Header from './header'
+import Counter from './counter' // これはClient Componentです
+
+export default function Page() {
+  return (
+    <div>
+      <Header />
+      <Counter />
+    </div>
+  )
+}
+```
+
+## リファレンス
+
+`use client`の詳細については、[React ドキュメント](https://react.dev/reference/rsc/use-client)を参照してください。

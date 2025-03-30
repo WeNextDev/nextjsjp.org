@@ -1,0 +1,355 @@
+---
+title: フォントモジュール
+nav_title: フォント
+description: 組み込みの `next/font` ローダーを使用したウェブフォントの読み込み最適化。
+slug: /docs/app/api-reference/components/font
+---
+
+{/* このドキュメントの内容は、appルーターとpagesルーターで共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pages Router固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+この API リファレンスは、[`next/font/google`](/docs/app/building-your-application/optimizing/fonts#google-fonts) と [`next/font/local`](/docs/app/building-your-application/optimizing/fonts#local-fonts) の使用方法を理解するのに役立ちます。機能と使用方法については、[フォントの最適化](/docs/app/building-your-application/optimizing/fonts)ページを参照してください。
+
+### フォント関数の引数
+
+使用方法については、[Google フォント](/docs/app/building-your-application/optimizing/fonts#google-fonts)と[ローカルフォント](/docs/app/building-your-application/optimizing/fonts#local-fonts)を確認してください。
+
+| キー                                        | `font/google`       | `font/local`        | タイプ                      | 必須             |
+| ------------------------------------------- | ------------------- | ------------------- | -------------------------- | ----------------- |
+| [`src`](#src)                               | <Cross size={18} /> | <Check size={18} /> | 文字列または複数オブジェクト配列 | はい               |
+| [`weight`](#weight)                         | <Check size={18} /> | <Check size={18} /> | 文字列または配列             | 必須/オプション    |
+| [`style`](#style)                           | <Check size={18} /> | <Check size={18} /> | 文字列または配列             | -                 |
+| [`subsets`](#subsets)                       | <Check size={18} /> | <Cross size={18} /> | 文字列配列                  | -                 |
+| [`axes`](#axes)                             | <Check size={18} /> | <Cross size={18} /> | 文字列配列                  | -                 |
+| [`display`](#display)                       | <Check size={18} /> | <Check size={18} /> | 文字列                     | -                 |
+| [`preload`](#preload)                       | <Check size={18} /> | <Check size={18} /> | ブール値                   | -                 |
+| [`fallback`](#fallback)                     | <Check size={18} /> | <Check size={18} /> | 文字列配列                  | -                 |
+| [`adjustFontFallback`](#adjustfontfallback) | <Check size={18} /> | <Check size={18} /> | ブール値または文字列          | -                 |
+| [`variable`](#variable)                     | <Check size={18} /> | <Check size={18} /> | 文字列                     | -                 |
+| [`declarations`](#declarations)             | <Cross size={18} /> | <Check size={18} /> | オブジェクト配列             | -                 |
+
+### `src`
+
+フォントローダー関数が呼び出されるディレクトリを基準とした、フォントファイルのパスを文字列または複数のオブジェクト配列（`Array<{path: string, weight?: string, style?: string}>`）で指定します。
+
+`next/font/local` で使用
+
+- 必須
+
+例：
+
+- `src:'./fonts/my-font.woff2'`。`my-font.woff2` は `app` ディレクトリ内の `fonts` という名前のディレクトリに配置
+- `src:[{path: './inter/Inter-Thin.ttf', weight: '100',},{path: './inter/Inter-Regular.ttf',weight: '400',},{path: './inter/Inter-Bold-Italic.ttf', weight: '700',style: 'italic',},]`
+- フォントローダー関数が `app/page.tsx` で呼び出され、`src:'../styles/fonts/my-font.ttf'` の場合、`my-font.ttf` はプロジェクトのルートにある `styles/fonts` に配置
+
+### `weight`
+
+以下の可能性のあるフォントの [`weight`](https://fonts.google.com/knowledge/glossary/weight)：
+
+- 特定のフォントで利用可能なウェイトの値、または[可変](https://fonts.google.com/variablefonts)フォントの場合は値の範囲を示す文字列
+- フォントが[可変 Google フォント](https://fonts.google.com/variablefonts)でない場合のウェイト値の配列。`next/font/google` にのみ適用
+
+`next/font/google` と `next/font/local` で使用
+
+- フォントが[可変](https://fonts.google.com/variablefonts)でない場合、**必須**
+
+例：
+
+- `weight: '400'`：単一のウェイト値の文字列 - [`Inter`](https://fonts.google.com/specimen/Inter?query=inter)フォントの場合、可能な値は `'100'`、`'200'`、`'300'`、`'400'`、`'500'`、`'600'`、`'700'`、`'800'`、`'900'` または `'variable'`（`'variable'` がデフォルト）
+- `weight: '100 900'`：可変フォントの `100` から `900` までの範囲を示す文字列
+- `weight: ['100','400','900']`：可変でないフォントの3つの可能な値の配列
+
+### `style`
+
+以下の可能性のあるフォントの [`style`](https://developer.mozilla.org/docs/Web/CSS/font-style)：
+
+- デフォルト値 `'normal'` の文字列の[値](https://developer.mozilla.org/docs/Web/CSS/font-style#values)
+- フォントが[可変 Google フォント](https://fonts.google.com/variablefonts)でない場合のスタイル値の配列。`next/font/google` にのみ適用
+
+`next/font/google` と `next/font/local` で使用
+
+- オプション
+
+例：
+
+- `style: 'italic'`：文字列 - `next/font/google` の場合 `normal` または `italic`
+- `style: 'oblique'`：文字列 - `next/font/local` の場合任意の値を取れますが、[標準フォントスタイル](https://developer.mozilla.org/docs/Web/CSS/font-style)から来ることが期待されます
+- `style: ['italic','normal']`：`next/font/google` の2つの値の配列 - 値は `normal` と `italic` から
+
+### `subsets`
+
+[`preload`](#preload) オプションが true（デフォルト）の場合、先行読み込みするサブセットの名前を文字列配列で定義したフォントの [`subsets`](https://fonts.google.com/knowledge/glossary/subsetting)。`subsets` で指定されたフォントには、ヘッダーにプリロードリンクタグが挿入されます。
+
+`next/font/google` で使用
+
+- オプション
+
+例：
+
+- `subsets: ['latin']`：`latin` サブセットを含む配列
+
+お使いのフォントの Google Fonts ページで、すべてのサブセットのリストを見つけることができます。
+
+### `axes`
+
+一部の可変フォントには、追加の `axes` を含めることができます。デフォルトでは、ファイルサイズを抑えるためにフォントウェイトのみが含まれます。`axes` の可能な値は、特定のフォントによって異なります。
+
+`next/font/google` で使用
+
+- オプション
+
+例：
+
+- `axes: ['slnt']`：[こちら](https://fonts.google.com/variablefonts?vfquery=inter#font-families)に示されている `Inter` 可変フォントの追加の `axes` である `slnt` を含む配列。お使いのフォントの可能な `axes` 値は、[Google 可変フォントページ](https://fonts.google.com/variablefonts#font-families)のフィルターを使用し、`wght` 以外の軸を探すことで見つけられます
+
+### `display`
+
+デフォルト値 `'swap'` で、文字列の[値](https://developer.mozilla.org/docs/Web/CSS/@font-face/font-display)が `'auto'`、`'block'`、`'swap'`、`'fallback'`、`'optional'` のいずれかのフォントの [`display`](https://developer.mozilla.org/docs/Web/CSS/@font-face/font-display)。
+
+`next/font/google` と `next/font/local` で使用
+
+- オプション
+
+例：
+
+- `display: 'optional'`：`optional` 値に割り当てられた文字列
+
+### `preload`
+
+フォントを[先行読み込み](/docs/app/building-your-application/optimizing/fonts#preloading)するかどうかを指定するブール値。デフォルトは `true`。
+
+`next/font/google` と `next/font/local` で使用
+
+- オプション
+
+例：
+
+- `preload: false`
+
+### `fallback`
+
+フォントを読み込めない場合に使用するフォールバックフォント。デフォルトのない文字列のフォールバックフォント配列。
+
+- オプション
+
+`next/font/google` と `next/font/local` で使用
+
+例：
+
+- `fallback: ['system-ui', 'arial']`：フォールバックフォントを `system-ui` または `arial` に設定する配列
+
+### `adjustFontFallback`
+
+- `next/font/google`の場合：[Cumulative Layout Shift](https://web.dev/cls/)を削減するための、自動フォールバックフォントを使用するかどうかを設定するブール値。デフォルトは`true`です。
+- `next/font/local`の場合：[Cumulative Layout Shift](https://web.dev/cls/)を削減するための、自動フォールバックフォントを使用するかどうかを設定する文字列または`false`値。指定可能な値は`'Arial'`、`'Times New Roman'`、または`false`です。デフォルトは`'Arial'`です。
+
+`next/font/google`と`next/font/local`で使用
+
+- オプション
+
+例：
+
+- `adjustFontFallback: false`：`next/font/google`の場合
+- `adjustFontFallback: 'Times New Roman'`：`next/font/local`の場合
+
+### `variable`
+
+スタイルが[CSSの変数メソッド](#css-変数)で適用される場合に使用するCSS変数名を定義する文字列値。
+
+`next/font/google`と`next/font/local`で使用
+
+- オプション
+
+例：
+
+- `variable: '--my-font'`：CSS変数`--my-font`が宣言されます
+
+### `declarations`
+
+生成される`@font-face`をさらに定義するフォントフェースの[ディスクリプタ](https://developer.mozilla.org/docs/Web/CSS/@font-face#descriptors)のキーと値のペアの配列。
+
+`next/font/local`で使用
+
+- オプション
+
+例：
+
+- `declarations: [{ prop: 'ascent-override', value: '90%' }]`
+
+## スタイルの適用
+
+フォントスタイルは3つの方法で適用できます：
+
+- [`className`](#classname)
+- [`style`](#style-1)
+- [CSS変数](#css-変数)
+
+### `className`
+
+読み込まれたフォントのHTML要素に渡すための、読み取り専用のCSS `className` を返します。
+
+```tsx
+<p className={inter.className}>Hello, Next.js!</p>
+```
+
+### `style`
+
+読み込まれたフォントのHTML要素に渡すための、読み取り専用のCSS `style` オブジェクトを返します。フォントファミリー名とフォールバックフォントにアクセスするための `style.fontFamily` を含みます。
+
+```tsx
+<p style={inter.style}>Hello World</p>
+```
+
+### CSS変数
+
+外部スタイルシートでスタイルを設定し、追加のオプションを指定する場合は、CSS変数メソッドを使用します。
+
+フォントをインポートする際に、CSS変数が定義されているCSSファイルもインポートし、フォントローダーオブジェクトの変数オプションを以下のように設定します：
+
+```tsx filename="app/page.tsx" switcher
+import { Inter } from 'next/font/google'
+import styles from '../styles/component.module.css'
+
+const inter = Inter({
+  variable: '--font-inter',
+})
+```
+
+```jsx filename="app/page.js" switcher
+import { Inter } from 'next/font/google'
+import styles from '../styles/component.module.css'
+
+const inter = Inter({
+  variable: '--font-inter',
+})
+```
+
+フォントを使用するには、スタイルを適用するテキストの親コンテナの`className`をフォントローダーの`variable`値に、テキストの`className`を外部CSSファイルの`styles`プロパティに設定します。
+
+```tsx filename="app/page.tsx" switcher
+<main className={inter.variable}>
+  <p className={styles.text}>Hello World</p>
+</main>
+```
+
+```jsx filename="app/page.js" switcher
+<main className={inter.variable}>
+  <p className={styles.text}>Hello World</p>
+</main>
+```
+
+`component.module.css` CSSファイルで`text`セレクタクラスを以下のように定義します：
+
+```css filename="styles/component.module.css"
+.text {
+  font-family: var(--font-inter);
+  font-weight: 200;
+  font-style: italic;
+}
+```
+
+上記の例では、`Hello World`のテキストが、生成されたフォントフォールバックを使用した`Inter`フォントで、`font-weight: 200`と`font-style: italic`のスタイルが適用されています。
+
+## フォント定義ファイルの使用
+
+`localFont`またはGoogleフォント関数を呼び出すたびに、そのフォントはアプリケーション内で1つのインスタンスとしてホストされます。そのため、同じフォントを複数の場所で使用する必要がある場合は、1つの場所で読み込み、必要な場所でそれに関連するフォントオブジェクトをインポートする必要があります。これは、フォント定義ファイルを使用して行います。
+
+例えば、アプリディレクトリのルートにある`styles`フォルダに`fonts.ts`ファイルを作成します。
+
+次に、以下のようにフォント定義を指定します：
+
+```ts filename="styles/fonts.ts" switcher
+import { Inter, Lora, Source_Sans_3 } from 'next/font/google'
+import localFont from 'next/font/local'
+
+// 可変フォントを定義
+const inter = Inter()
+const lora = Lora()
+// 非可変フォントの2つのウェイトを定義
+const sourceCodePro400 = Source_Sans_3({ weight: '400' })
+const sourceCodePro700 = Source_Sans_3({ weight: '700' })
+// GreatVibes-Regular.ttfがstyleフォルダに保存されているカスタムローカルフォントを定義
+const greatVibes = localFont({ src: './GreatVibes-Regular.ttf' })
+
+export { inter, lora, sourceCodePro400, sourceCodePro700, greatVibes }
+```
+
+```js filename="styles/fonts.js" switcher
+import { Inter, Lora, Source_Sans_3 } from 'next/font/google'
+import localFont from 'next/font/local'
+
+// 可変フォントを定義
+const inter = Inter()
+const lora = Lora()
+// 非可変フォントの2つのウェイトを定義
+const sourceCodePro400 = Source_Sans_3({ weight: '400' })
+const sourceCodePro700 = Source_Sans_3({ weight: '700' })
+// GreatVibes-Regular.ttfがstyleフォルダに保存されているカスタムローカルフォントを定義
+const greatVibes = localFont({ src: './GreatVibes-Regular.ttf' })
+
+export { inter, lora, sourceCodePro400, sourceCodePro700, greatVibes }
+```
+
+これらの定義を以下のようにコードで使用できます：
+
+```tsx filename="app/page.tsx" switcher
+import { inter, lora, sourceCodePro700, greatVibes } from '../styles/fonts'
+
+export default function Page() {
+  return (
+    <div>
+      <p className={inter.className}>Interフォントを使用したHello world</p>
+      <p style={lora.style}>Loraフォントを使用したHello world</p>
+      <p className={sourceCodePro700.className}>
+        ウェイト700のSource_Sans_3フォントを使用したHello world
+      </p>
+      <p className={greatVibes.className}>Great Vibesフォントのマイタイトル</p>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/page.js" switcher
+import { inter, lora, sourceCodePro700, greatVibes } from '../styles/fonts'
+
+export default function Page() {
+  return (
+    <div>
+      <p className={inter.className}>Interフォントを使用したHello world</p>
+      <p style={lora.style}>Loraフォントを使用したHello world</p>
+      <p className={sourceCodePro700.className}>
+        ウェイト700のSource_Sans_3フォントを使用したHello world
+      </p>
+      <p className={greatVibes.className}>Great Vibesフォントのマイタイトル</p>
+    </div>
+  )
+}
+```
+
+コード内でフォント定義にアクセスしやすくするために、`tsconfig.json`または`jsconfig.json`ファイルにパスエイリアスを定義できます：
+
+```json filename="tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@/fonts": ["./styles/fonts"]
+    }
+  }
+}
+```
+
+これで、次のようにフォント定義をインポートできます：
+
+```tsx filename="app/about/page.tsx" switcher
+import { greatVibes, sourceCodePro400 } from '@/fonts'
+```
+
+```jsx filename="app/about/page.js" switcher
+import { greatVibes, sourceCodePro400 } from '@/fonts'
+```
+
+## バージョンの変更
+
+| バージョン    | 変更点                                                               |
+| --------- | ----------------------------------------------------------------- |
+| `v13.2.0` | `@next/font`が`next/font`に名称変更。インストールが不要になりました。           |
+| `v13.0.0` | `@next/font`が追加されました。                                        |

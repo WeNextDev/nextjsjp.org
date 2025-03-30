@@ -1,0 +1,67 @@
+---
+title: サポートされているブラウザ
+description: Next.jsがサポートするブラウザとJavaScript機能。
+slug: /docs/architecture/supported-browsers
+---
+
+Next.jsは追加設定なしで**モダンなブラウザ**をサポートしています。
+
+- Chrome 64+
+- Edge 79+
+- Firefox 67+
+- Opera 51+
+- Safari 12+
+
+## Browserslist
+
+特定のブラウザや機能を対象にする場合、Next.jsは`package.json`ファイルで[Browserslist](https://browsersl.ist)の設定をサポートしています。Next.jsは、デフォルトで次のBrowserslist設定を使用します：
+
+```json filename="package.json"
+{
+  "browserslist": [
+    "chrome 64",
+    "edge 79",
+    "firefox 67",
+    "opera 51",
+    "safari 12"
+  ]
+}
+```
+
+## ポリフィル
+
+以下を含む、[広く使用されているポリフィル](https://github.com/vercel/next.js/blob/canary/packages/next-polyfill-nomodule/src/index.js)を注入します：
+
+- [**fetch()**](https://developer.mozilla.org/docs/Web/API/Fetch_API) — 置き換え: `whatwg-fetch`と`unfetch`。
+- [**URL**](https://developer.mozilla.org/docs/Web/API/URL) — 置き換え: [`url`パッケージ（Node.js API）](https://nodejs.org/api/url.html)。
+- [**Object.assign()**](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign) — 置き換え: `object-assign`、`object.assign`、`core-js/object/assign`。
+
+依存関係にこれらのポリフィルが含まれている場合、重複を避けるために本番ビルドから自動的に削除されます。
+
+さらに、バンドルサイズを削減するため、Next.jsはそれらを必要とするブラウザにのみこれらのポリフィルを読み込みます。世界的なウェブトラフィックの大部分はこれらのポリフィルをダウンロードしません。
+
+### カスタムポリフィル
+
+自分のコードや外部のnpm依存関係が、対象ブラウザ（IE 11など）でサポートされていない機能を必要とする場合、ポリフィルを自分で追加する必要があります。
+
+この場合、[カスタム`<App>`](/docs/pages/building-your-application/routing/custom-app)または個々のコンポーネントで、必要な**特定のポリフィル**のトップレベルインポートを追加する必要があります。
+
+## JavaScriptの言語機能
+
+Next.jsでは、追加設定なしで最新のJavaScript機能を使用できます。[ES6の機能](https://github.com/lukehoban/es6features)に加えて、Next.jsは以下もサポートしています：
+
+- [Async/await](https://github.com/tc39/ecmascript-asyncawait)（ES2017）
+- [オブジェクトのRest/Spread プロパティ](https://github.com/tc39/proposal-object-rest-spread)（ES2018）
+- [動的 `import()`](https://github.com/tc39/proposal-dynamic-import)（ES2020）
+- [オプショナルチェーニング](https://github.com/tc39/proposal-optional-chaining)（ES2020）
+- [Nullish Coalescing](https://github.com/tc39/proposal-nullish-coalescing)（ES2020）
+- [クラスフィールド](https://github.com/tc39/proposal-class-fields)と[静的プロパティ](https://github.com/tc39/proposal-static-class-features)（ES2022）
+- その他多数！
+
+### TypeScript機能
+
+Next.jsは、組み込みのTypeScriptサポートを提供しています。[詳細はこちら](/docs/pages/api-reference/config/typescript)。
+
+### Babelの設定のカスタマイズ（上級者向け）
+
+Babel設定をカスタマイズできます。[詳細はこちら](/docs/pages/building-your-application/configuring/babel)。

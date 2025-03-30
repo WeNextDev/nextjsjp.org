@@ -1,0 +1,98 @@
+---
+title: not-found.js
+description: not-found.jsファイルのAPIリファレンス。
+slug: /docs/app/api-reference/file-conventions/not-found
+---
+
+**not-found** ファイルは、ルートセグメント内で[`notFound`](/docs/app/api-reference/functions/not-found)関数がスローされたときにUIをレンダリングするために使用されます。カスタムUIを提供するだけでなく、Next.jsはストリーミングされたレスポンスには`200` HTTPステータスコード、ストリーミングされていないレスポンスには`404`を返します。
+
+```tsx filename="app/not-found.tsx" switcher
+import Link from 'next/link'
+
+export default function NotFound() {
+  return (
+    <div>
+      <h2>Not Found</h2>
+      <p>Could not find requested resource</p>
+      <Link href="/">Return Home</Link>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/blog/not-found.js" switcher
+import Link from 'next/link'
+
+export default function NotFound() {
+  return (
+    <div>
+      <h2>Not Found</h2>
+      <p>Could not find requested resource</p>
+      <Link href="/">Return Home</Link>
+    </div>
+  )
+}
+```
+
+## リファレンス
+
+### プロパティ
+
+`not-found.js`コンポーネントはプロパティを受け取りません。
+
+> **補足**: 予期される`notFound()`エラーをキャッチするだけでなく、ルートの`app/not-found.js`ファイルはアプリケーション全体で一致しないURLも処理します。つまり、アプリケーションで処理されないURLにユーザーがアクセスすると、`app/not-found.js`ファイルによってエクスポートされたUIが表示されます。
+
+## 例
+
+### データの取得
+
+デフォルトでは、`not-found`はServerComponentです。`async`としてマークすることで、データを取得して表示できます：
+
+```tsx filename="app/not-found.tsx" switcher
+import Link from 'next/link'
+import { headers } from 'next/headers'
+
+export default async function NotFound() {
+  const headersList = await headers()
+  const domain = headersList.get('host')
+  const data = await getSiteData(domain)
+  return (
+    <div>
+      <h2>Not Found: {data.name}</h2>
+      <p>リクエストされたリソースが見つかりませんでした</p>
+      <p>
+        <Link href="/blog">すべての投稿</Link>を表示
+      </p>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/not-found.jsx" switcher
+import Link from 'next/link'
+import { headers } from 'next/headers'
+
+export default async function NotFound() {
+  const headersList = await headers()
+  const domain = headersList.get('host')
+  const data = await getSiteData(domain)
+  return (
+    <div>
+      <h2>Not Found: {data.name}</h2>
+      <p>リクエストされたリソースが見つかりませんでした</p>
+      <p>
+        <Link href="/blog">すべての投稿</Link>を表示
+      </p>
+    </div>
+  )
+}
+```
+
+`usePathname`のようなクライアントコンポーネントのフックを使用してパスに基づいたコンテンツを表示する必要がある場合は、代わりにクライアント側でデータをフェッチする必要があります。
+
+## バージョン履歴
+
+| バージョン | 変更点                                               |
+| --------- | --------------------------------------------------- |
+| `v13.3.0` | ルートの`app/not-found`がグローバルの一致しないURLを処理。 |
+| `v13.0.0` | `not-found`が導入。                                  |

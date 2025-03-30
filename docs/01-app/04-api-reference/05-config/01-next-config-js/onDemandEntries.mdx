@@ -1,0 +1,22 @@
+---
+title: onDemandEntries
+description: 開発環境でNext.jsがページの破棄とメモリ保持をどのように設定するかを構成します。
+slug: /docs/app/api-reference/config/next-config-js/onDemandEntries
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されます。`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップされるべきではありません。 */}
+
+Next.jsは、開発環境でサーバーがビルドされたページをどのように破棄またはメモリに保持するかをコントロールするためのオプションを提供しています。
+
+デフォルト値を変更するには、`next.config.js`を開き、`onDemandEntries`の設定を追加します：
+
+```js filename="next.config.js"
+module.exports = {
+  onDemandEntries: {
+    // サーバーがバッファにページを保持する期間（ミリ秒）
+    maxInactiveAge: 25 * 1000,
+    // 破棄されずに同時に保持されるべきページ数
+    pagesBufferLength: 2,
+  },
+}
+```

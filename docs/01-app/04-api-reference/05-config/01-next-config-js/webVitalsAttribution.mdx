@@ -1,0 +1,27 @@
+---
+title: webVitalsAttribution
+description: Web Vitalsの問題の原因を特定する方法について説明します。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/webVitalsAttribution
+---
+
+{/* このドキュメントの内容はAppルーターとPagesルーターで共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+Web Vitalsに関連する問題をデバッグする際、問題の原因を特定できれば非常に役立ちます。
+例えば、累積レイアウトシフト（CLS）の場合、最大のレイアウトシフトが発生した際に最初にシフトした要素を知りたいことがあります。
+また、最大コンテンツフルペイント（LCP）の場合、ページのLCPに対応する要素を特定したいことがあります。
+LCP要素が画像の場合、画像リソースのURLを知ることで、最適化が必要なアセットを特定できます。
+
+Web Vitalsスコアへの最大の貢献要因（別名[アトリビューション](https://github.com/GoogleChrome/web-vitals/blob/4ca38ae64b8d1e899028c692f94d4c56acfc996c/README.md#attribution)）を特定することで、[PerformanceEventTiming](https://developer.mozilla.org/docs/Web/API/PerformanceEventTiming)、[PerformanceNavigationTiming](https://developer.mozilla.org/docs/Web/API/PerformanceNavigationTiming)、[PerformanceResourceTiming](https://developer.mozilla.org/docs/Web/API/PerformanceResourceTiming)のエントリなど、より詳細な情報を取得できます。
+
+アトリビューションはNext.jsではデフォルトで無効になっていますが、`next.config.js`で以下を指定することで**メトリクスごとに**有効にできます。
+
+```js filename="next.config.js"
+module.exports = {
+  experimental: {
+    webVitalsAttribution: ['CLS', 'LCP'],
+  },
+}
+```
+
+有効なアトリビューション値は、[`NextWebVitalsMetric`](https://github.com/vercel/next.js/blob/442378d21dd56d6e769863eb8c2cb521a463a2e0/packages/next/shared/lib/utils.ts#L43)型で指定されているすべての`web-vitals`メトリクスです。

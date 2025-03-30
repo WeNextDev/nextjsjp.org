@@ -1,0 +1,173 @@
+---
+title: forbidden
+description: forbidden 関数のAPI リファレンス。
+version: experimental
+related:
+  links:
+    - app/api-reference/file-conventions/forbidden
+slug: /docs/app/api-reference/functions/forbidden
+---
+
+`forbidden` 関数は、Next.js の403エラーページをレンダリングするエラーをスローします。アプリケーションでの認可エラーを処理する際に便利です。[`forbidden.js` ファイル](/docs/app/api-reference/file-conventions/forbidden)を使用してUIをカスタマイズできます。
+
+`forbidden` を使用するには、`next.config.js` ファイルで実験的な [`authInterrupts`](/docs/app/api-reference/config/next-config-js/authInterrupts) 設定オプションを有効にしてください：
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    authInterrupts: true,
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+module.exports = {
+  experimental: {
+    authInterrupts: true,
+  },
+}
+```
+
+`forbidden` は[Server Components](/docs/app/building-your-application/rendering/server-components)、[Server Actions](/docs/app/building-your-application/data-fetching/server-actions-and-mutations)、および[Route Handlers](/docs/app/building-your-application/routing/route-handlers)で呼び出すことができます。
+
+```tsx filename="app/auth/page.tsx" switcher
+import { verifySession } from '@/app/lib/dal'
+import { forbidden } from 'next/navigation'
+
+export default async function AdminPage() {
+  const session = await verifySession()
+
+  // ユーザーが'admin'ロールを持っているか確認
+  if (session.role !== 'admin') {
+    forbidden()
+  }
+
+  // 認可されたユーザーに管理ページを表示
+  return <></>
+}
+```
+
+```jsx filename="app/auth/page.js" switcher
+import { verifySession } from '@/app/lib/dal'
+import { forbidden } from 'next/navigation'
+
+export default async function AdminPage() {
+  const session = await verifySession()
+
+  // ユーザーが'admin'ロールを持っているか確認
+  if (session.role !== 'admin') {
+    forbidden()
+  }
+
+  // 認可されたユーザーに管理ページを表示
+  return <></>
+}
+```
+
+## 補足
+
+- `forbidden` 関数は[ルートレイアウト](/docs/app/building-your-application/routing/layouts-and-templates#root-layout-required)では呼び出せません。
+
+## 例
+
+### ロールベースのルート保護
+
+`forbidden` を使用して、ユーザーロールに基づいて特定のルートへのアクセスを制限できます。これにより、認証されているものの必要な権限を持たないユーザーがルートにアクセスできないようになります。
+
+```tsx filename="app/admin/page.tsx" switcher
+import { verifySession } from '@/app/lib/dal'
+import { forbidden } from 'next/navigation'
+
+export default async function AdminPage() {
+  const session = await verifySession()
+
+  // ユーザーが'admin'ロールを持っているか確認
+  if (session.role !== 'admin') {
+    forbidden()
+  }
+
+  // 認可されたユーザーに管理ページを表示
+  return (
+    <main>
+      <h1>管理者ダッシュボード</h1>
+      <p>ようこそ、{session.user.name}さん！</p>
+    </main>
+  )
+}
+```
+
+```jsx filename="app/admin/page.js" switcher
+import { verifySession } from '@/app/lib/dal'
+import { forbidden } from 'next/navigation'
+
+export default async function AdminPage() {
+  const session = await verifySession()
+
+  // ユーザーが'admin'ロールを持っているか確認
+  if (session.role !== 'admin') {
+    forbidden()
+  }
+
+  // 認可されたユーザーに管理ページを表示
+  return (
+    <main>
+      <h1>管理者ダッシュボード</h1>
+      <p>ようこそ、{session.user.name}さん！</p>
+    </main>
+  )
+}
+```
+
+### Server Actionsでのミューテーション
+
+Server Actionsでミューテーションを実装する際、`forbidden` を使用して特定のロールを持つユーザーのみが機密データを更新できるようにできます。
+
+```ts filename="app/actions/update-role.ts" switcher
+'use server'
+
+import { verifySession } from '@/app/lib/dal'
+import { forbidden } from 'next/navigation'
+import db from '@/app/lib/db'
+
+export async function updateRole(formData: FormData) {
+  const session = await verifySession()
+
+  // 管理者のみがロールを更新できるようにする
+  if (session.role !== 'admin') {
+    forbidden()
+  }
+
+  // 認可されたユーザーのロール更新を実行
+  // ...
+}
+```
+
+```js filename="app/actions/update-role.js" switcher
+'use server'
+
+import { verifySession } from '@/app/lib/dal'
+import { forbidden } from 'next/navigation'
+import db from '@/app/lib/db'
+
+export async function updateRole(formData) {
+  const session = await verifySession()
+
+  // 管理者のみがロールを更新できるようにする
+  if (session.role !== 'admin') {
+    forbidden()
+  }
+
+  // 認可されたユーザーのロール更新を実行
+  // ...
+}
+```
+
+## バージョン履歴
+
+| バージョン | 変更内容                     |
+| --------- | -------------------------- |
+| `v15.1.0` | 導入時期：`forbidden`関数      |

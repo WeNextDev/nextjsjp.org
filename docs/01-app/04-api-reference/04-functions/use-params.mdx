@@ -1,0 +1,74 @@
+---
+title: useParams
+description: useParamsフックのAPIリファレンス。
+slug: /docs/app/api-reference/functions/use-params
+---
+
+`useParams`は、現在のURLによって入力されたルートの[動的パラメータ](/docs/app/building-your-application/routing/dynamic-routes)を読み取ることができる**クライアントコンポーネント**フックです。
+
+```tsx filename="app/example-client-component.tsx" switcher
+'use client'
+
+import { useParams } from 'next/navigation'
+
+export default function ExampleClientComponent() {
+  const params = useParams<{ tag: string; item: string }>()
+
+  // Route -> /shop/[tag]/[item]
+  // URL -> /shop/shoes/nike-air-max-97
+  // `params` -> { tag: 'shoes', item: 'nike-air-max-97' }
+  console.log(params)
+
+  return '...'
+}
+```
+
+```jsx filename="app/example-client-component.js" switcher
+'use client'
+
+import { useParams } from 'next/navigation'
+
+export default function ExampleClientComponent() {
+  const params = useParams()
+
+  // Route -> /shop/[tag]/[item]
+  // URL -> /shop/shoes/nike-air-max-97
+  // `params` -> { tag: 'shoes', item: 'nike-air-max-97' }
+  console.log(params)
+
+  return '...'
+}
+```
+
+## パラメータ
+
+```tsx
+const params = useParams()
+```
+
+`useParams`はパラメータを受け取りません。
+
+## 戻り値
+
+`useParams`は、現在のルートの入力済み[動的パラメータ](/docs/app/building-your-application/routing/dynamic-routes)を含むオブジェクトを返します。
+
+- オブジェクト内の各プロパティは、アクティブな動的セグメントです。
+- プロパティ名はセグメントの名前、プロパティ値はセグメントに入力された値です。
+- プロパティ値は、[動的セグメントの種類](/docs/app/building-your-application/routing/dynamic-routes)に応じて、`string`または`string`の配列になります。
+- ルートに動的パラメータが含まれない場合、`useParams`は空のオブジェクトを返します。
+- Pages Routerで使用される場合、`useParams`は初回レンダー時に`null`を返し、ルーターの準備ができた後、上記のルールに従ってプロパティを更新します。
+
+例：
+
+| Route                           | URL         | `useParams()`             |
+| ------------------------------- | ----------- | ------------------------- |
+| `app/shop/page.js`              | `/shop`     | `{}`                      |
+| `app/shop/[slug]/page.js`       | `/shop/1`   | `{ slug: '1' }`           |
+| `app/shop/[tag]/[item]/page.js` | `/shop/1/2` | `{ tag: '1', item: '2' }` |
+| `app/shop/[...slug]/page.js`    | `/shop/1/2` | `{ slug: ['1', '2'] }`    |
+
+## バージョン履歴
+
+| Version   | Changes                 |
+| --------- | ----------------------- |
+| `v13.3.0` | 導入時期：`useParams` |

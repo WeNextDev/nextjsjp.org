@@ -1,0 +1,56 @@
+---
+title: サーバーアクション
+description: Next.js アプリケーションでのサーバーアクションの動作を設定します。
+slug: /docs/app/api-reference/config/next-config-js/serverActions
+---
+
+Next.js アプリケーションでのサーバーアクションの動作を設定するためのオプション。
+
+## `allowedOrigins`
+
+サーバーアクションを呼び出すことができる追加の安全なオリジンドメインのリスト。Next.jsはサーバーアクションリクエストのオリジンとホストドメインを比較し、CSRF攻撃を防ぐために一致することを確認します。指定されていない場合、同一オリジンのみが許可されます。
+
+```js filename="next.config.js"
+/** @type {import('next').NextConfig} */
+
+module.exports = {
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['my-proxy.com', '*.my-proxy.com'],
+    },
+  },
+}
+```
+
+## `bodySizeLimit`
+
+デフォルトでは、サーバーアクションに送信されるリクエストボディの最大サイズは1MBであり、これは大量のデータの解析によるサーバーリソースの過剰な消費や潜在的なDDoS攻撃を防ぐためです。
+
+ただし、`serverActions.bodySizeLimit`オプションを使用してこの制限を設定できます。バイト数または`bytes`でサポートされている文字列形式（例：`1000`、`'500kb'`、`'3mb'`）を取ることができます。
+
+```js filename="next.config.js"
+/** @type {import('next').NextConfig} */
+
+module.exports = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+}
+```
+
+## サーバーアクションの有効化（v13）
+
+サーバーアクションはNext.js 14で安定版の機能となり、デフォルトで有効になっています。ただし、Next.jsの以前のバージョンを使用している場合は、`experimental.serverActions`を`true`に設定することで有効にできます。
+
+```js filename="next.config.js"
+/** @type {import('next').NextConfig} */
+const config = {
+  experimental: {
+    serverActions: true,
+  },
+}
+
+module.exports = config
+```

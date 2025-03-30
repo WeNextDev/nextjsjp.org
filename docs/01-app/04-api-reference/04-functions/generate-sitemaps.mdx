@@ -1,0 +1,80 @@
+---
+title: generateSitemaps
+nav_title: generateSitemaps
+description: アプリケーション用に複数のサイトマップを作成するgenerateSiteMapsファンクションの使用方法を学びます。
+related:
+  title: 次のステップ
+  description: Next.jsアプリケーション用のサイトマップを作成する方法を学びます。
+  links:
+    - app/api-reference/file-conventions/metadata/sitemap
+slug: /docs/app/api-reference/functions/generate-sitemaps
+---
+
+`generateSitemaps`ファンクションを使用して、アプリケーション用に複数のサイトマップを生成できます。
+
+## 戻り値
+
+`generateSitemaps`は、`id`プロパティを持つオブジェクトの配列を返します。
+
+## URL
+
+生成されたサイトマップは `/.../sitemap/[id].xml` で利用可能になります。例えば、`/product/sitemap/1.xml` のようになります。
+
+## 例
+
+例えば、サイトマップを分割するために`generateSitemaps`を使用する場合、サイトマップの`id`を持つオブジェクトの配列を返します。その後、`id`を使用して固有のサイトマップを生成します。
+
+```ts filename="app/product/sitemap.ts" switcher
+import { BASE_URL } from '@/app/lib/constants'
+
+export async function generateSitemaps() {
+  // 製品の総数を取得し、必要なサイトマップの数を計算
+  return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }]
+}
+
+export default async function sitemap({
+  id,
+}: {
+  id: number
+}): Promise<MetadataRoute.Sitemap> {
+  // Googleの制限は1サイトマップあたり50,000 URL
+  const start = id * 50000
+  const end = start + 50000
+  const products = await getProducts(
+    `SELECT id, date FROM products WHERE id BETWEEN ${start} AND ${end}`
+  )
+  return products.map((product) => ({
+    url: `${BASE_URL}/product/${product.id}`,
+    lastModified: product.date,
+  }))
+}
+```
+
+```js filename="app/product/sitemap.js" switcher
+import { BASE_URL } from '@/app/lib/constants'
+
+export async function generateSitemaps() {
+  // 製品の総数を取得し、必要なサイトマップの数を計算
+  return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }]
+}
+
+export default async function sitemap({ id }) {
+  // Googleの制限は1サイトマップあたり50,000 URL
+  const start = id * 50000
+  const end = start + 50000
+  const products = await getProducts(
+    `SELECT id, date FROM products WHERE id BETWEEN ${start} AND ${end}`
+  )
+  return products.map((product) => ({
+    url: `${BASE_URL}/product/${id}`,
+    lastModified: product.date,
+  }))
+}
+```
+
+## バージョン履歴
+
+| バージョン | 変更内容 |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 導入時期：`v15.0.0` | `generateSitemaps` は開発環境と本番環境の間で一貫性のあるURLを生成するようになりました |
+| 導入時期：`v13.3.2` | `generateSitemaps` が導入されました。開発環境では、生成されたサイトマップを `/.../sitemap.xml/[id]` で確認できます。例えば、`/product/sitemap.xml/1` のようになります。 |

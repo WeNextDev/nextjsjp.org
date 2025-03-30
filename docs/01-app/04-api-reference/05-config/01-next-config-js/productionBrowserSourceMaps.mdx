@@ -1,0 +1,22 @@
+---
+title: productionBrowserSourceMaps
+description: 本番ビルド時にブラウザソースマップの生成を有効にします。
+slug: /docs/app/api-reference/config/next-config-js/productionBrowserSourceMaps
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターの間で共有されます。`<PagesOnly>Content</PagesOnly>` コンポーネントを使用して、Pagesルーターに固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+ソースマップは開発中はデフォルトで有効になっています。本番ビルド時は、特定の設定フラグでオプトインしない限り、クライアント上でソースがリークすることを防ぐため、無効になっています。
+
+Next.jsには、本番ビルド時にブラウザソースマップの生成を有効にする設定フラグがあります：
+
+```js filename="next.config.js"
+module.exports = {
+  productionBrowserSourceMaps: true,
+}
+```
+
+`productionBrowserSourceMaps`オプションが有効な場合、ソースマップはJavaScriptファイルと同じディレクトリに出力されます。Next.jsはリクエストされた際にこれらのファイルを自動的に提供します。
+
+- ソースマップの追加は`next build`の時間を増加させる可能性があります
+- `next build`中のメモリ使用量を増加させます

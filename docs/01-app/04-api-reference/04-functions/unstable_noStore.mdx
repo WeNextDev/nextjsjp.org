@@ -1,0 +1,48 @@
+---
+title: unstable_noStore
+description: unstable_noStore関数のAPIリファレンス。
+version: legacy
+slug: /docs/app/api-reference/functions/unstable_noStore
+---
+
+**バージョン15では、`unstable_noStore`の代わりに[`connection`](/docs/app/api-reference/functions/connection)の使用を推奨しています。**
+
+`unstable_noStore`は静的レンダリングから明示的に外れ、特定のコンポーネントがキャッシュされないようにするために使用できます。
+
+```jsx
+import { unstable_noStore as noStore } from 'next/cache';
+
+export default async function ServerComponent() {
+  noStore();
+  const result = await db.query(...);
+  ...
+}
+```
+
+> **補足**:
+>
+> - `unstable_noStore`は`fetch`での`cache: 'no-store'`と同等です
+> - `unstable_noStore`は`export const dynamic = 'force-dynamic'`よりも細かく制御でき、コンポーネント単位で使用できるため推奨されます
+
+- [`unstable_cache`](/docs/app/api-reference/functions/unstable_cache)内で`unstable_noStore`を使用しても、静的生成からは外れません。代わりに、キャッシュ設定に従って結果をキャッシュするかどうかが決定されます。
+
+## 使用方法
+
+`fetch`に`cache: 'no-store'`や`next: { revalidate: 0 }`などの追加オプションを渡したくない場合や、`fetch`が利用できない場合は、これらすべてのユースケースの代替として`noStore()`を使用できます。
+
+```jsx
+import { unstable_noStore as noStore } from 'next/cache';
+
+export default async function ServerComponent() {
+  noStore();
+  const result = await db.query(...);
+  ...
+}
+```
+
+## バージョン履歴
+
+| バージョン | 変更内容                                         |
+| --------- | ----------------------------------------------- |
+| `v15.0.0` | `unstable_noStore`は`connection`に置き換えられました。 |
+| `v14.0.0` | `unstable_noStore`が導入されました。                  |

@@ -1,0 +1,148 @@
+---
+title: カスタムドキュメント
+description: Next.jsによって追加されるデフォルトのドキュメントマークアップを拡張します。
+slug: /docs/pages/building-your-application/routing/custom-document
+---
+
+カスタム `Document` は、[ページ](/docs/pages/building-your-application/routing/pages-and-layouts)のレンダリングに使用される `<html>` タグと `<body>` タグを更新できます。
+
+デフォルトの `Document` をオーバーライドするには、以下のように `pages/_document` ファイルを作成します：
+
+```tsx filename="pages/_document.tsx" switcher
+import { Html, Head, Main, NextScript } from 'next/document'
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  )
+}
+```
+
+```jsx filename="pages/_document.jsx" switcher
+import { Html, Head, Main, NextScript } from 'next/document'
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  )
+}
+```
+
+> **補足**：
+>
+> - `_document` はサーバー上でのみレンダリングされるため、`onClick` のようなイベントハンドラはこのファイルで使用できません。
+> - ページを適切にレンダリングするには、`<Html>`、`<Head />`、`<Main />`、`<NextScript />` が必要です。
+
+## 注意点
+
+- `_document` で使用される `<Head />` コンポーネントは、[`next/head`](/docs/pages/api-reference/components/head) のものとは異なります。ここで使用される `<Head />` コンポーネントは、すべてのページで共通の `<head>` コードにのみ使用する必要があります。`<title>` タグなどその他のケースでは、ページやコンポーネントで [`next/head`](/docs/pages/api-reference/components/head) を使用することをお勧めします。
+- `<Main />` の外側のReactコンポーネントはブラウザによって初期化されません。アプリケーションロジックやカスタムCSS（`styled-jsx` など）をここに追加しないでください。すべてのページで共有するコンポーネント（メニューやツールバーなど）が必要な場合は、代わりに[レイアウト](/docs/pages/building-your-application/routing/pages-and-layouts#layout-pattern)をお読みください。
+- `Document` は現在、[`getStaticProps`](/docs/pages/building-your-application/data-fetching/get-static-props) や [`getServerSideProps`](/docs/pages/building-your-application/data-fetching/get-server-side-props) などのNext.jsの[データフェッチメソッド](/docs/pages/building-your-application/data-fetching)をサポートしていません。
+
+## `renderPage` のカスタマイズ
+
+`renderPage` のカスタマイズは高度な操作で、CSS-in-JSのようなライブラリでサーバーサイドレンダリングをサポートする場合にのみ必要です。これは組み込みの `styled-jsx` サポートには不要です。
+
+**このパターンの使用はお勧めしません。** 代わりに、[段階的に App Router を採用](/docs/app/building-your-application/upgrading/app-router-migration)することを検討してください。これにより、[ページとレイアウト](/docs/app/building-your-application/routing/layouts-and-templates)のデータをより簡単にフェッチできます。
+
+```tsx filename="pages/_document.tsx" switcher
+import Document, {
+  Html,
+  Head,
+  Main,
+  NextScript,
+  DocumentContext,
+  DocumentInitialProps,
+} from 'next/document'
+
+class MyDocument extends Document {
+  static async getInitialProps(
+    ctx: DocumentContext
+  ): Promise<DocumentInitialProps> {
+    const originalRenderPage = ctx.renderPage
+
+    // Reactレンダリングロジックを同期的に実行
+    ctx.renderPage = () =>
+      originalRenderPage({
+        // 全Reactツリーをラップするのに便利
+        enhanceApp: (App) => App,
+        // ページごとにラップするのに便利
+        enhanceComponent: (Component) => Component,
+      })
+
+    // カスタム `renderPage` を含む親の `getInitialProps` を実行
+    const initialProps = await Document.getInitialProps(ctx)
+
+    return initialProps
+  }
+
+  render() {
+    return (
+      <Html lang="en">
+        <Head />
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    )
+  }
+}
+
+export default MyDocument
+```
+
+```jsx filename="pages/_document.jsx" switcher
+import Document, { Html, Head, Main, NextScript } from 'next/document'
+
+class MyDocument extends Document {
+  static async getInitialProps(ctx) {
+    const originalRenderPage = ctx.renderPage
+
+    // Reactレンダリングロジックを同期的に実行
+    ctx.renderPage = () =>
+      originalRenderPage({
+        // 全Reactツリーをラップするのに便利
+        enhanceApp: (App) => App,
+        // ページごとにラップするのに便利
+        enhanceComponent: (Component) => Component,
+      })
+
+    // カスタム `renderPage` を含む親の `getInitialProps` を実行
+    const initialProps = await Document.getInitialProps(ctx)
+
+    return initialProps
+  }
+
+  render() {
+    return (
+      <Html lang="en">
+        <Head />
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    )
+  }
+}
+
+export default MyDocument
+```
+
+> **補足**：
+>
+> - `_document` の `getInitialProps` はクライアントサイドの遷移中は呼び出されません。
+> - `_document` の `ctx` オブジェクトは、`renderPage` の追加を除いて、[`getInitialProps`](/docs/pages/api-reference/functions/get-initial-props#context-object) で受け取るものと同等です。

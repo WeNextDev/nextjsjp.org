@@ -1,0 +1,29 @@
+---
+title: ランタイム
+description: Next.jsのスイッチ可能なランタイム（Edge及びNode.js）について学びます。
+related:
+  description: Edge Runtime APIリファレンスを表示。
+  links:
+    - app/api-reference/edge
+slug: /docs/app/building-your-application/rendering/edge-and-nodejs-runtimes
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されます。`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+Next.jsには、アプリケーションで使用できるサーバーランタイムが2つあります：
+
+- すべてのNode.js APIとエコシステムの互換パッケージにアクセスできる**Node.jsランタイム**（デフォルト）。
+- より制限された[APIセット](/docs/app/api-reference/edge)を持つ**Edge Runtime**。
+
+Edgeランタイムはデフォルトでは[ミドルウェア](/docs/app/building-your-application/routing/middleware)のためのランタイムです。ただし、これはNode.jsランタイムに変更することができます。詳細については[ミドルウェアのドキュメント](/docs/app/building-your-application/routing/middleware#runtime)を参照してください。
+
+## ユースケース
+
+- Node.jsランタイムはアプリケーションのレンダリングに使用されます。
+- Edgeランタイムはミドルウェア（リダイレクト、リライト、ヘッダー設定などのルーティングルール）に使用されます。
+
+## 注意点
+
+- Edge Runtimeは、すべてのNode.js APIをサポートしているわけではありません。一部のパッケージが期待通りに動作しない可能性があります。サポートされていないAPIの詳細については、[Edge Runtime](/docs/app/api-reference/edge#unsupported-apis)をご確認ください。
+- Edge Runtimeは、増分静的再生成（ISR）をサポートしていません。
+- デプロイメントインフラストラクチャに応じて、両方のランタイムが[ストリーミング](/docs/app/building-your-application/routing/loading-ui-and-streaming)をサポートできます。

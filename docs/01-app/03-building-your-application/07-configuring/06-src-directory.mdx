@@ -1,0 +1,35 @@
+---
+title: src ディレクトリ
+description: pages ディレクトリのルートの代わりに、`src` ディレクトリ下にページを保存します。
+related:
+  links:
+    - app/getting-started/project-structure
+slug: /docs/app/building-your-application/configuring/src-directory
+---
+
+{/* このドキュメントの内容は、appルーターとpagesルーターの両方で共有されます。`<PagesOnly>Content</PagesOnly>` コンポーネントを使用して、Pages Router固有のコンテンツを追加できます。共有されるコンテンツは、コンポーネントでラップしないでください。 */}
+
+プロジェクトのルートにある特別な Next.js の `app` または `pages` ディレクトリの代わりに、Next.js は、アプリケーションコードを `src` ディレクトリに配置する一般的なパターンもサポートしています。
+
+これにより、アプリケーションコードをプロジェクト設定ファイルから分離できます。これらの設定ファイルは通常プロジェクトのルートに配置されており、一部の個人やチームに好まれています。
+
+`src` ディレクトリを使用するには、`app` ルーターフォルダまたは `pages` ルーターフォルダをそれぞれ `src/app` または `src/pages` に移動します。
+
+<Image
+  alt="`src` ディレクトリを含むフォルダ構造の例"
+  srcLight="/light/project-organization-src-directory.png"
+  srcDark="/dark/project-organization-src-directory.png"
+  width="1600"
+  height="687"
+/>
+
+> **補足**:
+>
+> - `/public` ディレクトリはプロジェクトのルートに残す必要があります。
+> - `package.json`、`next.config.js`、`tsconfig.json` などの設定ファイルはプロジェクトのルートに残す必要があります。
+> - `.env.*` ファイルはプロジェクトのルートに残す必要があります。
+> - ルートディレクトリに `app` または `pages` が存在する場合、`src/app` または `src/pages` は無視されます。
+> - `src` を使用する場合、`/components` や `/lib` などの他のアプリケーションフォルダも移動する可能性があります。
+> - Middlewareを使用する場合、`src` ディレクトリ内に配置してください。
+> - Tailwind CSSを使用する場合、[コンテンツセクション](https://tailwindcss.com/docs/content-configuration)の `tailwind.config.js` ファイルに `/src` プレフィックスを追加する必要があります。
+> - `@/*` のようなインポートにTypeScriptパスを使用する場合、`tsconfig.json` の `paths` オブジェクトを `src/` を含むように更新する必要があります。

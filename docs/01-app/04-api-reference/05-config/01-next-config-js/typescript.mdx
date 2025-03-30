@@ -1,0 +1,27 @@
+---
+title: typescript
+description: Next.jsはデフォルトでTypeScriptエラーを報告します。この動作をオプトアウトする方法をここで学びます。
+slug: /docs/app/api-reference/config/next-config-js/typescript
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されます。`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用して、Pagesルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+Next.jsは、プロジェクト内にTypeScriptエラーが存在する場合、**本番ビルド**（`next build`）を失敗させます。
+
+アプリケーションにエラーがある場合でも、Next.jsに危険にも本番コードを生成させたい場合は、組み込みの型チェックステップを無効にできます。
+
+無効にする場合は、ビルドまたはデプロイプロセスの一部として型チェックを確実に実行してください。そうしないと、非常に危険になる可能性があります。
+
+`next.config.js`を開き、`typescript`設定で`ignoreBuildErrors`オプションを有効にします：
+
+```js filename="next.config.js"
+module.exports = {
+  typescript: {
+    // !! 警告 !!
+    // プロジェクトに型エラーがある場合でも、
+    // 危険にも本番ビルドを正常に完了させます。
+    // !! 警告 !!
+    ignoreBuildErrors: true,
+  },
+}
+```

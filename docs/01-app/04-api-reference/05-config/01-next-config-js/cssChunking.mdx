@@ -1,0 +1,42 @@
+---
+title: CSSチャンキング
+description: Next.jsアプリケーションでCSSファイルのチャンキング方法を制御するには、`cssChunking`オプションを使用します。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/cssChunking
+---
+
+CSSチャンキングは、CSSファイルを分割および並べ替えることで、Webアプリケーションのパフォーマンスを改善するための戦略です。これにより、アプリケーションのすべてのCSSを一度に読み込むのではなく、特定のルートに必要なCSSのみを読み込むことができます。
+
+`next.config.js`ファイルの`experimental.cssChunking`オプションを使用して、CSSファイルのチャンキング方法を制御できます：
+
+```tsx filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig = {
+  experimental: {
+    cssChunking: 'loose', // デフォルト
+  },
+} satisfies NextConfig
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    cssChunking: 'loose', // デフォルト
+  },
+}
+
+module.exports = nextConfig
+```
+
+## オプション
+
+- **`'loose'`（デフォルト）**: Next.jsは、チャンク数とリクエスト数を削減するために、インポート順序から明示的および暗黙的な依存関係を判断し、可能な限りCSSファイルをマージしようとします。
+- **`'strict'`**: Next.jsは、ファイルにインポートされた順序通りにCSSファイルを読み込みます。これにより、チャンクとリクエストが増える可能性があります。
+
+予期しないCSSの動作が発生した場合は、`'strict'`の使用を検討してください。例えば、異なるファイルで`a.css`と`b.css`を異なる`import`順序（`a`の前に`b`、または`b`の前に`a`）でインポートする場合、`'loose'`はファイルを任意の順序でマージし、それらの間に依存関係がないと想定します。しかし、`b.css`が`a.css`に依存する場合、ファイルをマージせず、インポートされた順序で読み込むために`'strict'`を使用したいことがあります。これにより、チャンクとリクエストが増える可能性があります。
+
+ほとんどのアプリケーションでは、リクエスト数が少なくなりパフォーマンスが向上するため、`'loose'`をおすすめします。

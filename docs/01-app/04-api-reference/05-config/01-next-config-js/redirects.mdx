@@ -1,0 +1,323 @@
+---
+title: リダイレクト
+description: Next.js アプリにリダイレクトを追加します。
+slug: /docs/app/api-reference/config/next-config-js/redirects
+---
+
+{/* このドキュメントの内容は app と pages ルーターの間で共有されます。`<PagesOnly>コンテンツ</PagesOnly>` コンポーネントを使用して、Pages ルーター固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+リダイレクトを使用すると、着信リクエストパスを別の宛先パスにリダイレクトできます。
+
+リダイレクトを使用するには、`next.config.js` の `redirects` キーを使用します：
+
+```js filename="next.config.js"
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/about',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
+}
+```
+
+`redirects` は `source`、`destination`、`permanent` プロパティを持つオブジェクトの配列を返す非同期関数です：
+
+- `source` は着信リクエストパスのパターンです。
+- `destination` はルーティングしたいパスです。
+- `permanent` は `true` または `false` - `true` の場合、クライアント/検索エンジンにリダイレクトを永久にキャッシュするよう指示する 308 ステータスコードを使用し、`false` の場合は一時的で、キャッシュされない 307 ステータスコードを使用します。
+
+> **Next.js が 307 と 308 を使用する理由は？** 従来、302 は一時的なリダイレクト、301 は永久的なリダイレクトに使用されていましたが、多くのブラウザがリダイレクトのリクエストメソッドを `GET` に変更しました。例えば、ブラウザが `POST /v1/users` へのリクエストを行い、ステータスコード `302` と `/v2/users` の場所を返した場合、後続のリクエストは期待される `POST /v2/users` ではなく、`GET /v2/users` になる可能性があります。Next.js は 307（一時的なリダイレクト）と 308（永久的なリダイレクト）のステータスコードを使用して、使用されたリクエストメソッドを明示的に保持します。
+
+- `basePath`: `false` または `undefined` - `false` の場合、マッチング時に `basePath` が含まれません。外部リダイレクトのみに使用できます。
+- `locale`: `false` または `undefined` - マッチング時にロケールを含めるかどうか。
+- `has` は [has オブジェクト](#header-cookie-and-query-matching) の配列で、`type`、`key`、`value` プロパティを持ちます。
+- `missing` は [missing オブジェクト](#header-cookie-and-query-matching) の配列で、`type`、`key`、`value` プロパティを持ちます。
+
+リダイレクトは、ページや `/public` ファイルを含むファイルシステムの前にチェックされます。
+
+Pages ルーターを使用する場合、[ミドルウェア](/docs/app/building-your-application/routing/middleware)が存在し、パスと一致しない限り、リダイレクトはクライアントサイドルーティング（`Link`、`router.push`）に適用されません。
+
+リダイレクトが適用される場合、リクエストで提供されたクエリ値はリダイレクト先に引き継がれます。例えば、次のリダイレクト設定を参照してください：
+
+```js
+{
+  source: '/old-blog/:path*',
+  destination: '/blog/:path*',
+  permanent: false
+}
+```
+
+> **補足**: source と destination のパスパラメータでは、コロン : の前にスラッシュ / を必ず入れてください。入れないと、パスが単なる文字列として扱われ、無限リダイレクトが発生する恐れがあります。
+
+`/old-blog/post-1?hello=world` がリクエストされると、クライアントは `/blog/post-1?hello=world` にリダイレクトされます。
+
+## パスマッチング
+
+パスマッチングが許可されています。例えば、`/old-blog/:slug` は `/old-blog/hello-world` にマッチします（ネストされたパスはなし）：
+
+```js filename="next.config.js"
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/old-blog/:slug',
+        destination: '/news/:slug', // マッチしたパラメータは宛先で使用できます
+        permanent: true,
+      },
+    ]
+  },
+}
+```
+
+### ワイルドカードパスマッチング
+
+ワイルドカードパスをマッチさせるには、パラメータの後に `*` を使用します。例えば、`/blog/:slug*` は `/blog/a/b/c/d/hello-world` にマッチします：
+
+```js filename="next.config.js"
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/blog/:slug*',
+        destination: '/news/:slug*', // マッチしたパラメータは宛先で使用できます
+        permanent: true,
+      },
+    ]
+  },
+}
+```
+
+### 正規表現パスマッチング
+
+正規表現パスをマッチさせるには、パラメータの後の括弧内に正規表現を記述します。例えば、`/post/:slug(\\d{1,})` は `/post/123` にマッチしますが、`/post/abc` にはマッチしません：
+
+```js filename="next.config.js"
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/post/:slug(\\d{1,})',
+        destination: '/news/:slug', // マッチしたパラメータは宛先で使用できます
+        permanent: false,
+      },
+    ]
+  },
+}
+```
+
+以下の文字 `(`, `)`, `{`, `}`, `:`, `*`, `+`, `?` は正規表現パスマッチングに使用されるため、`source` で非特殊値として使用する場合は、その前に `\\` を追加してエスケープする必要があります：
+
+```js filename="next.config.js"
+module.exports = {
+  async redirects() {
+    return [
+      {
+        // これは `/english(default)/something` がリクエストされた場合にマッチします
+        source: '/english\\(default\\)/:slug',
+        destination: '/en-us/:slug',
+        permanent: false,
+      },
+    ]
+  },
+}
+```
+
+## ヘッダー、Cookie、およびクエリマッチング
+
+ヘッダー、Cookie、またはクエリ値が `has` フィールドにマッチする、または `missing` フィールドにマッチしない場合のみリダイレクトをマッチさせるには、`has` フィールドと `missing` フィールドを使用できます。リダイレクトを適用するには、`source` とすべての `has` アイテムがマッチし、すべての `missing` アイテムがマッチしない必要があります。
+
+`has` と `missing` アイテムには、次のフィールドを指定できます：
+
+- `type`: `String` - `header`、`cookie`、`host`、または `query` のいずれかである必要があります。
+- `key`: `String` - 選択したタイプからマッチさせるキー。
+- `value`: `String` または `undefined` - チェックする値。`undefined` の場合、任意の値にマッチします。値の特定の部分をキャプチャするには、正規表現のような文字列を使用できます。例えば、値 `first-(?<paramName>.*)` を `first-second` に使用すると、`:paramName` を使用して宛先で `second` を利用できます。
+
+```js filename="next.config.js"
+module.exports = {
+  async redirects() {
+    return [
+      // ヘッダー `x-redirect-me` が存在する場合、
+      // このリダイレクトが適用されます
+      {
+        source: '/:path((?!another-page$).*)',
+        has: [
+          {
+            type: 'header',
+            key: 'x-redirect-me',
+          },
+        ],
+        permanent: false,
+        destination: '/another-page',
+      },
+      // ヘッダー `x-dont-redirect` が存在する場合、
+      // このリダイレクトは適用されません
+      {
+        source: '/:path((?!another-page$).*)',
+        missing: [
+          {
+            type: 'header',
+            key: 'x-do-not-redirect',
+          },
+        ],
+        permanent: false,
+        destination: '/another-page',
+      },
+      // ソース、クエリ、Cookieがマッチする場合、
+      // このリダイレクトが適用されます
+      {
+        source: '/specific/:path*',
+        has: [
+          {
+            type: 'query',
+            key: 'page',
+            // 値が提供され、名前付きキャプチャグループ（例：(?<page>home)）を使用していないため、
+            // ページ値は宛先で利用できません
+            value: 'home',
+          },
+          {
+            type: 'cookie',
+            key: 'authorized',
+            value: 'true',
+          },
+        ],
+        permanent: false,
+        destination: '/another/:path*',
+      },
+      // ヘッダー `x-authorized` が存在し、
+      // マッチする値を含む場合、このリダイレクトが適用されます
+      {
+        source: '/',
+        has: [
+          {
+            type: 'header',
+            key: 'x-authorized',
+            value: '(?<authorized>yes|true)',
+          },
+        ],
+        permanent: false,
+        destination: '/home?authorized=:authorized',
+      },
+      // ホストが `example.com` の場合、
+      // このリダイレクトが適用されます
+      {
+        source: '/:path((?!another-page$).*)',
+        has: [
+          {
+            type: 'host',
+            value: 'example.com',
+          },
+        ],
+        permanent: false,
+        destination: '/another-page',
+      },
+    ]
+  },
+}
+```
+
+### basePath サポート付きのリダイレクト
+
+[`basePath` サポート](/docs/app/api-reference/config/next-config-js/basePath)を使用してリダイレクトする場合、各 `source` と `destination` には、リダイレクトに `basePath: false` を追加しない限り、自動的に `basePath` が接頭辞として付けられます：
+
+```js filename="next.config.js"
+module.exports = {
+  basePath: '/docs',
+
+  async redirects() {
+    return [
+      {
+        source: '/with-basePath', // 自動的に /docs/with-basePath になります
+        destination: '/another', // 自動的に /docs/another になります
+        permanent: false,
+      },
+      {
+        // basePath: false が設定されているため /docs は追加されません
+        source: '/without-basePath',
+        destination: 'https://example.com',
+        basePath: false,
+        permanent: false,
+      },
+    ]
+  },
+}
+```
+
+### i18n サポート付きリダイレクト
+
+<AppOnly>
+
+[`i18n` サポート](/docs/app/building-your-application/routing/internationalization)を利用する際、各 `source` と `destination` は、リダイレクトに `locale: false` を追加しない限り、設定された `locales` を処理するために自動的にプレフィックスが付けられます。`locale: false` を使用する場合は、正しく一致させるために `source` と `destination` にロケールを付ける必要があります。
+
+</AppOnly>
+
+<PagesOnly>
+
+[`i18n` サポート](/docs/pages/building-your-application/routing/internationalization)を利用する際、各 `source` と `destination` は、リダイレクトに `locale: false` を追加しない限り、設定された `locales` を処理するために自動的にプレフィックスが付けられます。`locale: false` を使用する場合は、正しく一致させるために `source` と `destination` にロケールを付ける必要があります。
+
+</PagesOnly>
+
+```js filename="next.config.js"
+module.exports = {
+  i18n: {
+    locales: ['en', 'fr', 'de'],
+    defaultLocale: 'en',
+  },
+
+  async redirects() {
+    return [
+      {
+        source: '/with-locale', // 自動的にすべてのロケールを処理
+        destination: '/another', // 自動的にロケールを引き継ぐ
+        permanent: false,
+      },
+      {
+        // locale: false が設定されているため、自動的にロケールを処理しない
+        source: '/nl/with-locale-manual',
+        destination: '/nl/another',
+        locale: false,
+        permanent: false,
+      },
+      {
+        // 'en' がデフォルトロケールのため、'/' に一致
+        source: '/en',
+        destination: '/en/another',
+        locale: false,
+        permanent: false,
+      },
+      // locale: false が設定されていても、すべてのロケールに一致させることが可能
+      {
+        source: '/:locale/page',
+        destination: '/en/newpage',
+        permanent: false,
+        locale: false,
+      },
+      {
+        // これは /(en|fr|de)/(.*) に変換されるため、トップレベルの
+        // `/` または `/fr` のようなルートには一致しない /:path* とは異なる
+        source: '/(.*)',
+        destination: '/another',
+        permanent: false,
+      },
+    ]
+  },
+}
+```
+
+稀に、古い HTTP クライアントで適切にリダイレクトするためにカスタムステータスコードを割り当てる必要がある場合があります。このような場合、`permanent` プロパティの代わりに `statusCode` プロパティを使用できますが、両方同時には使用できません。IE11 との互換性を確保するために、308 ステータスコードに対して自動的に `Refresh` ヘッダーが追加されます。
+
+## その他のリダイレクト
+
+- [API Routes](/docs/pages/building-your-application/routing/api-routes) および [Route Handlers](/docs/app/building-your-application/routing/route-handlers) 内で、受信リクエストに基づいてリダイレクトできます。
+- [`getStaticProps`](/docs/pages/building-your-application/data-fetching/get-static-props) および [`getServerSideProps`](/docs/pages/building-your-application/data-fetching/get-server-side-props) 内で、リクエスト時に特定のページをリダイレクトできます。
+
+## バージョン履歴
+
+| バージョン | 変更点             |
+| --------- | ------------------ |
+| `v13.3.0` | `missing` が追加。 |
+| `v10.2.0` | `has` が追加。     |
+| `v9.5.0`  | `redirects` が追加。|

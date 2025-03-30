@@ -1,0 +1,362 @@
+---
+title: 画像とフォントの最適化方法
+nav_title: 画像とフォント
+description: 画像とフォントを最適化する方法を学びましょう。
+related:
+  title: API リファレンス
+  description: このページで説明された機能について詳しく知るには、API リファレンスをご覧ください。
+  links:
+    - app/api-reference/components/font
+    - app/api-reference/components/image
+slug: /docs/app/getting-started/images-and-fonts
+---
+
+Next.jsには、パフォーマンスとユーザー体験を向上させるための自動的な画像とフォントの最適化機能が組み込まれています。このページでは、これらの機能の使い方をご案内します。
+
+## 静的アセットの取り扱い
+
+画像やフォントなどの静的ファイルは、ルートディレクトリにある`public`というフォルダに保存できます。`public`内のファイルは、ベースURL（`/`）から始まるパスでコード内から参照できます。
+
+<Image
+  alt="appとpublicフォルダを示すフォルダ構造"
+  srcLight="/docs/light/public-folder.png"
+  srcDark="/docs/dark/public-folder.png"
+  width="1600"
+  height="282"
+/>
+
+## 画像の最適化
+
+Next.jsの[`<Image>`](/docs/app/building-your-application/optimizing/images)コンポーネントはHTML `<img>`要素を拡張し、以下の機能を提供します：
+
+- **サイズ最適化：** 各デバイスに対して自動的に適切なサイズの画像を提供し、WebPなどの最新の画像フォーマットを使用します。
+- **視覚的安定性：** 画像の読み込み時に[レイアウトシフト](https://web.dev/articles/cls)が発生するのを自動的に防ぎます。
+- **高速なページ読み込み：** ネイティブブラウザの遅延読み込みを使用して、ビューポートに入ったときにのみ画像を読み込み、オプションでぼかしプレースホルダを表示します。
+- **アセットの柔軟性：** リモートサーバーに保存されている画像も含め、オンデマンドで画像をリサイズします。
+
+`<Image>`を使い始めるには、`next/image`からインポートし、コンポーネント内でレンダリングします。
+
+```tsx filename="app/page.tsx" switcher
+import Image from 'next/image'
+
+export default function Page() {
+  return <Image src="" alt="" />
+}
+```
+
+```jsx filename="app/page.js" switcher
+import Image from 'next/image'
+
+export default function Page() {
+  return <Image src="" alt="" />
+}
+```
+
+`src`プロパティには[ローカル画像](#ローカル画像)または[リモート画像](#リモート画像)を指定できます。
+
+### ローカル画像
+
+ローカル画像を使用するには、[`public`フォルダ](#静的アセットの取り扱い)から`.jpg`、`.png`、または`.webp`画像ファイルを`import`します。
+
+```tsx filename="app/page.tsx" switcher
+import Image from 'next/image'
+import profilePic from './me.png'
+
+export default function Page() {
+  return (
+    <Image
+      src={profilePic}
+      alt="作者の写真"
+      // width={500} 自動的に提供されます
+      // height={500} 自動的に提供されます
+      // blurDataURL="data:..." 自動的に提供されます
+      // placeholder="blur" // オプションで読み込み中にぼかし効果
+    />
+  )
+}
+```
+
+```jsx filename="app/page.js" switcher
+import Image from 'next/image'
+import profilePic from './me.png'
+
+export default function Page() {
+  return (
+    <Image
+      src={profilePic}
+      alt="作者の写真"
+      // width={500} 自動的に提供されます
+      // height={500} 自動的に提供されます
+      // blurDataURL="data:..." 自動的に提供されます
+      // placeholder="blur" // オプションで読み込み中にぼかし効果
+    />
+  )
+}
+```
+
+Next.jsはインポートされたファイルに基づいて、画像の固有の[`width`](/docs/app/api-reference/components/image#width)と[`height`](/docs/app/api-reference/components/image#height)を自動的に決定します。これらの値は画像の比率を決定し、画像の読み込み中に[累積レイアウトシフト](https://web.dev/articles/cls)が発生するのを防ぐために使用されます。
+
+### リモート画像
+
+リモート画像を使用するには、`src`プロパティにURL文字列を指定します。
+
+```tsx filename="app/page.tsx" switcher
+import Image from 'next/image'
+
+export default function Page() {
+  return (
+    <Image
+      src="https://s3.amazonaws.com/my-bucket/profile.png"
+      alt="作者の写真"
+      width={500}
+      height={500}
+    />
+  )
+}
+```
+
+```jsx filename="app/page.js" switcher
+import Image from 'next/image'
+
+export default function Page() {
+  return (
+    <Image
+      src="https://s3.amazonaws.com/my-bucket/profile.png"
+      alt="作者の写真"
+      width={500}
+      height={500}
+    />
+  )
+}
+```
+
+Next.jsはビルドプロセス中にリモートファイルにアクセスできないため、[`width`](/docs/app/api-reference/components/image#width)、[`height`](/docs/app/api-reference/components/image#height)、およびオプションの[`blurDataURL`](/docs/app/api-reference/components/image#blurdataurl)プロパティを手動で指定する必要があります。`width`と`height`属性は画像の正確なアスペクト比を推測し、画像の読み込みによるレイアウトシフトを防ぐために使用されます。
+
+次に、リモートサーバーからの画像を安全に許可するために、[`next.config.js`](/docs/app/api-reference/config/next-config-js)でサポートするURLパターンのリストを定義する必要があります。悪意のある使用を防ぐために、できるだけ具体的に指定してください。たとえば、次の設定では特定のAWS S3バケットからの画像のみを許可します：
+
+```ts filename="next.config.ts" switcher
+import { NextConfig } from 'next'
+
+const config: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 's3.amazonaws.com',
+        port: '',
+        pathname: '/my-bucket/**',
+        search: '',
+      },
+    ],
+  },
+}
+
+export default config
+```
+
+```js filename="next.config.js" switcher
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 's3.amazonaws.com',
+        port: '',
+        pathname: '/my-bucket/**',
+        search: '',
+      },
+    ],
+  },
+}
+```
+
+## フォントの最適化
+
+[`next/font`](/docs/app/api-reference/components/font)モジュールは自動的にフォントを最適化し、プライバシーとパフォーマンスを向上させるために外部ネットワークリクエストを削除します。
+
+これには_あらゆる_フォントファイルに対する**組み込みの自動セルフホスティング**が含まれています。これにより、レイアウトシフトなしでWebフォントを最適に読み込むことができます。
+
+`next/font`を使い始めるには、[`next/font/local`](#ローカルフォント)または[`next/font/google`](#googleフォント)からインポートし、適切なオプションを指定して関数として呼び出し、フォントを適用したい要素の`className`を設定します。例えば：
+
+```tsx filename="app/layout.tsx" highlight={1,3-5,9} switcher
+import { Geist } from 'next/font/google'
+
+const geist = Geist({
+  subsets: ['latin'],
+})
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={geist.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" highlight={1,3-5,9} switcher
+import { Geist } from 'next/font/google'
+
+const geist = Geist({
+  subsets: ['latin'],
+})
+
+export default function Layout({ children }) {
+  return (
+    <html className={geist.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+### Googleフォント
+
+任意のGoogleフォントを自動的にセルフホスティングできます。フォントはデプロイメントに含まれ、デプロイメントと同じドメインから提供されるため、ユーザーがサイトを訪問してもブラウザからGoogleにリクエストは送信されません。
+
+Googleフォントを使い始めるには、`next/font/google`から選択したフォントをインポートします：
+
+```tsx filename="app/layout.tsx" switcher
+import { Geist } from 'next/font/google'
+
+const geist = Geist({
+  subsets: ['latin'],
+})
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" className={geist.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+import { Geist } from 'next/font/google'
+
+const geist = Geist({
+  subsets: ['latin'],
+})
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={geist.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+最高のパフォーマンスと柔軟性のために[可変フォント](https://fonts.google.com/variablefonts)を使用することをお勧めします。ただし、可変フォントを使用できない場合は、**ウェイトを指定する必要があります**：
+
+```tsx filename="app/layout.tsx" switcher
+import { Roboto } from 'next/font/google'
+
+const roboto = Roboto({
+  weight: '400',
+  subsets: ['latin'],
+})
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" className={roboto.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" highlight={1,3-5,9} switcher
+import { Roboto } from 'next/font/google'
+
+const roboto = Roboto({
+  weight: '400',
+  subsets: ['latin'],
+})
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={roboto.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+### ローカルフォント
+
+ローカルフォントを使用するには、`next/font/local`からフォントをインポートし、[`public`フォルダ](#静的アセットの取り扱い)にあるローカルフォントファイルの`src`を指定します。
+
+```tsx filename="app/layout.tsx" switcher
+import localFont from 'next/font/local'
+
+const myFont = localFont({
+  src: './my-font.woff2',
+})
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" className={myFont.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+import localFont from 'next/font/local'
+
+const myFont = localFont({
+  src: './my-font.woff2',
+})
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={myFont.className}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+単一のフォントファミリーに複数のファイルを使用する場合、`src`は配列にすることができます：
+
+```js
+const roboto = localFont({
+  src: [
+    {
+      path: './Roboto-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './Roboto-Italic.woff2',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: './Roboto-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: './Roboto-BoldItalic.woff2',
+      weight: '700',
+      style: 'italic',
+    },
+  ],
+})
+```

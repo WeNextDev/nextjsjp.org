@@ -1,0 +1,17 @@
+---
+title: reactMaxHeadersLength
+description: Reactによって送出され、レスポンスに追加されるヘッダーの最大長。
+slug: /docs/app/api-reference/config/next-config-js/reactMaxHeadersLength
+---
+
+静的レンダリング中、Reactはレスポンスに追加できるヘッダーを送出できます。これらは、フォント、スクリプト、スタイルシートなどのリソースをブラウザが事前に読み込めるようにし、パフォーマンスを向上させるために使用できます。デフォルト値は `6000` ですが、`next.config.js` で `reactMaxHeadersLength` オプションを設定することで、この値を上書きできます：
+
+```js filename="next.config.js"
+module.exports = {
+  reactMaxHeadersLength: 1000,
+}
+```
+
+> **補足**: このオプションはApp Routerでのみ利用可能です。
+
+ブラウザとサーバー間のプロキシの種類によっては、ヘッダーが切り詰められる可能性があります。例えば、長いヘッダーをサポートしていないリバースプロキシを使用している場合、ヘッダーが切り詰められないように、より低い値を設定する必要があります。

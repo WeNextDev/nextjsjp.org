@@ -1,0 +1,123 @@
+---
+title: revalidatePath
+description: revalidatePath 関数のAPI リファレンス。
+slug: /docs/app/api-reference/functions/revalidatePath
+---
+
+`revalidatePath` を使用すると、特定のパスの[キャッシュされたデータ](/docs/app/building-your-application/caching)をオンデマンドでパージできます。
+
+> **補足**:
+>
+> - `revalidatePath` は、指定されたパスに次回アクセスがあった時のみキャッシュを無効化します。これは、動的ルートセグメントで `revalidatePath` を呼び出しても、多数の再検証が一度に発生するわけではないことを意味します。無効化は、そのパスに次回アクセスがあった時にのみ行われます。
+> - 現在、サーバーアクション内で使用された場合、`revalidatePath` は[クライアントサイドRouterキャッシュ](/docs/app/building-your-application/caching#client-side-router-cache)内のすべてのルートを無効化します。この動作は一時的なもので、将来的には特定のパスにのみ適用されるように更新される予定です。
+> - `revalidatePath` を使用すると、[サーバーサイドRouteキャッシュ](/docs/app/building-your-application/caching#full-route-cache)内の**特定のパスのみ**が無効化されます。
+
+## パラメータ
+
+```tsx
+revalidatePath(path: string, type?: 'page' | 'layout'): void;
+```
+
+- `path`: 再検証したいデータに関連するファイルシステムパス（例：`/product/[slug]/page`）、または実際のルートセグメント（例：`/product/123`）を表す文字列。1024文字未満である必要があります。この値は大文字と小文字を区別します。
+- `type`: (オプション) 再検証するパスの種類を変更するための`'page'`または`'layout'`の文字列。`path`に動的セグメントが含まれる場合（例：`/product/[slug]/page`）、このパラメータは必須です。パスが実際のルートセグメント（例：動的ページ `/product/[slug]/page` の `/product/1`）を参照する場合、`type`を指定しないでください。
+
+## 戻り値
+
+`revalidatePath`は値を返しません。
+
+## 例
+
+### 特定のURLを再検証
+
+```ts
+import { revalidatePath } from 'next/cache'
+revalidatePath('/blog/post-1')
+```
+
+これにより、次のページ訪問時に1つの特定のURLが再検証されます。
+
+### ページパスを再検証
+
+```ts
+import { revalidatePath } from 'next/cache'
+revalidatePath('/blog/[slug]', 'page')
+// またはルートグループを使用
+revalidatePath('/(main)/blog/[slug]', 'page')
+```
+
+これにより、次のページ訪問時に提供された`page`ファイルに一致するすべてのURLが再検証されます。これは、特定のページ以下のページを無効化**しません**。例えば、`/blog/[slug]`は`/blog/[slug]/[author]`を無効化しません。
+
+### レイアウトパスを再検証
+
+```ts
+import { revalidatePath } from 'next/cache'
+revalidatePath('/blog/[slug]', 'layout')
+// またはルートグループを使用
+revalidatePath('/(main)/post/[slug]', 'layout')
+```
+
+これにより、次のページ訪問時に提供された`layout`ファイルに一致するすべてのURLが再検証されます。これにより、同じレイアウトを持つその下のページも次の訪問時に再検証されます。上記の例では、`/blog/[slug]/[another]`も次の訪問時に再検証されます。
+
+### すべてのデータを再検証
+
+```ts
+import { revalidatePath } from 'next/cache'
+
+revalidatePath('/', 'layout')
+```
+
+これにより、クライアントサイドのRouterキャッシュが削除され、次のページ訪問時にデータキャッシュが再検証されます。
+
+### サーバーアクション
+
+```ts filename="app/actions.ts" switcher
+'use server'
+
+import { revalidatePath } from 'next/cache'
+
+export default async function submit() {
+  await submitForm()
+  revalidatePath('/')
+}
+```
+
+### ルートハンドラ
+
+```ts filename="app/api/revalidate/route.ts" switcher
+import { revalidatePath } from 'next/cache'
+import type { NextRequest } from 'next/server'
+
+export async function GET(request: NextRequest) {
+  const path = request.nextUrl.searchParams.get('path')
+
+  if (path) {
+    revalidatePath(path)
+    return Response.json({ revalidated: true, now: Date.now() })
+  }
+
+  return Response.json({
+    revalidated: false,
+    now: Date.now(),
+    message: '再検証するパスがありません',
+  })
+}
+```
+
+```js filename="app/api/revalidate/route.js" switcher
+import { revalidatePath } from 'next/cache'
+
+export async function GET(request) {
+  const path = request.nextUrl.searchParams.get('path')
+
+  if (path) {
+    revalidatePath(path)
+    return Response.json({ revalidated: true, now: Date.now() })
+  }
+
+  return Response.json({
+    revalidated: false,
+    now: Date.now(),
+    message: '再検証するパスがありません',
+  })
+}
+```

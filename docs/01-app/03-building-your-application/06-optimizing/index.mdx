@@ -1,0 +1,47 @@
+---
+title: 最適化
+nav_title: 最適化
+description: 最高のパフォーマンスとユーザーエクスペリエンスのためにNext.jsアプリケーションを最適化します。
+slug: /docs/app/building-your-application/optimizing
+---
+
+{/* このドキュメントの内容は、appルーターとpagesルーターで共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用してPages Router固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+Next.jsには、アプリケーションの速度と[Core Web Vitals](https://web.dev/vitals/)を改善するための様々な組み込みの最適化が用意されています。このガイドでは、ユーザーエクスペリエンスを向上させるために活用できる最適化について説明します。
+
+## 組み込みコンポーネント
+
+組み込みコンポーネントは、一般的なUIの最適化を実装する複雑さを抽象化します。これらのコンポーネントは：
+
+- **Images**：ネイティブの`<img>`要素をベースにしています。Imageコンポーネントは、遅延読み込みと、デバイスサイズに基づく自動画像リサイズにより、画像のパフォーマンスを最適化します。
+- **Link**：ネイティブの`<a>`タグをベースにしています。Linkコンポーネントは、ページを背景で先読みし、より高速でスムーズなページ遷移を実現します。
+- **Scripts**：ネイティブの`<script>`タグをベースにしています。Scriptコンポーネントは、サードパーティスクリプトの読み込みと実行を制御できます。
+
+## メタデータ
+
+メタデータは、検索エンジンがコンテンツをより良く理解するのに役立ち（これによりSEOが改善される可能性があります）、ソーシャルメディア上でのコンテンツの表示をカスタマイズできるため、さまざまなプラットフォーム間でより魅力的で一貫したユーザーエクスペリエンスを作成できます。
+
+<AppOnly>
+
+Next.jsのMetadata APIを使用すると、ページの`<head>`要素を変更できます。メタデータは2つの方法で設定できます：
+
+- **構成ベースのメタデータ**：`layout.js`または`page.js`ファイルで、静的な`metadata`オブジェクトまたは動的な[`generateMetadata`関数](/docs/app/api-reference/functions/generate-metadata#generatemetadata-function)をエクスポートします。
+- **ファイルベースのメタデータ**：ルートセグメントに静的または動的に生成された特殊ファイルを追加します。
+
+さらに、[imageResponse](/docs/app/api-reference/functions/image-response)コンストラクターを使用して、JSXとCSSで動的なオープングラフ画像を作成できます。
+
+</AppOnly>
+
+<PagesOnly>
+
+Next.jsのHeadコンポーネントを使用すると、ページの`<head>`を変更できます。詳細は[Headコンポーネント](/docs/pages/api-reference/components/head)のドキュメントを参照してください。
+
+</PagesOnly>
+
+## 静的アセット
+
+Next.jsの`/public`フォルダを使用して、画像、フォント、その他のファイルなどの静的アセットを提供できます。`/public`内のファイルは、CDNプロバイダーによってキャッシュされ、効率的に配信されます。
+
+## 分析と監視
+
+大規模なアプリケーションでは、Next.jsは人気の分析およびモニタリングツールと統合され、アプリケーションのパフォーマンスを理解するのに役立ちます。詳細は<PagesOnly>[分析](/docs/app/building-your-application/optimizing/analytics)、</PagesOnly>[OpenTelemetry](/docs/pages/building-your-application/optimizing/open-telemetry)<PagesOnly>、</PagesOnly>[インストゥルメンテーション](/docs/pages/building-your-application/optimizing/instrumentation)ガイドを参照してください。

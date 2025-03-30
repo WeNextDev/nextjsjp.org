@@ -1,0 +1,19 @@
+---
+title: typedRoutes
+description: 静的に型付けされたリンクの実験的サポートを有効にします。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/typedRoutes
+---
+
+[静的に型付けされたリンク](/docs/app/api-reference/config/typescript#statically-typed-links)の実験的サポート。この機能は、App RouterとTypeScriptをプロジェクトで使用することが必要です。
+
+```js filename="next.config.js"
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    typedRoutes: true,
+  },
+}
+
+module.exports = nextConfig
+```

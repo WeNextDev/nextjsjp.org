@@ -1,0 +1,156 @@
+---
+title: use server
+description: サーバー上でコードを実行する use server ディレクティブの使用方法を学びます。
+slug: /docs/app/api-reference/directives/use-server
+---
+
+`use server` ディレクティブは、関数またはファイルを**サーバー側**で実行することを指定します。ファイルの先頭で使用して、ファイル内のすべての関数をサーバー側とするか、関数の先頭でインラインで使用して、その関数を[サーバー関数](https://19.react.dev/reference/rsc/server-functions)としてマークできます。これは React の機能です。
+
+## ファイルの先頭で `use server` を使用する
+
+以下の例は、ファイルの先頭に `use server` ディレクティブがある場合を示しています。ファイル内のすべての関数はサーバー上で実行されます。
+
+```tsx filename="app/actions.ts" highlight={1} switcher
+'use server'
+import { db } from '@/lib/db' // データベースクライアント
+
+export async function createUser(data: { name: string; email: string }) {
+  const user = await db.user.create({ data })
+  return user
+}
+```
+
+```jsx filename="app/actions.js" highlight={1} switcher
+'use server'
+import { db } from '@/lib/db' // データベースクライアント
+
+export async function createUser(data) {
+  const user = await db.user.create({ data })
+  return user
+}
+```
+
+### クライアントコンポーネントでのサーバー関数の使用
+
+クライアントコンポーネントでサーバー関数を使用するには、ファイルの先頭に `use server` ディレクティブを付けた専用のファイルにサーバー関数を作成する必要があります。これらのサーバー関数は、クライアントおよびサーバーコンポーネントにインポートして実行できます。
+
+`actions.ts` に `fetchUsers` サーバー関数があると仮定します：
+
+```tsx filename="app/actions.ts" highlight={1} switcher
+'use server'
+import { db } from '@/lib/db' // データベースクライアント
+
+export async function fetchUsers() {
+  const users = await db.user.findMany()
+  return users
+}
+```
+
+```jsx filename="app/actions.js" highlight={1} switcher
+'use server'
+import { db } from '@/lib/db' // データベースクライアント
+
+export async function fetchUsers() {
+  const users = await db.user.findMany()
+  return users
+}
+```
+
+その後、`fetchUsers` サーバー関数をクライアントコンポーネントにインポートし、クライアント側で実行できます。
+
+```tsx filename="app/components/my-button.tsx" highlight={1,2,8} switcher
+'use client'
+import { fetchUsers } from '../actions'
+
+export default function MyButton() {
+  return <button onClick={() => fetchUsers()}>ユーザーを取得</button>
+}
+```
+
+```jsx filename="app/components/my-button.js" highlight={1,2,8} switcher
+'use client'
+import { fetchUsers } from '../actions'
+
+export default function MyButton() {
+  return <button onClick={() => fetchUsers()}>ユーザーを取得</button>
+}
+```
+
+## インラインで `use server` を使用する
+
+次の例では、`use server` を関数の先頭でインラインに使用して、[サーバー関数](https://19.react.dev/reference/rsc/server-functions)としてマークしています：
+
+```tsx filename="app/page.tsx" highlight={5} switcher
+import { db } from '@/lib/db' // データベースクライアント
+
+export default function UserList() {
+  async function fetchUsers() {
+    'use server'
+    const users = await db.user.findMany()
+    return users
+  }
+
+  return <button onClick={() => fetchUsers()}>ユーザーを取得</button>
+}
+```
+
+```jsx filename="app/page.js" highlight={5} switcher
+import { db } from '@/lib/db' // データベースクライアント
+
+export default function UserList() {
+  async function fetchUsers() {
+    'use server'
+    const users = await db.user.findMany()
+    return users
+  }
+
+  return <button onClick={() => fetchUsers()}>ユーザーを取得</button>
+}
+```
+
+## セキュリティに関する考慮事項
+
+`use server` ディレクティブを使用する場合、すべてのサーバー側のロジックが安全であり、機密データが保護されていることを確認することが重要です。
+
+### 認証と認可
+
+機密性の高いサーバー側の操作を実行する前に、常にユーザーを認証および認可してください。
+
+```tsx filename="app/actions.ts" highlight={1,7,8,9,10} switcher
+'use server'
+
+import { db } from '@/lib/db' // データベースクライアント
+import { authenticate } from '@/lib/auth' // 認証ライブラリ
+
+export async function createUser(
+  data: { name: string; email: string },
+  token: string
+) {
+  const user = authenticate(token)
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
+  const newUser = await db.user.create({ data })
+  return newUser
+}
+```
+
+```jsx filename="app/actions.js" highlight={1,7,8,9,10} switcher
+'use server'
+
+import { db } from '@/lib/db' // データベースクライアント
+import { authenticate } from '@/lib/auth' // 認証ライブラリ
+
+export async function createUser(data, token) {
+  const user = authenticate(token)
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
+  const newUser = await db.user.create({ data })
+  return newUser
+}
+```
+
+## 参考
+
+詳細については、[React ドキュメント](https://react.dev/reference/rsc/use-server)の `use server` を参照してください。

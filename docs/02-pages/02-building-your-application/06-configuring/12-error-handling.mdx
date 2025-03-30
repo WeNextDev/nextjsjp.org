@@ -1,0 +1,105 @@
+---
+title: エラーハンドリング
+description: Next.js アプリでエラーを処理する方法。
+slug: /docs/pages/building-your-application/configuring/error-handling
+---
+
+このドキュメントでは、Next.js アプリケーションの開発、サーバーサイド、クライアントサイドのエラーを処理する方法を説明します。
+
+## 開発中のエラーハンドリング
+
+Next.js アプリケーションの開発フェーズで実行時エラーが発生すると、**オーバーレイ**が表示されます。これは Web ページを覆うモーダルです。オーバーレイは `next dev` を使用して開発サーバーを実行する場合（`pnpm dev`、`npm run dev`、`yarn dev`、または `bun dev`）にのみ表示され、本番環境では表示されません。エラーを修正すると、オーバーレイは自動的に非表示になります。
+
+オーバーレイの例を以下に示します：
+
+{/* TODO UPDATE SCREENSHOT */}
+![開発モード時のオーバーレイの例](https://assets.vercel.com/image/upload/v1645118290/docs-assets/static/docs/error-handling/overlay.png)
+
+## サーバーエラーの処理
+
+Next.js はデフォルトで静的な 500 ページを提供し、アプリケーション内のサーバーサイドエラーを処理します。`pages/500.js` ファイルを作成することで、[このページをカスタマイズ](/docs/pages/building-your-application/routing/custom-error#customizing-the-500-page)することもできます。
+
+アプリケーションに 500 ページがあっても、アプリユーザーに具体的なエラーは表示されません。
+
+`ファイルが見つからない`などの特定の実行時エラーを処理するには、[404 ページ](/docs/pages/building-your-application/routing/custom-error#404-page)を使用することもできます。
+
+## クライアントエラーの処理
+
+React の [エラーバウンダリ](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)は、クライアント上の JavaScript エラーを優雅に処理し、アプリケーションの他の部分が引き続き動作するようにする方法です。ページのクラッシュを防ぐだけでなく、カスタムのフォールバックコンポーネントを提供し、エラー情報をログに記録することもできます。
+
+Next.js アプリケーションでエラーバウンダリを使用するには、クラスコンポーネント `ErrorBoundary` を作成し、`pages/_app.js` ファイルの `Component` プロップをラップする必要があります。このコンポーネントは以下の責務を負います：
+
+- エラー発生後にフォールバック UI をレンダリングする
+- アプリケーションの状態をリセットする方法を提供する
+- エラー情報をログに記録する
+
+`ErrorBoundary` クラスコンポーネントは、`React.Component` を拡張することで作成できます。例：
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+
+    // エラーがあるかどうかを追跡する状態変数を定義
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError(error) {
+    // 次のレンダリングでフォールバック UI を表示するために状態を更新
+
+    return { hasError: true }
+  }
+  componentDidCatch(error, errorInfo) {
+    // ここで独自のエラーログサービスを使用できます
+    console.log({ error, errorInfo })
+  }
+  render() {
+    // エラーが発生したかどうかを確認
+    if (this.state.hasError) {
+      // カスタムのフォールバック UI をレンダリング
+      return (
+        <div>
+          <h2>おっと、エラーが発生しました！</h2>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false })}
+          >
+            もう一度試しますか？
+          </button>
+        </div>
+      )
+    }
+
+    // エラーがない場合は子コンポーネントを返す
+
+    return this.props.children
+  }
+}
+
+export default ErrorBoundary
+```
+
+`ErrorBoundary` コンポーネントは `hasError` 状態を追跡します。この状態変数の値はブール値です。`hasError` の値が `true` の場合、`ErrorBoundary` コンポーネントはフォールバック UI をレンダリングします。それ以外の場合は、子コンポーネントをレンダリングします。
+
+`ErrorBoundary` コンポーネントを作成したら、`pages/_app.js` ファイルにインポートし、Next.js アプリケーションの `Component` プロップをラップします。
+
+```jsx
+// ErrorBoundary コンポーネントをインポート
+import ErrorBoundary from '../components/ErrorBoundary'
+
+function MyApp({ Component, pageProps }) {
+  return (
+    // Component プロップを ErrorBoundary コンポーネントでラップ
+    <ErrorBoundary>
+      <Component {...pageProps} />
+    </ErrorBoundary>
+  )
+}
+
+export default MyApp
+```
+
+React のドキュメントで[エラーバウンダリ](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)についてさらに詳しく学べます。
+
+### エラー報告
+
+クライアントエラーを監視するには、[Sentry](https://github.com/vercel/next.js/tree/canary/examples/with-sentry)、Bugsnag、または Datadog などのサービスを使用します。

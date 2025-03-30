@@ -1,0 +1,107 @@
+---
+title: クライアントコンポーネント
+description: アプリケーションの一部をクライアント上でレンダリングするためのクライアントコンポーネントの使用方法を学びます。
+slug: /docs/app/building-your-application/rendering/client-components
+---
+
+クライアントコンポーネントを使用すると、サーバーでプリレンダリングされ、ブラウザで実行するクライアントJavaScriptを使用できるインタラクティブなUIを作成できます。
+
+このページでは、クライアントコンポーネントの仕組み、レンダリング方法、そして使用するタイミングについて説明します。
+
+## クライアントレンダリングの利点
+
+クライアント上でレンダリング処理を行うことには、以下のような利点があります：
+
+- **インタラクティブ性**: クライアントコンポーネントは、状態、エフェクト、イベントリスナーを使用でき、ユーザーに即座のフィードバックを提供し、UIを更新できます。
+- **ブラウザAPI**: クライアントコンポーネントは、[ジオロケーション](https://developer.mozilla.org/docs/Web/API/Geolocation_API)や[localStorage](https://developer.mozilla.org/docs/Web/API/Window/localStorage)などのブラウザAPIにアクセスできます。
+
+## Next.jsでのクライアントコンポーネントの使用
+
+クライアントコンポーネントを使用するには、ファイルのインポート文の上に、React [`"use client"`ディレクティブ](https://react.dev/reference/react/use-client)を追加します。
+
+`"use client"`は、サーバーコンポーネントとクライアントコンポーネントのモジュール間の[境界](/docs/app/building-your-application/rendering#network-boundary)を宣言するために使用されます。つまり、あるファイルで`"use client"`を定義すると、そのファイルにインポートされるその他のモジュール（子コンポーネントを含む）がクライアントバンドルの一部と見なされます。
+
+```tsx filename="app/counter.tsx" highlight={1} switcher
+'use client'
+
+import { useState } from 'react'
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/counter.js" highlight={1} switcher
+'use client'
+
+import { useState } from 'react'
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
+    </div>
+  )
+}
+```
+
+以下の図は、`"use client"`ディレクティブが定義されていない場合、ネストされたコンポーネント（`toggle.js`）で`onClick`と`useState`を使用するとエラーが発生することを示しています。これは、デフォルトでApp Routerのすべてのコンポーネントがサーバーコンポーネントであり、これらのAPIが利用できないためです。`toggle.js`で`"use client"`ディレクティブを定義することで、これらのAPIが利用可能なクライアント境界に入ることをReactに伝えることができます。
+
+<Image
+  alt="Use Client Directive and Network Boundary"
+  srcLight="/light/use-client-directive.png"
+  srcDark="/dark/use-client-directive.png"
+  width="1600"
+  height="1320"
+/>
+
+> **複数の`use client`エントリーポイントの定義**:
+>
+> Reactコンポーネントツリーに複数の「use client」エントリーポイントを定義できます。これにより、アプリケーションを複数のクライアントバンドルに分割できます。
+>
+> ただし、クライアント上でレンダリングする必要があるすべてのコンポーネントで`"use client"`を定義する必要はありません。一度境界を定義すれば、その中にインポートされるすべての子コンポーネントとモジュールがクライアントバンドルの一部と見なされます。
+
+## クライアントコンポーネントはどのようにレンダリングされるか
+
+Next.jsでは、クライアントコンポーネントは、フルページロード（アプリケーションへの初回訪問またはブラウザ更新によるページリロード）か、それ以降のナビゲーションかによって異なる方法でレンダリングされます。
+
+### フルページロード
+
+初期ページロードを最適化するため、Next.jsはReactのAPIを使用して、クライアントコンポーネントとサーバーコンポーネントの両方について、サーバー上で静的HTMLプレビューをレンダリングします。つまり、ユーザーが最初にアプリケーションを訪れた際、クライアントコンポーネントのJavaScriptバンドルをダウンロード、解析、実行するのを待つことなく、ページのコンテンツをすぐに表示できます。
+
+サーバー上では：
+
+1. Reactは、クライアントコンポーネントへの参照を含む、[**React サーバーコンポーネントペイロード（RSCペイロード）**](/docs/app/building-your-application/rendering/server-components#what-is-the-react-server-component-payload-rsc)と呼ばれる特殊なデータ形式にサーバーコンポーネントをレンダリングします。
+2. Next.jsは、RSCペイロードとクライアントコンポーネントのJavaScriptの命令を使用して、サーバー上でルートの**HTML**をレンダリングします。
+
+次に、クライアント上では：
+
+1. HTMLを使用して、ルートの高速で非インタラクティブな初期プレビューをすぐに表示します。
+2. React サーバーコンポーネントペイロードを使用して、クライアントコンポーネントとサーバーコンポーネントのツリーを調整し、DOMを更新します。
+3. Javascriptの命令を使用して、クライアントコンポーネントを[ハイドレート](https://react.dev/reference/react-dom/client/hydrateRoot)し、UIをインタラクティブにします。
+
+> **ハイドレーションとは？**
+>
+> ハイドレーションは、静的なHTMLにイベントリスナーをアタッチし、インタラクティブにするプロセスです。背後では、ハイドレーションは[`hydrateRoot`](https://react.dev/reference/react-dom/client/hydrateRoot) React APIで行われます。
+
+### 後続のナビゲーション
+
+後続のナビゲーションでは、クライアントコンポーネントはサーバーでレンダリングされたHTMLなしで、完全にクライアント上でレンダリングされます。
+
+つまり、クライアントコンポーネントのJavaScriptバンドルがダウンロードされ、解析されます。バンドルの準備ができたら、Reactは[RSCペイロード](/docs/app/building-your-application/rendering/server-components#what-is-the-react-server-component-payload-rsc)を使用して、クライアントコンポーネントとサーバーコンポーネントのツリーを調整し、DOMを更新します。
+
+## サーバー環境に戻る
+
+`"use client"`境界を宣言した後、サーバー環境に戻りたい場合があります。例えば、クライアントバンドルのサイズを削減したり、サーバー上でデータをフェッチしたり、サーバー上でのみ利用可能なAPIを使用したりする場合です。
+
+クライアントコンポーネント内に理論的にネストされていても、クライアントとサーバーコンポーネントを入れ子にし、[サーバーアクション](/docs/app/building-your-application/data-fetching/server-actions-and-mutations)を使用することで、コードをサーバー上に保持できます。詳細は[コンポジションパターン](/docs/app/building-your-application/rendering/composition-patterns)ページを参照してください。

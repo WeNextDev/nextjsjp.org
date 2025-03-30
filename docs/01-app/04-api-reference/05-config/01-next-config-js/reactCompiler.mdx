@@ -1,0 +1,72 @@
+---
+title: reactCompiler
+description: コンポーネントのレンダリングを自動的に最適化するReact Compilerを有効にする
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/reactCompiler
+---
+
+Next.js 15 RCは[React Compiler](https://react.dev/learn/react-compiler)をサポートしました。このコンパイラは、コンポーネントのレンダリングを自動的に最適化することでパフォーマンスを向上させます。これにより、開発者が`useMemo`や`useCallback`などのAPIを通じて手動でメモ化する必要がある量が減少します。
+
+使用するには、Next.js 15にアップグレードし、`babel-plugin-react-compiler`をインストールします：
+
+```bash filename="Terminal"
+npm install babel-plugin-react-compiler
+```
+
+次に、`next.config.js`で`experimental.reactCompiler`オプションを追加します：
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    reactCompiler: true,
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    reactCompiler: true,
+  },
+}
+
+module.exports = nextConfig
+```
+
+オプションとして、コンパイラを「オプトイン」モードで実行するように設定できます：
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    reactCompiler: {
+      compilationMode: 'annotation',
+    },
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    reactCompiler: {
+      compilationMode: 'annotation',
+    },
+  },
+}
+
+module.exports = nextConfig
+```
+
+> **Note:** React Compilerは現在、Babelプラグインを通じてNext.jsでのみ使用可能です。これにより、Next.jsのデフォルトの[Rust製コンパイラ](/docs/architecture/nextjs-compiler)からオプトアウトされ、ビルド時間が遅くなる可能性があります。デフォルトのコンパイラとしてReact Compilerのサポートに取り組んでいます。
+
+[React Compiler](https://react.dev/learn/react-compiler)と[利用可能なNext.js設定オプション](https://react.dev/learn/react-compiler#usage-with-nextjs)の詳細について学びましょう。

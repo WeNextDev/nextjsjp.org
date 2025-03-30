@@ -1,0 +1,183 @@
+---
+title: 静的サイト生成（SSG）
+description: ビルド時にページを事前レンダリングするために静的サイト生成（SSG）を使用します。
+slug: /docs/pages/building-your-application/rendering/static-site-generation
+---
+
+<details>
+  <summary>例</summary>
+
+- [Agility CMS の例](https://github.com/vercel/next.js/tree/canary/examples/cms-agilitycms)（[デモ](https://next-blog-agilitycms.vercel.app/）
+- [Builder.io の例](https://github.com/vercel/next.js/tree/canary/examples/cms-builder-io)（[デモ](https://cms-builder-io.vercel.app/）
+- [ButterCMS の例](https://github.com/vercel/next.js/tree/canary/examples/cms-buttercms)（[デモ](https://next-blog-buttercms.vercel.app/）
+- [Contentful の例](https://github.com/vercel/next.js/tree/canary/examples/cms-contentful)（[デモ](https://app-router-contentful.vercel.app/）
+- [Cosmic の例](https://github.com/vercel/next.js/tree/canary/examples/cms-cosmic)（[デモ](https://next-blog-cosmic.vercel.app/）
+- [DatoCMS の例](https://github.com/vercel/next.js/tree/canary/examples/cms-datocms)（[デモ](https://next-blog-datocms.vercel.app/）
+- [DotCMS の例](https://github.com/vercel/next.js/tree/canary/examples/cms-dotcms)（[デモ](https://nextjs-dotcms-blog.vercel.app/）
+- [Drupal の例](https://github.com/vercel/next.js/tree/canary/examples/cms-drupal)（[デモ](https://cms-drupal.vercel.app/）
+- [Enterspeed の例](https://github.com/vercel/next.js/tree/canary/examples/cms-enterspeed)（[デモ](https://next-blog-demo.enterspeed.com/）
+- [GraphCMS の例](https://github.com/vercel/next.js/tree/canary/examples/cms-graphcms)（[デモ](https://next-blog-graphcms.vercel.app/）
+- [Keystone の例](https://github.com/vercel/next.js/tree/canary/examples/cms-keystonejs-embedded)（[デモ](https://nextjs-keystone-demo.vercel.app/）
+- [Kontent.ai の例](https://github.com/vercel/next.js/tree/canary/examples/cms-kontent-ai)（[デモ](https://next-blog-kontent-ai.vercel.app/）
+- [Makeswift の例](https://github.com/vercel/next.js/tree/canary/examples/cms-makeswift)（[デモ](https://nextjs-makeswift-example.vercel.app/）
+- [Plasmic の例](https://github.com/vercel/next.js/tree/canary/examples/cms-plasmic)（[デモ](https://nextjs-plasmic-example.vercel.app/）
+- [Prepr の例](https://github.com/vercel/next.js/tree/canary/examples/cms-prepr)（[デモ](https://next-blog-prepr.vercel.app/）
+- [Prismic の例](https://github.com/vercel/next.js/tree/canary/examples/cms-prismic)（[デモ](https://next-blog-prismic.vercel.app/）
+- [Sanity の例](https://github.com/vercel/next.js/tree/canary/examples/cms-sanity)（[デモ](https://next-blog.sanity.build/）
+- [Sitecore XM Cloud の例](https://github.com/vercel/next.js/tree/canary/examples/cms-sitecore-xmcloud)（[デモ](https://vercel-sitecore-xmcloud-demo.vercel.app/）
+- [Storyblok の例](https://github.com/vercel/next.js/tree/canary/examples/cms-storyblok)（[デモ](https://next-blog-storyblok.vercel.app/）
+- [Strapi の例](https://github.com/vercel/next.js/tree/canary/examples/cms-strapi)（[デモ](https://next-blog-strapi.vercel.app/）
+- [TakeShape の例](https://github.com/vercel/next.js/tree/canary/examples/cms-takeshape)（[デモ](https://next-blog-takeshape.vercel.app/）
+- [Tina の例](https://github.com/vercel/next.js/tree/canary/examples/cms-tina)（[デモ](https://cms-tina-example.vercel.app/）
+- [Umbraco の例](https://github.com/vercel/next.js/tree/canary/examples/cms-umbraco)（[デモ](https://nextjs-umbraco-sample-blog.vercel.app/）
+- [Umbraco Heartcore の例](https://github.com/vercel/next.js/tree/canary/examples/cms-umbraco-heartcore)（[デモ](https://next-blog-umbraco-heartcore.vercel.app/）
+- [Webiny の例](https://github.com/vercel/next.js/tree/canary/examples/cms-webiny)（[デモ](https://webiny-headlesscms-nextjs-example.vercel.app/）
+- [WordPress の例](https://github.com/vercel/next.js/tree/canary/examples/cms-wordpress)（[デモ](https://next-blog-wordpress.vercel.app/）
+- [ブログスターターの例](https://github.com/vercel/next.js/tree/canary/examples/blog-starter)（[デモ](https://next-blog-starter.vercel.app/）
+- [Static Tweet（デモ）](https://react-tweet.vercel.app/)
+
+</details>
+
+ページが**静的生成**を使用している場合、ページのHTMLは**ビルド時**に生成されます。つまり、本番環境では、`next build`を実行したときにページのHTMLが生成されます。このHTMLは、その後の各リクエストで再利用されます。CDNによってキャッシュされることもあります。
+
+Next.jsでは、ページを**データありまたはなし**で静的に生成できます。それぞれのケースを見ていきましょう。
+
+### データなしの静的生成
+
+デフォルトでは、Next.jsはデータを取得せずに静的生成を使用してページを事前レンダリングします。以下は例です：
+
+```jsx
+function About() {
+  return <div>About</div>
+}
+
+export default About
+```
+
+このページは事前レンダリングするために外部データを取得する必要がないことに注意してください。このようなケースでは、Next.jsはビルド時に各ページに対して1つのHTMLファイルを生成します。
+
+### データありの静的生成
+
+一部のページは事前レンダリングのために外部データの取得が必要です。2つのシナリオがあり、どちらか一方または両方が適用される可能性があります。各ケースで、Next.jsが提供する以下の関数を使用できます：
+
+1. ページの**コンテンツ**が外部データに依存している：`getStaticProps`を使用。
+2. ページの**パス**が外部データに依存している：`getStaticPaths`を使用（通常は`getStaticProps`と組み合わせて）。
+
+#### シナリオ1：ページのコンテンツが外部データに依存している
+
+**例**：ブログページがCMS（コンテンツ管理システム）からブログ投稿のリストを取得する必要がある場合。
+
+```jsx
+// TODO: このページを事前レンダリングする前に、APIエンドポイントを呼び出して`posts`を取得する必要があります。
+export default function Blog({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+事前レンダリング時にこのデータを取得するために、Next.jsでは同じファイルから`getStaticProps`という`async`関数を`export`できます。この関数はビルド時に呼び出され、取得したデータを事前レンダリング時にページの`props`として渡すことができます。
+
+```jsx
+export default function Blog({ posts }) {
+  // 投稿をレンダリング...
+}
+
+// この関数はビルド時に呼び出されます
+export async function getStaticProps() {
+  // 投稿を取得するための外部APIエンドポイントを呼び出す
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  // { props: { posts } }を返すことで、
+  // Blogコンポーネントはビルド時に`posts`をpropsとして受け取ります
+  return {
+    props: {
+      posts,
+    },
+  }
+}
+```
+
+`getStaticProps`の詳細については、[データフェッチングのドキュメント](/docs/pages/building-your-application/data-fetching/get-static-props)を確認してください。
+
+#### シナリオ2：ページのパスが外部データに依存している
+
+Next.jsでは、**動的ルート**を持つページを作成できます。例えば、`pages/posts/[id].js`というファイルを作成して、`id`に基づいて単一のブログ投稿を表示できます。これにより、`posts/1`にアクセスすると`id: 1`のブログ投稿を表示できます。
+
+> 動的ルーティングの詳細については、[動的ルーティングのドキュメント](/docs/pages/building-your-application/routing/dynamic-routes)を確認してください。
+
+しかし、ビルド時に事前レンダリングする`id`は外部データに依存する可能性があります。
+
+**例**：データベースに1つのブログ投稿（`id: 1`）のみを追加したとします。この場合、ビルド時に`posts/1`のみを事前レンダリングしたいでしょう。
+
+後に、`id: 2`の2番目の投稿を追加するかもしれません。その場合、`posts/2`も事前レンダリングしたいでしょう。
+
+つまり、事前レンダリングするページの**パス**が外部データに依存しています。これを処理するために、Next.jsでは動的ページ（この場合は`pages/posts/[id].js`）から`getStaticPaths`という`async`関数を`export`できます。この関数はビルド時に呼び出され、事前レンダリングするパスを指定できます。
+
+```jsx
+// この関数はビルド時に呼び出されます
+export async function getStaticPaths() {
+  // 投稿を取得するための外部APIエンドポイントを呼び出す
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  // 投稿に基づいて事前レンダリングするパスを取得
+  const paths = posts.map((post) => ({
+    params: { id: post.id },
+  }))
+
+  // ビルド時にこれらのパスのみを事前レンダリングします。
+  // { fallback: false }は他のルートが404になることを意味します。
+  return { paths, fallback: false }
+}
+```
+
+`pages/posts/[id].js`では、この`id`に関する投稿のデータを取得してページを事前レンダリングするために、`getStaticProps`もエクスポートする必要があります：
+
+```jsx
+export default function Post({ post }) {
+  // 投稿をレンダリング...
+}
+
+export async function getStaticPaths() {
+  // ...
+}
+
+// これもビルド時に呼び出されます
+export async function getStaticProps({ params }) {
+  // paramsには投稿の`id`が含まれます。
+  // ルートが/posts/1のような場合、params.idは1になります
+  const res = await fetch(`https://.../posts/${params.id}`)
+  const post = await res.json()
+
+  // propsを通じて投稿データをページに渡します
+  return { props: { post } }
+}
+```
+
+`getStaticPaths`の詳細については、[データフェッチングのドキュメント](/docs/pages/building-your-application/data-fetching/get-static-paths)を確認してください。
+
+### いつ静的生成を使用すべきか
+
+ページを1回ビルドしてCDNで提供できるため、サーバーが各リクエストでページをレンダリングするよりもはるかに高速になるので、可能な限り**静的生成**（データありとなし）を使用することをお勧めします。
+
+以下のようなタイプのページに静的生成を使用できます：
+
+- マーケティングページ
+- ブログ投稿とポートフォリオ
+- Eコマース製品リスト
+- ヘルプとドキュメント
+
+自問してみてください：「ユーザーのリクエスト**前に**このページを事前レンダリングできるか？」と。答えがイエスなら、静的生成を選択すべきです。
+
+一方、ユーザーのリクエスト前にページを事前レンダリングできない場合、静的生成は**適していません**。ページに頻繁に更新されるデータが表示され、リクエストごとにページのコンテンツが変更される可能性があります。
+
+このようなケースでは、以下のいずれかを実行できます：
+
+- **クライアントサイドデータフェッチ**を使用した静的生成：ページの一部の事前レンダリングをスキップし、クライアントサイドのJavaScriptを使用してそれらを設定できます。このアプローチの詳細については、[データフェッチングのドキュメント](/docs/pages/building-your-application/data-fetching/client-side)を確認してください。
+- **サーバーサイドレンダリング**を使用：Next.jsは各リクエスト時にページを事前レンダリングします。CDNでキャッシュできないためページが遅くなりますが、事前レンダリングされたページは常に最新の状態になります。このアプローチについては、以下で説明します。

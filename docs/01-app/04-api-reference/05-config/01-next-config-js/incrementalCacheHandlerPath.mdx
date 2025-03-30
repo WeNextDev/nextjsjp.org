@@ -1,0 +1,64 @@
+---
+title: カスタム Next.js キャッシュハンドラー
+nav_title: cacheHandler
+description: Redis、Memcachedなどの外部サービスを使用して、データの保存と再検証に使用される Next.js キャッシュを設定します。
+slug: /docs/app/api-reference/config/next-config-js/incrementalCacheHandlerPath
+---
+
+ページのキャッシュと再検証（増分静的再生成を使用）は、同じ共有キャッシュを使用します。[Vercelにデプロイする](https://vercel.com/docs/incremental-static-regeneration?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)場合、ISRキャッシュは自動的に耐久性のあるストレージに保持されます。
+
+セルフホスティングの場合、ISRキャッシュは Next.js サーバーのファイルシステム（ディスク）に保存されます。これはPages RouterとApp Routerの両方を使用するセルフホスティング時に自動的に機能します。
+
+キャッシュされたページとデータを耐久性のあるストレージに保持したり、Next.js アプリケーションの複数のコンテナやインスタンス間でキャッシュを共有したい場合は、Next.js キャッシュの場所を設定できます。
+
+```js filename="next.config.js"
+module.exports = {
+  cacheHandler: require.resolve('./cache-handler.js'),
+  cacheMaxMemorySize: 0, // デフォルトのインメモリキャッシングを無効化
+}
+```
+
+[カスタムキャッシュハンドラー](/docs/app/building-your-application/deploying#configuring-caching)の例を確認し、実装について詳しく学びましょう。
+
+## APIリファレンス
+
+キャッシュハンドラーは、次のメソッドを実装できます：`get`、`set`、`revalidateTag`。
+
+### `get()`
+
+| パラメーター | 型       | 説明                          |
+| ---------- | -------- | ----------------------------- |
+| `key`      | `string` | キャッシュされた値のキー。     |
+
+キャッシュされた値を返します。見つからない場合は`null`を返します。
+
+### `set()`
+
+| パラメーター | 型                 | 説明                            |
+| ---------- | ------------------ | ------------------------------- |
+| `key`      | `string`           | データを保存するキー。           |
+| `data`     | データまたは`null` | キャッシュするデータ。           |
+| `ctx`      | `{ tags: [] }`     | 提供されたキャッシュタグ。       |
+
+`Promise<void>`を返します。
+
+### `revalidateTag()`
+
+| パラメーター | 型                    | 説明                      |
+| ---------- | --------------------- | ------------------------- |
+| `tag`      | `string` または `string[]` | 再検証するキャッシュタグ。 |
+
+`Promise<void>`を返します。[データの再検証](/docs/app/building-your-application/data-fetching/incremental-static-regeneration)または[`revalidateTag()`](/docs/app/api-reference/functions/revalidateTag)関数について詳しく学びましょう。
+
+**補足:**
+
+- `revalidatePath`はキャッシュタグの便利なレイヤーです。`revalidatePath`を呼び出すと`revalidateTag`関数が呼び出され、パスに基づいてキャッシュキーにタグ付けするかどうかを選択できます。
+
+## バージョン履歴
+
+| バージョン  | 変更点                                                       |
+| ---------- | ------------------------------------------------------------ |
+| `v14.1.0`  | `cacheHandler`に改名され、安定版となりました。               |
+| `v13.4.0`  | `revalidateTag`に対する`incrementalCacheHandlerPath`のサポート。 |
+| `v13.4.0`  | スタンドアロン出力に対する`incrementalCacheHandlerPath`のサポート。 |
+| `v12.2.0`  | 実験的な`incrementalCacheHandlerPath`が追加されました。       |

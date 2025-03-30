@@ -1,0 +1,75 @@
+---
+title: App Router
+description: Next.jsとReactの最新機能（レイアウト、サーバーコンポーネント、Suspenseなど）を使用した新しいアプリケーション構築モデル
+slug: /docs/app
+---
+
+Next.jsのApp Routerは、[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)、[Suspenseを使ったストリーミング](/docs/app/building-your-application/routing/loading-ui-and-streaming#streaming-with-suspense)、[サーバーアクション](/docs/app/building-your-application/data-fetching/server-actions-and-mutations)などのReactの最新機能を使用したアプリケーション構築の新しいモデルを導入します。
+
+[最初のページを作成する](/docs/app/building-your-application/routing/layouts-and-templates)ことで、App Routerを始めましょう。
+
+## よくある質問
+
+### レイアウト内でリクエストオブジェクトにアクセスするにはどうすればよいですか？
+
+意図的に生のリクエストオブジェクトにアクセスすることはできません。ただし、サーバー専用の関数を通じて[`headers`](/docs/app/api-reference/functions/headers)と[`cookies`](/docs/app/api-reference/functions/cookies)にアクセスできます。また、[クッキーを設定](#how-can-i-set-cookies)することもできます。
+
+[レイアウト](/docs/app/building-your-application/routing/layouts-and-templates#layouts)は再レンダリングされません。ページ間のナビゲーション時に不要な計算を避けるため、キャッシュされ再利用できます。レイアウトから生のリクエストへのアクセスを制限することで、パフォーマンスに悪影響を与える可能性のある低速または高コストなユーザーコードをレイアウト内で実行することを防ぐことができます。
+
+このデザインにより、異なるページ間でレイアウトの一貫性と予測可能な動作を強制し、開発とデバッグを簡素化します。
+
+構築するUIパターンによっては、[並列ルート](/docs/app/building-your-application/routing/parallel-routes)により、同じレイアウト内で複数のページをレンダリングでき、ページはルートセグメントとURLの検索パラメータにもアクセスできます。
+
+### ページでURLにアクセスするにはどうすればよいですか？
+
+デフォルトでは、ページはサーバーコンポーネントです。特定のページの[`params`](/docs/app/api-reference/file-conventions/page#params-optional)プロップを通じてルートセグメントに、[`searchParams`](/docs/app/api-reference/file-conventions/page#searchparams-optional)プロップを通じてURLの検索パラメータにアクセスできます。
+
+クライアントコンポーネントを使用している場合は、より複雑なルートに対して[`usePathname`](/docs/app/api-reference/functions/use-pathname)、[`useSelectedLayoutSegment`](/docs/app/api-reference/functions/use-selected-layout-segment)、[`useSelectedLayoutSegments`](/docs/app/api-reference/functions/use-selected-layout-segments)を使用できます。
+
+さらに、構築するUIパターンによっては、[並列ルート](/docs/app/building-your-application/routing/parallel-routes)により、同じレイアウト内で複数のページをレンダリングでき、ページはルートセグメントとURLの検索パラメータにもアクセスできます。
+
+### サーバーコンポーネントからリダイレクトするにはどうすればよいですか？
+
+[`redirect`](/docs/app/api-reference/functions/redirect)を使用して、相対または絶対URLにリダイレクトできます。[`redirect`](/docs/app/api-reference/functions/redirect)は一時的な（307）リダイレクト、[`permanentRedirect`](/docs/app/api-reference/functions/permanentRedirect)は永久的な（308）リダイレクトです。これらの関数をUIストリーミング中に使用すると、クライアント側でリダイレクトを実行するメタタグを挿入します。
+
+### App Routerで認証を処理するにはどうすればよいですか？
+
+App Routerをサポートする一般的な認証ソリューションは以下の通りです：
+
+- [NextAuth.js](https://authjs.dev/getting-started/installation?framework=next.js)
+- [Clerk](https://clerk.com/docs/quickstarts/nextjs)
+- [Stack Auth](https://docs.stack-auth.com/getting-started/setup)
+- [Auth0](https://github.com/auth0/nextjs-auth0#app-router)
+- [Stytch](https://stytch.com/docs/sdks/resources/nextjs)
+- [Kinde](https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/)
+- [WorkOS](https://workos.com/docs/user-management/nextjs)
+- またはセッションやJWTを手動で処理
+
+### クッキーを設定するにはどうすればよいですか？
+
+[サーバーアクション](/docs/app/building-your-application/data-fetching/server-actions-and-mutations#cookies)または[ルートハンドラ](/docs/app/building-your-application/routing/route-handlers)で[`cookies`](/docs/app/api-reference/functions/cookies)関数を使用してクッキーを設定できます。
+
+HTTPではストリーミング開始後にクッキーを設定できないため、ページやレイアウトから直接クッキーを設定することはできません。[ミドルウェア](/docs/app/building-your-application/routing/middleware#using-cookies)からもクッキーを設定できます。
+
+### マルチテナントアプリを構築するにはどうすればよいですか？
+
+複数のテナントに対応する単一のNext.jsアプリケーションを構築したい場合は、推奨するアーキテクチャを示した[サンプル](https://vercel.com/templates/next.js/platforms-starter-kit)を用意しています。
+
+### App Routerのキャッシュを無効化するにはどうすればよいですか？
+
+Next.jsには複数のキャッシュレイヤーがあり、異なるキャッシュ部分を無効化する方法も複数あります。[キャッシュについて詳しく学ぶ](/docs/app/building-your-application/caching)。
+
+### App Routerを使用した包括的でオープンソースのアプリケーションはありますか？
+
+はい。[Next.js Commerce](https://vercel.com/templates/next.js/nextjs-commerce)や[Platforms Starter Kit](https://vercel.com/templates/next.js/platforms-starter-kit)をApp Routerを使用したより大規模な例として参照できます。
+
+## さらに詳しく学ぶ
+
+- [ルーティングの基本](/docs/app/building-your-application/routing)
+- [データのフェッチとキャッシュ](/docs/app/building-your-application/data-fetching/fetching)
+- [増分静的再生成](/docs/app/building-your-application/data-fetching/incremental-static-regeneration)
+- [フォームと変更](/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+- [キャッシング](/docs/app/building-your-application/caching)
+- [レンダリングの基本](/docs/app/building-your-application/rendering)
+- [サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)
+- [クライアントコンポーネント](/docs/app/building-your-application/rendering/client-components)

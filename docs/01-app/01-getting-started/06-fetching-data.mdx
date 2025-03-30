@@ -1,0 +1,355 @@
+---
+title: データのフェッチ方法とストリーミング
+nav_title: データのフェッチとストリーミング
+slug: /docs/app/getting-started/fetching-data
+description: アプリケーションでデータのフェッチとコンテンツのストリーミングを始めましょう。
+related:
+  title: API リファレンス
+  description: このページで紹介した機能について詳しく知るには、API リファレンスをご覧ください。
+  links:
+    - app/api-reference/functions/fetch
+    - app/api-reference/file-conventions/loading
+---
+
+このページでは、[サーバーコンポーネント](#server-components)と[クライアントコンポーネント](#client-components)でのデータのフェッチ方法について説明します。また、データに依存するコンテンツの[ストリーミング](#streaming)方法についても説明します。
+
+## データのフェッチ
+
+### サーバーコンポーネント
+
+サーバーコンポーネントでデータをフェッチするには、以下の方法があります：
+
+1. [`fetch` API](#with-the-fetch-api)を使用する
+2. [ORMまたはデータベース](#with-an-orm-or-database)を使用する
+
+#### `fetch` APIを使用する場合
+
+`fetch` APIでデータをフェッチするには、コンポーネントを非同期関数に変換し、`fetch`呼び出しを待機します。例：
+
+```tsx filename="app/blog/page.tsx" switcher
+export default async function Page() {
+  const data = await fetch('https://api.vercel.app/blog')
+  const posts = await data.json()
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+```jsx filename="app/blog/page.js" switcher
+export default async function Page() {
+  const data = await fetch('https://api.vercel.app/blog')
+  const posts = await data.json()
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+#### ORMまたはデータベースを使用する場合
+
+ORMまたはデータベースを使用してデータをフェッチするには、コンポーネントを非同期関数に変換し、呼び出しを待機します：
+
+```tsx filename="app/blog/page.tsx" switcher
+import { db, posts } from '@/lib/db'
+
+export default async function Page() {
+  const allPosts = await db.select().from(posts)
+  return (
+    <ul>
+      {allPosts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+```jsx filename="app/blog/page.js" switcher
+import { db, posts } from '@/lib/db'
+
+export default async function Page() {
+  const allPosts = await db.select().from(posts)
+  return (
+    <ul>
+      {allPosts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+### クライアントコンポーネント
+
+クライアントコンポーネントでデータをフェッチするには、次の2つの方法があります：
+
+1. Reactの[`use`フック](https://react.dev/reference/react/use)を使用する
+2. [SWR](https://swr.vercel.app/)や[React Query](https://tanstack.com/query/latest)などのコミュニティライブラリを使用する
+
+#### `use`フックを使用する場合
+
+Reactの[`use`フック](https://react.dev/reference/react/use)を使用して、サーバーからクライアントへデータを[ストリーミング](#streaming)できます。まず、サーバーコンポーネントでデータをフェッチし、そのプロミスをクライアントコンポーネントにプロップとして渡します：
+
+```tsx filename="app/blog/page.tsx" switcher
+import Posts from '@/app/ui/posts
+import { Suspense } from 'react'
+
+export default function Page() {
+  // データフェッチ関数をawaitしない
+  const posts = getPosts()
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Posts posts={posts} />
+    </Suspense>
+  )
+}
+```
+
+```jsx filename="app/blog/page.js" switcher
+import Posts from '@/app/ui/posts
+import { Suspense } from 'react'
+
+export default function Page() {
+  // データフェッチ関数をawaitしない
+  const posts = getPosts()
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Posts posts={posts} />
+    </Suspense>
+  )
+}
+```
+
+次に、クライアントコンポーネントで`use`フックを使用してプロミスを読み取ります：
+
+```tsx filename="app/ui/posts.tsx" switcher
+'use client'
+import { use } from 'react'
+
+export default function Posts({
+  posts,
+}: {
+  posts: Promise<{ id: string; title: string }[]>
+}) {
+  const allPosts = use(posts)
+
+  return (
+    <ul>
+      {allPosts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+```jsx filename="app/ui/posts.js" switcher
+'use client'
+import { use } from 'react'
+
+export default function Posts({ posts }) {
+  const posts = use(posts)
+
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+上記の例では、`<Posts />`コンポーネントを[`<Suspense>`バウンダリ](https://react.dev/reference/react/Suspense)でラップする必要があります。これにより、プロミスが解決されている間はフォールバックが表示されます。[ストリーミング](#streaming)について詳しく学びましょう。
+
+#### コミュニティライブラリを使用する場合
+
+[SWR](https://swr.vercel.app/)や[React Query](https://tanstack.com/query/latest)などのコミュニティライブラリを使用して、クライアントコンポーネントでデータをフェッチできます。これらのライブラリには、キャッシュ、ストリーミングなどの機能に関する独自のセマンティクスがあります。例えば、SWRを使用する場合：
+
+```tsx filename="app/blog/page.tsx" switcher
+'use client'
+import useSWR from 'swr'
+
+const fetcher = (url) => fetch(url).then((r) => r.json())
+
+export default function BlogPage() {
+  const { data, error, isLoading } = useSWR(
+    'https://api.vercel.app/blog',
+    fetcher
+  )
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+
+  return (
+    <ul>
+      {data.map((post: { id: string; title: string }) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+```jsx filename="app/blog/page.js" switcher
+'use client'
+import useSWR from 'swr'
+
+const fetcher = (url) => fetch(url).then((r) => r.json())
+
+export default function BlogPage() {
+  const { data, error, isLoading } = useSWR(
+    'https://api.vercel.app/blog',
+    fetcher
+  )
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+
+  return (
+    <ul>
+      {data.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+## ストリーミング
+
+> **注意:** 以下の内容は、アプリケーションで[`dynamicIO`設定オプション](/docs/app/api-reference/config/next-config-js/dynamicIO)が有効になっていることを前提としています。このフラグはNext.js 15 canaryで導入されました。
+
+サーバーコンポーネントで`async/await`を使用すると、Next.jsは**動的レンダリング**を選択します。これはデータが各ユーザーリクエストに対してサーバー上でフェッチされ、レンダリングされることを意味します。データリクエストが遅い場合、ルート全体がレンダリングをブロックされます。
+
+初期ロード時間とユーザーエクスペリエンスを向上させるために、ストリーミングを使用してページのHTMLを小さなチャンクに分割し、それらのチャンクをサーバーからクライアントに段階的に送信できます。
+
+<Image
+  alt="ストリーミングによるサーバーレンダリングの仕組み"
+  srcLight="/light/server-rendering-with-streaming.png"
+  srcDark="/dark/server-rendering-with-streaming.png"
+  width="1600"
+  height="785"
+/>
+
+アプリケーションでストリーミングを実装するには、2つの方法があります：
+
+1. [`loading.js`ファイル](#with-loadingjs)を使用する
+2. Reactの[`<Suspense>`コンポーネント](#with-suspense)を使用する
+
+### `loading.js`を使用する場合
+
+データがフェッチされている間に**ページ全体**をストリーミングするには、ページと同じフォルダに`loading.js`ファイルを作成できます。例えば、`app/blog/page.js`をストリーミングするには、`app/blog`フォルダ内にファイルを追加します。
+
+<Image
+  alt="loading.jsファイルを含むブログフォルダ構造"
+  srcLight="/light/loading-file.png"
+  srcDark="/dark/loading-file.png"
+  width="1600"
+  height="525"
+/>
+
+```tsx filename="app/blog/loading.tsx" switcher
+export default function Loading() {
+  // ここでローディングUIを定義します
+  return <div>Loading...</div>
+}
+```
+
+```jsx filename="app/blog/loading.js" switcher
+export default function Loading() {
+  // ここでローディングUIを定義します
+  return <div>Loading...</div>
+}
+```
+
+ナビゲーション時、ユーザーはページがレンダリングされている間、レイアウトと[ローディング状態](#creating-meaningful-loading-states)をすぐに見ることができます。レンダリングが完了すると、新しいコンテンツが自動的に置き換えられます。
+
+<Image
+  alt="ローディングUI"
+  srcLight="/light/loading-ui.png"
+  srcDark="/dark/loading-ui.png"
+  width="1600"
+  height="691"
+/>
+
+裏側では、`loading.js`は`layout.js`の中にネストされ、`page.js`ファイルとその下の子要素を自動的に`<Suspense>`バウンダリでラップします。
+
+<Image
+  alt="loading.jsの概要"
+  srcLight="/light/loading-overview.png"
+  srcDark="/dark/loading-overview.png"
+  width="1600"
+  height="768"
+/>
+
+このアプローチはルートセグメント（レイアウトとページ）に適していますが、より細かいストリーミングには`<Suspense>`を使用できます。
+
+### `<Suspense>`を使用する場合
+
+`<Suspense>`を使用すると、ページのどの部分をストリーミングするかをより細かく制御できます。例えば、`<Suspense>`バウンダリの外側にあるページコンテンツをすぐに表示し、バウンダリ内のブログ投稿リストをストリーミングできます。
+
+```tsx filename="app/blog/page.tsx" switcher
+import { Suspense } from 'react'
+import BlogList from '@/components/BlogList'
+import BlogListSkeleton from '@/components/BlogListSkeleton'
+
+export default function BlogPage() {
+  return (
+    <div>
+      {/* このコンテンツはすぐにクライアントに送信されます */}
+      <header>
+        <h1>ブログへようこそ</h1>
+        <p>以下で最新の投稿をお読みください。</p>
+      </header>
+      <main>
+        {/* <Suspense>バウンダリでラップされたコンテンツはストリーミングされます */}
+        <Suspense fallback={<BlogListSkeleton />}>
+          <BlogList />
+        </Suspense>
+      </main>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/blog/page.js" switcher
+import { Suspense } from 'react'
+import BlogList from '@/components/BlogList'
+import BlogListSkeleton from '@/components/BlogListSkeleton'
+
+export default function BlogPage() {
+  return (
+    <div>
+      {/* このコンテンツはすぐにクライアントに送信されます */}
+      <header>
+        <h1>ブログへようこそ</h1>
+        <p>以下で最新の投稿をお読みください。</p>
+      </header>
+      <main>
+        {/* <Suspense>バウンダリでラップされたコンテンツはストリーミングされます */}
+        <Suspense fallback={<BlogListSkeleton />}>
+          <BlogList />
+        </Suspense>
+      </main>
+    </div>
+  )
+}
+```
+
+### 意味のあるローディング状態を作成する
+
+即時ローディング状態とは、ナビゲーション後すぐにユーザーに表示されるフォールバックUIです。最高のユーザーエクスペリエンスを提供するために、アプリが応答していることをユーザーが理解できるような意味のあるローディング状態をデザインすることをお勧めします。例えば、スケルトンやスピナー、または将来の画面の小さいながらも意味のある部分（カバー写真、タイトルなど）を使用できます。
+
+開発中は、[React Devtools](https://react.dev/learn/react-developer-tools)を使用してコンポーネントのローディング状態をプレビューおよび検査できます。

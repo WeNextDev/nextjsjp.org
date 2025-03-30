@@ -1,0 +1,217 @@
+---
+title: 国際化
+description: 国際化されたルーティングとローカライズされたコンテンツで複数言語のサポートを追加します。
+slug: /docs/app/building-your-application/routing/internationalization
+---
+
+Next.jsでは、複数の言語をサポートするためにルーティングとコンテンツのレンダリングを設定できます。サイトを異なるロケールに適応させるには、翻訳されたコンテンツ（ローカリゼーション）と国際化されたルートが含まれます。
+
+## 用語
+
+- **ロケール:** 言語と書式設定の優先設定を示す識別子。通常、ユーザーの希望する言語と、場合によっては地理的地域が含まれます。
+  - `en-US`: アメリカ合衆国で話される英語
+  - `nl-NL`: オランダで話されるオランダ語
+  - `nl`: オランダ語、特定の地域なし
+
+## ルーティングの概要
+
+ブラウザのユーザー言語設定を使用して、使用するロケールを選択することをお勧めします。希望する言語を変更すると、アプリケーションへの着信`Accept-Language`ヘッダーが変更されます。
+
+例えば、以下のライブラリを使用すると、着信`Request`を調べて、`Headers`、サポートする予定のロケール、デフォルトのロケールに基づいて、どのロケールを選択するかを決定できます。
+
+```js filename="middleware.js"
+import { match } from '@formatjs/intl-localematcher'
+import Negotiator from 'negotiator'
+
+let headers = { 'accept-language': 'en-US,en;q=0.5' }
+let languages = new Negotiator({ headers }).languages()
+let locales = ['en-US', 'nl-NL', 'nl']
+let defaultLocale = 'en-US'
+
+match(languages, locales, defaultLocale) // -> 'en-US'
+```
+
+ルーティングは、サブパス（`/fr/products`）またはドメイン（`my-site.fr/products`）によって国際化できます。この情報があれば、[Middleware](/docs/app/building-your-application/routing/middleware)内でロケールに基づいてユーザーをリダイレクトできるようになります。
+
+```js filename="middleware.js"
+import { NextResponse } from "next/server";
+
+let locales = ['en-US', 'nl-NL', 'nl']
+
+// 上記と同様の方法またはライブラリを使用して、優先ロケールを取得する
+function getLocale(request) { ... }
+
+export function middleware(request) {
+  // パス名にサポートされているロケールがあるかどうかを確認する
+  const { pathname } = request.nextUrl
+  const pathnameHasLocale = locales.some(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  )
+
+  if (pathnameHasLocale) return
+
+  // ロケールがない場合はリダイレクトする
+  const locale = getLocale(request)
+  request.nextUrl.pathname = `/${locale}${pathname}`
+  // 例：着信リクエストが /products
+  // 新しいURLは /en-US/products となる
+  return NextResponse.redirect(request.nextUrl)
+}
+
+export const config = {
+  matcher: [
+    // 内部パス（_next）をすべてスキップ
+    '/((?!_next).*)',
+    // オプション：ルート（/）URLでのみ実行
+    // '/'
+  ],
+}
+```
+
+最後に、`app/`内のすべての特殊ファイルが`app/[lang]`の下にネストされていることを確認してください。これにより、Next.jsルーターがルート内の異なるロケールを動的に処理し、`lang`パラメータをすべてのレイアウトとページに転送できるようになります。例えば：
+
+```tsx filename="app/[lang]/page.tsx" switcher
+// 現在のロケールにアクセスできるようになりました
+// 例：/en-US/products -> `lang`は「en-US」
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ lang: string }>
+}) {
+  const lang = (await params).lang;
+  return ...
+}
+```
+
+```jsx filename="app/[lang]/page.js" switcher
+// 現在のロケールにアクセスできるようになりました
+// 例：/en-US/products -> `lang`は「en-US」
+export default async function Page({ params }) {
+  const lang = (await params).lang;
+  return ...
+}
+```
+
+ルートレイアウトも新しいフォルダ（例：`app/[lang]/layout.js`）内にネストすることができます。
+
+## ローカリゼーション
+
+ユーザーの希望するロケールに基づいて表示コンテンツを変更する、すなわちローカリゼーションは、Next.js特有のものではありません。以下で説明するパターンは、どのWebアプリケーションでも同様に機能します。
+
+アプリケーション内で英語とオランダ語の両方のコンテンツをサポートしたいとします。私たちは、あるキーからローカライズされた文字列へのマッピングを提供するオブジェクトである、2つの異なる「辞書」を管理することができます。例えば：
+
+```json filename="dictionaries/en.json"
+{
+  "products": {
+    "cart": "Add to Cart"
+  }
+}
+```
+
+```json filename="dictionaries/nl.json"
+{
+  "products": {
+    "cart": "Toevoegen aan Winkelwagen"
+  }
+}
+```
+
+そして、リクエストされたロケールの翻訳をロードする`getDictionary`関数を作成できます：
+
+```ts filename="app/[lang]/dictionaries.ts" switcher
+import 'server-only'
+
+const dictionaries = {
+  en: () => import('./dictionaries/en.json').then((module) => module.default),
+  nl: () => import('./dictionaries/nl.json').then((module) => module.default),
+}
+
+export const getDictionary = async (locale: 'en' | 'nl') =>
+  dictionaries[locale]()
+```
+
+```js filename="app/[lang]/dictionaries.js" switcher
+import 'server-only'
+
+const dictionaries = {
+  en: () => import('./dictionaries/en.json').then((module) => module.default),
+  nl: () => import('./dictionaries/nl.json').then((module) => module.default),
+}
+
+export const getDictionary = async (locale) => dictionaries[locale]()
+```
+
+現在選択されている言語を使用して、レイアウトまたはページ内で辞書を取得できます。
+
+```tsx filename="app/[lang]/page.tsx" switcher
+import { getDictionary } from './dictionaries'
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ lang: 'en' | 'nl' }>
+}) {
+  const lang = (await params).lang
+  const dict = await getDictionary(lang) // en
+  return <button>{dict.products.cart}</button> // Add to Cart
+}
+```
+
+```jsx filename="app/[lang]/page.js" switcher
+import { getDictionary } from './dictionaries'
+
+export default async function Page({ params }) {
+  const lang = (await params).lang
+  const dict = await getDictionary(lang) // en
+  return <button>{dict.products.cart}</button> // Add to Cart
+}
+```
+
+`app/`ディレクトリ内のすべてのレイアウトとページは、デフォルトで[Server Components](/docs/app/building-your-application/rendering/server-components)であるため、翻訳ファイルのサイズがクライアント側のJavaScriptバンドルサイズに影響することを心配する必要はありません。このコードは**サーバー上でのみ実行され**、結果のHTMLのみがブラウザに送信されます。
+
+## 静的生成
+
+特定のロケールセットに対して静的ルートを生成するには、任意のページまたはレイアウトで`generateStaticParams`を使用できます。これはグローバルに設定できます。例えば、ルートレイアウトで：
+
+```tsx filename="app/[lang]/layout.tsx" switcher
+export async function generateStaticParams() {
+  return [{ lang: 'en-US' }, { lang: 'de' }]
+}
+
+export default async function RootLayout({
+  children,
+  params,
+}: Readonly<{
+  children: React.ReactNode
+  params: Promise<{ lang: 'en-US' | 'de' }>
+}>) {
+  return (
+    <html lang={(await params).lang}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/[lang]/layout.js" switcher
+export async function generateStaticParams() {
+  return [{ lang: 'en-US' }, { lang: 'de' }]
+}
+
+export default async function RootLayout({ children, params }) {
+  return (
+    <html lang={(await params).lang}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+## リソース
+
+- [最小限のi18nルーティングと翻訳](https://github.com/vercel/next.js/tree/canary/examples/i18n-routing)
+- [`next-intl`](https://next-intl.dev)
+- [`next-international`](https://github.com/QuiiBz/next-international)
+- [`next-i18n-router`](https://github.com/i18nexus/next-i18n-router)
+- [`paraglide-next`](https://inlang.com/m/osslbuzt/paraglide-next-i18n)
+- [`lingui`](https://lingui.dev)

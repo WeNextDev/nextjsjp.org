@@ -1,0 +1,51 @@
+---
+title: forbidden.js
+description: forbidden.js特殊ファイルのAPIリファレンス。
+related:
+  links:
+    - app/api-reference/functions/forbidden
+version: experimental
+slug: /docs/app/api-reference/file-conventions/forbidden
+---
+
+**forbidden**ファイルは、認証中に[`forbidden`](/docs/app/api-reference/functions/forbidden)関数が呼び出されたときにUIをレンダリングするために使用されます。UIのカスタマイズを可能にするとともに、Next.jsは`403`ステータスコードを返します。
+
+```tsx filename="app/forbidden.tsx" switcher
+import Link from 'next/link'
+
+export default function Forbidden() {
+  return (
+    <div>
+      <h2>Forbidden</h2>
+      <p>You are not authorized to access this resource.</p>
+      <Link href="/">Return Home</Link>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/forbidden.jsx" switcher
+import Link from 'next/link'
+
+export default function Forbidden() {
+  return (
+    <div>
+      <h2>Forbidden</h2>
+      <p>You are not authorized to access this resource.</p>
+      <Link href="/">Return Home</Link>
+    </div>
+  )
+}
+```
+
+## リファレンス
+
+### Props
+
+`forbidden.js`コンポーネントはpropsを受け付けません。
+
+## バージョン履歴
+
+| バージョン | 変更内容                         |
+| --------- | ------------------------------- |
+| `v15.1.0` | 導入時期：`forbidden.js`         |
