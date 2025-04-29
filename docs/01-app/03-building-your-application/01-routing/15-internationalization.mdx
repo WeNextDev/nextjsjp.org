@@ -78,7 +78,7 @@ export default async function Page({
 }: {
   params: Promise<{ lang: string }>
 }) {
-  const lang = (await params).lang;
+  const { lang } = await params
   return ...
 }
 ```
@@ -87,7 +87,7 @@ export default async function Page({
 // 現在のロケールにアクセスできるようになりました
 // 例：/en-US/products -> `lang`は「en-US」
 export default async function Page({ params }) {
-  const lang = (await params).lang;
+  const { lang } = await params
   return ...
 }
 ```
@@ -151,7 +151,7 @@ export default async function Page({
 }: {
   params: Promise<{ lang: 'en' | 'nl' }>
 }) {
-  const lang = (await params).lang
+  const { lang } = await params
   const dict = await getDictionary(lang) // en
   return <button>{dict.products.cart}</button> // Add to Cart
 }
@@ -161,7 +161,7 @@ export default async function Page({
 import { getDictionary } from './dictionaries'
 
 export default async function Page({ params }) {
-  const lang = (await params).lang
+  const { lang } = await params
   const dict = await getDictionary(lang) // en
   return <button>{dict.products.cart}</button> // Add to Cart
 }

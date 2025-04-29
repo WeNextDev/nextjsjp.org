@@ -1,0 +1,72 @@
+---
+title: mdx-components.js
+description: mdx-components.jsファイルのAPIリファレンス。
+related:
+  title: MDX Componentsの詳細を学ぶ
+  links:
+    - app/guides/mdx
+slug: /docs/app/api-reference/file-conventions/mdx-components
+---
+
+`mdx-components.js|tsx` ファイルは、[App Routerで`@next/mdx`を使用する](/docs/app/guides/mdx)ために**必須**であり、これがなければ機能しません。さらに、[カスタムスタイルのカスタマイズ](/docs/app/guides/mdx#using-custom-styles-and-components)にも使用できます。
+
+プロジェクトのルートに `mdx-components.tsx`（または `.js`）ファイルを配置して、MDX Componentsを定義します。例えば、`pages`や`app`と同じレベル、または適用可能な場合は`src`内に配置します。
+
+```tsx filename="mdx-components.tsx" switcher
+import type { MDXComponents } from 'mdx/types'
+
+export function useMDXComponents(components: MDXComponents): MDXComponents {
+  return {
+    ...components,
+  }
+}
+```
+
+```js filename="mdx-components.js" switcher
+export function useMDXComponents(components) {
+  return {
+    ...components,
+  }
+}
+```
+
+## エクスポート
+
+### `useMDXComponents`関数
+
+ファイルは、デフォルトエクスポートまたは`useMDXComponents`という名前でエクスポートされた単一の関数を持つ必要があります。
+
+```tsx filename="mdx-components.tsx" switcher
+import type { MDXComponents } from 'mdx/types'
+
+export function useMDXComponents(components: MDXComponents): MDXComponents {
+  return {
+    ...components,
+  }
+}
+```
+
+```js filename="mdx-components.js" switcher
+export function useMDXComponents(components) {
+  return {
+    ...components,
+  }
+}
+```
+
+## パラメータ
+
+### `components`
+
+MDXコンポーネントを定義する際、エクスポート関数は単一のパラメータ`components`を受け取ります。このパラメータは`MDXComponents`のインスタンスです。
+
+- キーは上書きするHTML要素の名前です。
+- 値は代わりにレンダリングするコンポーネントです。
+
+> **補足**: オーバーライドされていない他のすべてのコンポーネント（つまり、`...components`）を必ず渡してください。
+
+## バージョン履歴
+
+| バージョン   | 変更内容              |
+| --------- | -------------------- |
+| `v13.1.2` | MDXコンポーネント追加 |

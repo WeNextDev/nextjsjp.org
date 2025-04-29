@@ -3,7 +3,7 @@ title: リンクとナビゲーション
 description: Next.jsでのナビゲーションの仕組みと、Linkコンポーネントおよび`useRouter`フックの使用方法について学びます。
 related:
   links:
-    - app/building-your-application/caching
+    - app/deep-dive/caching
     - app/api-reference/config/typescript
 slug: /docs/app/building-your-application/routing/linking-and-navigating
 ---
@@ -99,7 +99,7 @@ export default async function Profile({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const id = (await params).id
+  const { id } = await params
   if (!id) {
     redirect('/login')
   }
@@ -123,7 +123,7 @@ async function fetchTeam(id) {
 }
 
 export default async function Profile({ params }) {
-  const id = (await params).id
+  const { id } = await params
   if (!id) {
     redirect('/login')
   }
@@ -284,11 +284,11 @@ Next.jsでは、ルートが2つの方法でプリフェッチされます：
 
 ### 3. キャッシング
 
-Next.jsには[ルーターキャッシュ](/docs/app/building-your-application/caching#client-side-router-cache)と呼ばれる**インメモリのクライアントサイドキャッシュ**があります。ユーザーがアプリケーション内を移動すると、[プリフェッチ](#2-prefetching)されたルートセグメントと訪問済みルートのReact Server Componentペイロードがキャッシュに保存されます。
+Next.jsには[ルーターキャッシュ](/docs/app/deep-dive/caching#client-side-router-cache)と呼ばれる**インメモリのクライアントサイドキャッシュ**があります。ユーザーがアプリケーション内を移動すると、[プリフェッチ](#2-prefetching)されたルートセグメントと訪問済みルートのReact Server Componentペイロードがキャッシュに保存されます。
 
 これにより、ナビゲーション時に新たにサーバーへリクエストを送信する代わりに、可能な限りキャッシュが再利用されます。リクエスト数とデータ転送量を削減することでパフォーマンスが向上します。
 
-[ルーターキャッシュ](/docs/app/building-your-application/caching#client-side-router-cache)の仕組みとその設定方法について詳しく学んでください。
+[ルーターキャッシュ](/docs/app/deep-dive/caching#client-side-router-cache)の仕組みとその設定方法について詳しく学んでください。
 
 ### 4. 部分レンダリング
 
@@ -312,7 +312,7 @@ Next.jsには[ルーターキャッシュ](/docs/app/building-your-application/c
 
 ### 6. 戻るおよび進むナビゲーション
 
-デフォルトでは、Next.jsは戻るおよび進むナビゲーションでスクロール位置を維持し、[ルーターキャッシュ](/docs/app/building-your-application/caching#client-side-router-cache)内のルートセグメントを再利用します。
+デフォルトでは、Next.jsは戻るおよび進むナビゲーションでスクロール位置を維持し、[ルーターキャッシュ](/docs/app/deep-dive/caching#client-side-router-cache)内のルートセグメントを再利用します。
 
 ### 7. `pages/`と`app/`間のルーティング
 

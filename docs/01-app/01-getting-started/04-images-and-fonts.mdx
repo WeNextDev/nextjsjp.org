@@ -4,37 +4,25 @@ nav_title: 画像とフォント
 description: 画像とフォントを最適化する方法を学びましょう。
 related:
   title: API リファレンス
-  description: このページで説明された機能について詳しく知るには、API リファレンスをご覧ください。
+  description: このページで紹介されている機能についてさらに詳しく知るには、API リファレンスをお読みください。
   links:
     - app/api-reference/components/font
     - app/api-reference/components/image
 slug: /docs/app/getting-started/images-and-fonts
 ---
 
-Next.jsには、パフォーマンスとユーザー体験を向上させるための自動的な画像とフォントの最適化機能が組み込まれています。このページでは、これらの機能の使い方をご案内します。
-
-## 静的アセットの取り扱い
-
-画像やフォントなどの静的ファイルは、ルートディレクトリにある`public`というフォルダに保存できます。`public`内のファイルは、ベースURL（`/`）から始まるパスでコード内から参照できます。
-
-<Image
-  alt="appとpublicフォルダを示すフォルダ構造"
-  srcLight="/docs/light/public-folder.png"
-  srcDark="/docs/dark/public-folder.png"
-  width="1600"
-  height="282"
-/>
+Next.jsには画像とフォントを自動的に最適化する機能が組み込まれています。このページでは、それらの使い方を説明します。
 
 ## 画像の最適化
 
 Next.jsの[`<Image>`](/docs/app/building-your-application/optimizing/images)コンポーネントはHTML `<img>`要素を拡張し、以下の機能を提供します：
 
-- **サイズ最適化：** 各デバイスに対して自動的に適切なサイズの画像を提供し、WebPなどの最新の画像フォーマットを使用します。
-- **視覚的安定性：** 画像の読み込み時に[レイアウトシフト](https://web.dev/articles/cls)が発生するのを自動的に防ぎます。
-- **高速なページ読み込み：** ネイティブブラウザの遅延読み込みを使用して、ビューポートに入ったときにのみ画像を読み込み、オプションでぼかしプレースホルダを表示します。
-- **アセットの柔軟性：** リモートサーバーに保存されている画像も含め、オンデマンドで画像をリサイズします。
+- **サイズの最適化：** 各デバイスに対して適切なサイズの画像を自動的に提供し、WebPなどの最新の画像フォーマットを使用します。
+- **視覚的な安定性：** 画像読み込み時の[レイアウトシフト](https://web.dev/articles/cls)を自動的に防止します。
+- **高速なページ読み込み：** ネイティブブラウザの遅延読み込みを使用して、ビューポートに入ったときにのみ画像を読み込み、オプションでぼかしプレースホルダを表示できます。
+- **アセットの柔軟性：** リモートサーバーに保存されている画像でも、オンデマンドでリサイズできます。
 
-`<Image>`を使い始めるには、`next/image`からインポートし、コンポーネント内でレンダリングします。
+`<Image>`を使い始めるには、`next/image`からインポートしてコンポーネント内でレンダリングします。
 
 ```tsx filename="app/page.tsx" switcher
 import Image from 'next/image'
@@ -56,7 +44,15 @@ export default function Page() {
 
 ### ローカル画像
 
-ローカル画像を使用するには、[`public`フォルダ](#静的アセットの取り扱い)から`.jpg`、`.png`、または`.webp`画像ファイルを`import`します。
+画像やフォントなどの静的ファイルは、ルートディレクトリの`public`というフォルダに保存できます。`public`内のファイルはベースURL（`/`）から始まるパスでコードから参照できます。
+
+<Image
+  alt="appとpublicフォルダを示すフォルダ構造"
+  srcLight="/docs/light/public-folder.png"
+  srcDark="/docs/dark/public-folder.png"
+  width="1600"
+  height="282"
+/>
 
 ```tsx filename="app/page.tsx" switcher
 import Image from 'next/image'
@@ -66,11 +62,11 @@ export default function Page() {
   return (
     <Image
       src={profilePic}
-      alt="作者の写真"
-      // width={500} 自動的に提供されます
-      // height={500} 自動的に提供されます
-      // blurDataURL="data:..." 自動的に提供されます
-      // placeholder="blur" // オプションで読み込み中にぼかし効果
+      alt="著者の写真"
+      // width={500} 自動的に提供される
+      // height={500} 自動的に提供される
+      // blurDataURL="data:..." 自動的に提供される
+      // placeholder="blur" // 読み込み中のぼかし表示（オプション）
     />
   )
 }
@@ -84,17 +80,17 @@ export default function Page() {
   return (
     <Image
       src={profilePic}
-      alt="作者の写真"
-      // width={500} 自動的に提供されます
-      // height={500} 自動的に提供されます
-      // blurDataURL="data:..." 自動的に提供されます
-      // placeholder="blur" // オプションで読み込み中にぼかし効果
+      alt="著者の写真"
+      // width={500} 自動的に提供される
+      // height{500} 自動的に提供される
+      // blurDataURL="data:..." 自動的に提供される
+      // placeholder="blur" // 読み込み中のぼかし表示（オプション）
     />
   )
 }
 ```
 
-Next.jsはインポートされたファイルに基づいて、画像の固有の[`width`](/docs/app/api-reference/components/image#width)と[`height`](/docs/app/api-reference/components/image#height)を自動的に決定します。これらの値は画像の比率を決定し、画像の読み込み中に[累積レイアウトシフト](https://web.dev/articles/cls)が発生するのを防ぐために使用されます。
+Next.jsはインポートされたファイルに基づいて、画像の本来の[`width`](/docs/app/api-reference/components/image#width)と[`height`](/docs/app/api-reference/components/image#height)を自動的に判断します。これらの値は画像のアスペクト比を決定し、画像の読み込み中に[累積レイアウトシフト](https://web.dev/articles/cls)を防ぐために使用されます。
 
 ### リモート画像
 
@@ -107,7 +103,7 @@ export default function Page() {
   return (
     <Image
       src="https://s3.amazonaws.com/my-bucket/profile.png"
-      alt="作者の写真"
+      alt="著者の写真"
       width={500}
       height={500}
     />
@@ -122,7 +118,7 @@ export default function Page() {
   return (
     <Image
       src="https://s3.amazonaws.com/my-bucket/profile.png"
-      alt="作者の写真"
+      alt="著者の写真"
       width={500}
       height={500}
     />
@@ -130,9 +126,9 @@ export default function Page() {
 }
 ```
 
-Next.jsはビルドプロセス中にリモートファイルにアクセスできないため、[`width`](/docs/app/api-reference/components/image#width)、[`height`](/docs/app/api-reference/components/image#height)、およびオプションの[`blurDataURL`](/docs/app/api-reference/components/image#blurdataurl)プロパティを手動で指定する必要があります。`width`と`height`属性は画像の正確なアスペクト比を推測し、画像の読み込みによるレイアウトシフトを防ぐために使用されます。
+Next.jsはビルド時にリモートファイルにアクセスできないため、[`width`](/docs/app/api-reference/components/image#width)、[`height`](/docs/app/api-reference/components/image#height)、オプションの[`blurDataURL`](/docs/app/api-reference/components/image#blurdataurl)プロパティを手動で指定する必要があります。`width`と`height`は画像の正確なアスペクト比を推測し、画像の読み込みによるレイアウトシフトを防ぐために使用されます。
 
-次に、リモートサーバーからの画像を安全に許可するために、[`next.config.js`](/docs/app/api-reference/config/next-config-js)でサポートするURLパターンのリストを定義する必要があります。悪意のある使用を防ぐために、できるだけ具体的に指定してください。たとえば、次の設定では特定のAWS S3バケットからの画像のみを許可します：
+リモートサーバーからの画像を安全に許可するには、[`next.config.js`](/docs/app/api-reference/config/next-config-js)でサポートするURLパターンのリストを定義する必要があります。悪意のある使用を防ぐため、できるだけ具体的に指定してください。例えば、次の設定では特定のAWS S3バケットからの画像のみを許可します：
 
 ```ts filename="next.config.ts" switcher
 import { NextConfig } from 'next'
@@ -174,9 +170,9 @@ module.exports = {
 
 [`next/font`](/docs/app/api-reference/components/font)モジュールは自動的にフォントを最適化し、プライバシーとパフォーマンスを向上させるために外部ネットワークリクエストを削除します。
 
-これには_あらゆる_フォントファイルに対する**組み込みの自動セルフホスティング**が含まれています。これにより、レイアウトシフトなしでWebフォントを最適に読み込むことができます。
+これにはあらゆるフォントファイルの**ビルトインセルフホスティング**が含まれています。つまり、レイアウトシフトなしでWebフォントを最適に読み込むことができます。
 
-`next/font`を使い始めるには、[`next/font/local`](#ローカルフォント)または[`next/font/google`](#googleフォント)からインポートし、適切なオプションを指定して関数として呼び出し、フォントを適用したい要素の`className`を設定します。例えば：
+`next/font`を使い始めるには、[`next/font/local`](#ローカルフォント)または[`next/font/google`](#googleフォント)からインポートし、適切なオプションを指定して関数として呼び出し、フォントを適用したい要素の`className`を設定します。例：
 
 ```tsx filename="app/layout.tsx" highlight={1,3-5,9} switcher
 import { Geist } from 'next/font/google'
@@ -212,7 +208,7 @@ export default function Layout({ children }) {
 
 ### Googleフォント
 
-任意のGoogleフォントを自動的にセルフホスティングできます。フォントはデプロイメントに含まれ、デプロイメントと同じドメインから提供されるため、ユーザーがサイトを訪問してもブラウザからGoogleにリクエストは送信されません。
+任意のGoogleフォントを自動的にセルフホスティングできます。フォントはデプロイメントに含まれ、デプロイメントと同じドメインから提供されるため、ユーザーがサイトを訪問してもブラウザからGoogleへのリクエストは送信されません。
 
 Googleフォントを使い始めるには、`next/font/google`から選択したフォントをインポートします：
 
@@ -252,9 +248,9 @@ export default function RootLayout({ children }) {
 }
 ```
 
-最高のパフォーマンスと柔軟性のために[可変フォント](https://fonts.google.com/variablefonts)を使用することをお勧めします。ただし、可変フォントを使用できない場合は、**ウェイトを指定する必要があります**：
+最高のパフォーマンスと柔軟性のために[可変フォント](https://fonts.google.com/variablefonts)を使用することをお勧めします。しかし、可変フォントを使用できない場合は、ウェイトを指定する必要があります：
 
-```tsx filename="app/layout.tsx" switcher
+```tsx filename="app/layout.tsx" highlight={4} switcher
 import { Roboto } from 'next/font/google'
 
 const roboto = Roboto({
@@ -275,7 +271,7 @@ export default function RootLayout({
 }
 ```
 
-```jsx filename="app/layout.js" highlight={1,3-5,9} switcher
+```jsx filename="app/layout.js"  highlight={4} switcher
 import { Roboto } from 'next/font/google'
 
 const roboto = Roboto({
@@ -294,7 +290,7 @@ export default function RootLayout({ children }) {
 
 ### ローカルフォント
 
-ローカルフォントを使用するには、`next/font/local`からフォントをインポートし、[`public`フォルダ](#静的アセットの取り扱い)にあるローカルフォントファイルの`src`を指定します。
+ローカルフォントを使用するには、`next/font/local`からフォントをインポートし、ローカルフォントファイルの[`src`](/docs/app/api-reference/components/font#src)を指定します。
 
 ```tsx filename="app/layout.tsx" switcher
 import localFont from 'next/font/local'
@@ -332,7 +328,7 @@ export default function RootLayout({ children }) {
 }
 ```
 
-単一のフォントファミリーに複数のファイルを使用する場合、`src`は配列にすることができます：
+1つのフォントファミリーに複数のファイルを使用したい場合は、`src`を配列にできます：
 
 ```js
 const roboto = localFont({

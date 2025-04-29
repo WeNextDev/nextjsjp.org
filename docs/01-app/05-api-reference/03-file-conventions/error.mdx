@@ -1,0 +1,203 @@
+---
+title: error.js
+description: error.js特殊ファイルのAPIリファレンス。
+related:
+  title: エラー処理について詳しく学ぶ
+  links:
+    - app/building-your-application/routing/error-handling
+slug: /docs/app/api-reference/file-conventions/error
+---
+
+**error**ファイルを使用すると、予期しないランタイムエラーを処理し、フォールバックUIを表示することができます。
+
+<Image
+  alt="error.js特殊ファイル"
+  srcLight="/light/error-special-file.png"
+  srcDark="/dark/error-special-file.png"
+  width="1600"
+  height="606"
+/>
+
+```tsx filename="app/dashboard/error.tsx" switcher
+'use client' // エラーバウンダリはクライアントコンポーネントである必要があります
+
+import { useEffect } from 'react'
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  useEffect(() => {
+    // エラーをエラー報告サービスにログ記録する
+    console.error(error)
+  }, [error])
+
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button
+        onClick={
+          // セグメントを再レンダリングすることで回復を試みる
+          () => reset()
+        }
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/dashboard/error.js" switcher
+'use client' // エラーバウンダリはクライアントコンポーネントである必要があります
+
+import { useEffect } from 'react'
+
+export default function Error({ error, reset }) {
+  useEffect(() => {
+    // エラーをエラー報告サービスにログ記録する
+    console.error(error)
+  }, [error])
+
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button
+        onClick={
+          // セグメントを再レンダリングすることで回復を試みる
+          () => reset()
+        }
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+```
+
+`error.js`はルートセグメントとその子要素を[Reactエラーバウンダリ](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)でラップします。バウンダリ内でエラーがスローされると、`error`コンポーネントがフォールバックUIとして表示されます。
+
+<Image
+  alt="error.jsの仕組み"
+  srcLight="/light/error-overview.png"
+  srcDark="/dark/error-overview.png"
+  width="1600"
+  height="903"
+/>
+
+> **補足**:
+>
+> - [React DevTools](https://react.dev/learn/react-developer-tools)を使用すると、エラーバウンダリを切り替えてエラー状態をテストできます。
+> - エラーを親のエラーバウンダリにバブルアップさせたい場合は、`error`コンポーネントのレンダリング時に`throw`できます。
+
+## リファレンス
+
+### Props
+
+#### `error`
+
+`error.js`クライアントコンポーネントに転送される[`Error`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)オブジェクトのインスタンスです。
+
+> **補足:** 開発中は、クライアントに転送される`Error`オブジェクトがシリアライズされ、デバッグを容易にするために元のエラーの`message`が含まれます。ただし、**この動作は本番環境では異なり**、エラーに含まれる可能性のある機密情報がクライアントに漏れないようになっています。
+
+#### `error.message`
+
+- クライアントコンポーネントから転送されたエラーは元の`Error`メッセージを表示します。
+- サーバーコンポーネントから転送されたエラーは、識別子付きの一般的なメッセージを表示します。これは機密情報の漏洩を防ぐためです。`errors.digest`の下にある識別子を使用して、対応するサーバーサイドログと照合できます。
+
+#### `error.digest`
+
+自動生成されたエラーのハッシュです。サーバーサイドログ内の対応するエラーと照合するために使用できます。
+
+#### `reset`
+
+エラーの原因が一時的なものである場合があります。そのような場合、再試行することで問題が解決する可能性があります。
+
+エラーコンポーネントは`reset()`関数を使用して、ユーザーにエラーからの回復を促すことができます。実行されると、この関数はエラーバウンダリの内容を再レンダリングしようとします。成功した場合、フォールバックエラーコンポーネントは再レンダリングの結果に置き換えられます。
+
+```tsx filename="app/dashboard/error.tsx" switcher
+'use client' // エラーバウンダリはクライアントコンポーネントである必要があります
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
+    </div>
+  )
+}
+```
+
+```jsx filename="app/dashboard/error.js" switcher
+'use client' // エラーバウンダリはクライアントコンポーネントである必要があります
+
+export default function Error({ error, reset }) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
+    </div>
+  )
+}
+```
+
+## 例
+
+### グローバルエラー
+
+あまり一般的ではありませんが、[国際化](/docs/app/building-your-application/routing/internationalization)を活用している場合でも、ルートappディレクトリにある`global-error.js`を使用して、ルートレイアウトまたはテンプレートでエラーを処理できます。グローバルエラーUIは独自の`<html>`タグと`<body>`タグを定義する必要があります。このファイルはアクティブになるとルートレイアウトまたはテンプレートを置き換えます。
+
+```tsx filename="app/global-error.tsx" switcher
+'use client' // エラーバウンダリはクライアントコンポーネントである必要があります
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    // global-errorにはhtmlとbodyタグを含める必要があります
+    <html>
+      <body>
+        <h2>Something went wrong!</h2>
+        <button onClick={() => reset()}>Try again</button>
+      </body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/global-error.js" switcher
+'use client' // エラーバウンダリはクライアントコンポーネントである必要があります
+
+export default function GlobalError({ error, reset }) {
+  return (
+    // global-errorにはhtmlとbodyタグを含める必要があります
+    <html>
+      <body>
+        <h2>Something went wrong!</h2>
+        <button onClick={() => reset()}>Try again</button>
+      </body>
+    </html>
+  )
+}
+```
+
+## バージョン履歴
+
+| バージョン | 変更内容                                       |
+| --------- | --------------------------------------------- |
+| `v15.2.0` | 開発環境でも `global-error` を表示するように。   |
+| `v13.1.0` | 導入時期：`global-error`。                     |
+| `v13.0.0` | 導入時期：`error`。                           |

@@ -1,0 +1,67 @@
+---
+title: Head
+description: 組み込みのHeadコンポーネントを使用して、ページの`head`にカスタム要素を追加します。
+slug: /docs/pages/api-reference/components/head
+---
+
+ページの`head`に要素を追加するための組み込みコンポーネントを公開しています：
+
+```jsx
+import Head from 'next/head'
+
+function IndexPage() {
+  return (
+    <div>
+      <Head>
+        <title>ページタイトル</title>
+      </Head>
+      <p>こんにちは、世界！</p>
+    </div>
+  )
+}
+
+export default IndexPage
+```
+
+## 重複タグを避ける
+
+`head`内の重複タグを避けるために、`key`プロパティを使用できます。これにより、タグが1回だけレンダリングされることを保証します：
+
+```jsx
+import Head from 'next/head'
+
+function IndexPage() {
+  return (
+    <div>
+      <Head>
+        <title>ページタイトル</title>
+        <meta property="og:title" content="ページタイトル" key="title" />
+      </Head>
+      <Head>
+        <meta property="og:title" content="新しいタイトル" key="title" />
+      </Head>
+      <p>こんにちは、世界！</p>
+    </div>
+  )
+}
+
+export default IndexPage
+```
+
+この場合、2番目の`<meta property="og:title" />`のみがレンダリングされます。重複する`key`属性を持つmetaタグは自動的に処理されます。
+
+> **補足**: `<title>`と`<base>`タグは、Next.jsによって自動的に重複がチェックされるため、これらのタグにkeyを使用する必要はありません。
+
+> `head`の内容はコンポーネントのアンマウント時にクリアされるため、他のページが追加したものを想定せず、各ページで必要なものを完全に定義してください。
+
+## 最小限のネストを使用する
+
+`title`、`meta`、またはその他の要素（`script`など）は、`Head`要素の**直接の**子として含めるか、最大1レベルの`<React.Fragment>`または配列でラップする必要があります。そうしないと、クライアント側のナビゲーション時にタグが正しく取得されません。
+
+## スクリプトには`next/script`を使用
+
+コンポーネント内でスクリプトを手動で作成する代わりに、[`next/script`](/docs/pages/guides/scripts)の使用をお勧めします。
+
+## `html`または`body`タグは使用不可
+
+`<Head>`を使用して`<html>`または`<body>`タグに属性を設定することは**できません**。これにより、`next-head-count is missing`エラーが発生します。`next/head`はHTML `<head>`タグ内のタグのみを処理できます。

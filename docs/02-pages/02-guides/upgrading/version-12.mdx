@@ -1,0 +1,154 @@
+---
+title: バージョン12へのアップグレード方法
+nav_title: バージョン12
+description: Next.jsアプリケーションをバージョン11からバージョン12にアップグレードします。
+slug: /docs/pages/guides/upgrading/version-12
+---
+
+バージョン12にアップグレードするには、以下のコマンドを実行してください：
+
+```bash filename="Terminal"
+npm i next@12 react@17 react-dom@17 eslint-config-next@12
+```
+
+```bash filename="Terminal"
+yarn add next@12 react@17 react-dom@17 eslint-config-next@12
+```
+
+```bash filename="Terminal"
+pnpm up next@12 react@17 react-dom@17 eslint-config-next@12
+```
+
+```bash filename="Terminal"
+bun add next@12 react@17 react-dom@17 eslint-config-next@12
+```
+
+> **補足:** TypeScriptを使用している場合は、`@types/react`と`@types/react-dom`も対応するバージョンにアップグレードしてください。
+
+### 12.2へのアップグレード
+
+[Middleware](/docs/messages/middleware-upgrade-guide) - `12.2`より前にMiddlewareを使用していた場合は、詳細について[アップグレードガイド](/docs/messages/middleware-upgrade-guide)を参照してください。
+
+### 12.0へのアップグレード
+
+[Node.jsの最小バージョン](https://nodejs.org/en/) - Node.jsの最小バージョンが`12.0.0`から`12.22.0`に引き上げられました。これはネイティブES Modulesをサポートする最初のNode.jsバージョンです。
+
+[Reactの最小バージョン](https://react.dev/learn/add-react-to-an-existing-project) - 必要なReactの最小バージョンは`17.0.2`です。アップグレードするには、ターミナルで以下のコマンドを実行できます：
+
+```bash filename="Terminal"
+npm install react@latest react-dom@latest
+
+yarn add react@latest react-dom@latest
+
+pnpm update react@latest react-dom@latest
+
+bun add react@latest react-dom@latest
+```
+
+#### BabelからSWCへの置き換え
+
+Next.jsはRustベースのコンパイラ[SWC](https://swc.rs/)を使用してJavaScript/TypeScriptをコンパイルするようになりました。この新しいコンパイラは、個々のファイルのコンパイル時にBabelよりも最大17倍高速で、Fast Refreshも最大5倍高速です。
+
+Next.jsは[カスタムBabel設定](/docs/pages/guides/babel)を持つアプリケーションと完全な後方互換性を提供します。styled-jsxや`getStaticProps` / `getStaticPaths` / `getServerSideProps`のツリーシェイキングなど、Next.jsがデフォルトで処理するすべての変換はRustに移植されています。
+
+アプリケーションにカスタムBabel設定がある場合、Next.jsはJavaScript/TypescriptのコンパイルにおいてSWCの使用を自動的に無効にし、Next.js 11で使用されていたのと同じ方法でBabelを使用するようフォールバックします。
+
+現在カスタムBabel変換を必要とする外部ライブラリとの統合の多くは、近い将来RustベースのSWC変換に移植される予定です。これには以下が含まれますが、これらに限定されません：
+
+- Styled Components
+- Emotion
+- Relay
+
+SWC採用を支援する変換の優先順位付けのために、[このフィードバックスレッド](https://github.com/vercel/next.js/discussions/30174)で`.babelrc`を提供してください。
+
+#### 圧縮処理のTerserからSWCへの置き換え
+
+`next.config.js`でフラグを使用して、JavaScriptの圧縮にTerserの代わりにSWCを使用することで最大7倍の高速化を図れます：
+
+```js filename="next.config.js"
+module.exports = {
+  swcMinify: true,
+}
+```
+
+SWCを使用した圧縮は、Next.js 12.1でデフォルトになる前に、より多くの実際のNext.jsアプリケーションでテストできるようにするためのオプトイン機能です。圧縮に関するフィードバックがある場合は、[このフィードバックスレッド](https://github.com/vercel/next.js/discussions/30237)に残してください。
+
+#### styled-jsxのCSS解析の改善
+
+Rustベースのコンパイラの上に、styled-jsx Babel変換で使用されているものに基づいた新しいCSSパーサーを実装しました。この新しいパーサーはCSSの処理が改善され、以前は見逃されて予期しない動作を引き起こしていた無効なCSSがある場合にエラーを発生させるようになりました。
+
+この変更により、無効なCSSは開発中および`next build`実行時にエラーをスローします。この変更はstyled-jsxの使用にのみ影響します。
+
+#### `next/image`のラッピング要素の変更
+
+`next/image`は、`<div>`の代わりに`<span>`内に`<img>`をレンダリングするようになりました。
+
+アプリケーションに`.container span`のようなspanを対象とする特定のCSSがある場合、Next.js 12にアップグレードすると、`<Image>`コンポーネント内のラッピング要素が誤ってマッチする可能性があります。これを避けるには、セレクタを`.container span.item`のような特定のクラスに制限し、関連するコンポーネントを`<span className="item" />`のように更新してください。
+
+アプリケーションに`next/image`の`<div>`タグをターゲットにする特定のCSSがある場合（例：`.container div`）、もうマッチしない可能性があります。セレクタを`.container span`に更新するか、できれば`<Image>`コンポーネントを包む新しい`<div className="wrapper">`を追加して、代わりに`.container .wrapper`をターゲットにすることをお勧めします。
+
+`className`プロップは変更されておらず、引き続き基礎となる`<img>`要素に渡されます。
+
+詳細については[ドキュメント](/docs/pages/building-your-application/optimizing/images#styling)を参照してください。
+
+#### HMR接続がWebSocketを使用するようになりました
+
+以前、Next.jsはHMRイベントを受信するために[server-sent events](https://developer.mozilla.org/docs/Web/API/Server-sent_events)接続を使用していました。Next.js 12ではWebSocket接続を使用します。
+
+Next.js開発サーバーへのリクエストをプロキシする場合、アップグレードリクエストが正しく処理されるようにする必要があります。例えば、`nginx`では以下の設定を追加する必要があります：
+
+```nginx
+location /_next/webpack-hmr {
+    proxy_pass http://localhost:3000/_next/webpack-hmr;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+Apache（2.x）を使用している場合は、サーバーにWebSocketを有効にするために以下の設定を追加できます。ポート、ホスト名、サーバー名を確認してください。
+
+```
+<VirtualHost *:443>
+ # ServerName yourwebsite.local
+ ServerName "${WEBSITE_SERVER_NAME}"
+ ProxyPass / http://localhost:3000/
+ ProxyPassReverse / http://localhost:3000/
+ # Next.js 12 uses websocket
+ <Location /_next/webpack-hmr>
+    RewriteEngine On
+    RewriteCond %{QUERY_STRING} transport=websocket [NC]
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule /(.*) ws://localhost:3000/_next/webpack-hmr/$1 [P,L]
+    ProxyPass ws://localhost:3000/_next/webpack-hmr retry=0 timeout=30
+    ProxyPassReverse ws://localhost:3000/_next/webpack-hmr
+ </Location>
+</VirtualHost>
+```
+
+`express`などのカスタムサーバーでは、リクエストが正しく渡されるように`app.all`を使用する必要がある場合があります。例：
+
+```js
+app.all('/_next/webpack-hmr', (req, res) => {
+  nextjsRequestHandler(req, res)
+})
+```
+
+#### webpack 4のサポートが削除されました
+
+すでにwebpack 5を使用している場合は、このセクションをスキップできます。
+
+Next.jsはNext.js 11でコンパイルのデフォルトとしてwebpack 5を採用しました。[webpack 5アップグレードドキュメント](/docs/messages/webpack5)で通知されていたように、Next.js 12ではwebpack 4のサポートが削除されました。
+
+アプリケーションがオプトアウトフラグを使用してまだwebpack 4を使用している場合は、[webpack 5アップグレードドキュメント](/docs/messages/webpack5)へのリンクを含むエラーが表示されます。
+
+#### `target`オプションの非推奨化
+
+`next.config.js`に`target`がない場合は、このセクションをスキップできます。
+
+targetオプションは、ページの実行に必要な依存関係を追跡するための組み込みサポートに代わり、非推奨となりました。
+
+`next build`の実行中、Next.jsはページとその依存関係を自動的に追跡して、アプリケーションの本番バージョンをデプロイするために必要なすべてのファイルを決定します。
+
+現在`target`オプションを`serverless`に設定している場合は、[新しい出力の活用方法に関するドキュメント](/docs/pages/api-reference/config/next-config-js/output)をお読みください。

@@ -1,0 +1,260 @@
+---
+title: ファビコン、アイコン、Apple アイコン
+description: ファビコン、アイコン、Apple アイコンのファイル規約に関するAPIリファレンス。
+slug: /docs/app/api-reference/file-conventions/metadata/app-icons
+---
+
+`favicon`、`icon`、`apple-icon` のファイル規約により、アプリケーションのアイコンを設定できます。
+
+これらは、ウェブブラウザのタブ、電話のホーム画面、検索エンジンの結果などに表示されるアプリアイコンを追加する際に役立ちます。
+
+アプリアイコンの設定方法は2つあります：
+
+- [画像ファイルを使用する (.ico, .jpg, .png)](#画像ファイル-ico-jpg-png)
+- [コードを使用してアイコンを生成する (.js, .ts, .tsx)](#コードを使用したアイコンの生成-js-ts-tsx)
+
+## 画像ファイル (.ico, .jpg, .png)
+
+`/app` ディレクトリ内に `favicon`、`icon`、`apple-icon` の画像ファイルを配置することで、アプリアイコンを設定できます。
+`favicon` 画像は `app/` の最上位にのみ配置できます。
+
+Next.jsはファイルを評価し、アプリの `<head>` 要素に適切なタグを自動的に追加します。
+
+| ファイル規約                   | サポートされるファイルタイプ               | 有効な場所      |
+| ------------------------------ | ------------------------------------------ | --------------- |
+| [`favicon`](#favicon)          | `.ico`                                     | `app/`          |
+| [`icon`](#icon)                | `.ico`, `.jpg`, `.jpeg`, `.png`, `.svg`    | `app/**/*`      |
+| [`apple-icon`](#apple-icon)    | `.jpg`, `.jpeg`, `.png`                    | `app/**/*`      |
+
+### `favicon`
+
+ルート `/app` ルートセグメントに `favicon.ico` 画像ファイルを追加します。
+
+```html filename="<head> の出力"
+<link rel="icon" href="/favicon.ico" sizes="any" />
+```
+
+### `icon`
+
+`icon.(ico|jpg|jpeg|png|svg)` 画像ファイルを追加します。
+
+```html filename="<head> の出力"
+<link
+  rel="icon"
+  href="/icon?<generated>"
+  type="image/<generated>"
+  sizes="<generated>"
+/>
+```
+
+### `apple-icon`
+
+`apple-icon.(jpg|jpeg|png)` 画像ファイルを追加します。
+
+```html filename="<head> の出力"
+<link
+  rel="apple-touch-icon"
+  href="/apple-icon?<generated>"
+  type="image/<generated>"
+  sizes="<generated>"
+/>
+```
+
+> **補足**:
+>
+> - ファイル名に数字を付けることで、複数のアイコンを設定できます。例えば、`icon1.png`、`icon2.png` などです。番号付きファイルは辞書順に並べられます。
+> - ファビコンは、ルート `/app` セグメントにのみ設定できます。より詳細な設定が必要な場合は、[`icon`](#icon) を使用できます。
+> - `rel`、`href`、`type`、`sizes` などの適切な `<link>` タグと属性は、アイコンの種類と評価されたファイルのメタデータによって決定されます。
+> - 例えば、32×32ピクセルの `.png` ファイルは、`type="image/png"` と `sizes="32x32"` の属性を持ちます。
+> - 拡張子が `.svg` の場合、または画像サイズが特定できない場合、`sizes="any"` が追加されます。詳細は [ファビコンハンドブック](https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs) を参照してください。
+
+## コードを使用したアイコンの生成 (.js, .ts, .tsx)
+
+[画像ファイル](#画像ファイル-ico-jpg-png)を使用することに加えて、コードを使用してプログラム的にアイコンを**生成**できます。
+
+デフォルトエクスポートの関数を持つ `icon` または `apple-icon` ルートを作成することで、アプリアイコンを生成できます。
+
+| ファイル規約     | サポートされるファイルタイプ |
+| --------------- | -------------------- |
+| `icon`          | `.js`, `.ts`, `.tsx` |
+| `apple-icon`    | `.js`, `.ts`, `.tsx` |
+
+アイコンを生成する最も簡単な方法は、`next/og` から `ImageResponse` APIを使用することです。
+
+```tsx filename="app/icon.tsx" switcher
+import { ImageResponse } from 'next/og'
+
+// 画像メタデータ
+export const size = {
+  width: 32,
+  height: 32,
+}
+export const contentType = 'image/png'
+
+// 画像生成
+export default function Icon() {
+  return new ImageResponse(
+    (
+      // ImageResponse JSX 要素
+      <div
+        style={{
+          fontSize: 24,
+          background: 'black',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+        }}
+      >
+        A
+      </div>
+    ),
+    // ImageResponse オプション
+    {
+      // 便宜上、エクスポートされたアイコンのサイズメタデータ
+      // 設定を ImageResponse の幅と高さにも再利用できます。
+      ...size,
+    }
+  )
+}
+```
+
+```jsx filename="app/icon.js" switcher
+import { ImageResponse } from 'next/og'
+
+// 画像メタデータ
+export const size = {
+  width: 32,
+  height: 32,
+}
+export const contentType = 'image/png'
+
+// 画像生成
+export default function Icon() {
+  return new ImageResponse(
+    (
+      // ImageResponse JSX 要素
+      <div
+        style={{
+          fontSize: 24,
+          background: 'black',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+        }}
+      >
+        A
+      </div>
+    ),
+    // ImageResponse オプション
+    {
+      // 便宜上、エクスポートされたアイコンのサイズメタデータ
+      // 設定を ImageResponse の幅と高さにも再利用できます。
+      ...size,
+    }
+  )
+}
+```
+
+```html filename="<head> の出力"
+<link rel="icon" href="/icon?<generated>" type="image/png" sizes="32x32" />
+```
+
+> **補足**:
+>
+> - デフォルトでは、生成されたアイコンは[**静的に最適化**](/docs/app/building-your-application/rendering/server-components#静的レンダリング-デフォルト)されます（ビルド時に生成され、キャッシュされます）。ただし、[動的API](/docs/app/building-your-application/rendering/server-components#サーバーレンダリング戦略動的api) またはキャッシュされていないデータを使用する場合は除きます。
+> - [`generateImageMetadata`](/docs/app/api-reference/functions/generate-image-metadata) を使用して、同じファイル内に複数のアイコンを生成できます。
+> - `favicon` アイコンは生成できません。代わりに [`icon`](#icon) または [favicon.ico](#favicon) ファイルを使用してください。
+> - アプリアイコンは特殊なルートハンドラであり、[動的API](/docs/app/deep-dive/caching#動的api) または [動的設定](/docs/app/deep-dive/caching#セグメント設定オプション)オプションを使用しない限り、デフォルトでキャッシュされます。
+
+### プロップ
+
+デフォルトエクスポート関数は、以下のプロップを受け取ります：
+
+#### `params`（オプション）
+
+`icon` または `apple-icon` が配置されているセグメントからルートセグメントまでの、[動的ルートパラメータ](/docs/app/building-your-application/routing/dynamic-routes)オブジェクト。
+
+```tsx filename="app/shop/[slug]/icon.tsx" switcher
+export default function Icon({ params }: { params: { slug: string } }) {
+  // ...
+}
+```
+
+```jsx filename="app/shop/[slug]/icon.js" switcher
+export default function Icon({ params }) {
+  // ...
+}
+```
+
+| ルート                          | URL         | `params`                  |
+| ------------------------------- | ----------- | ------------------------- |
+| `app/shop/icon.js`              | `/shop`     | `undefined`               |
+| `app/shop/[slug]/icon.js`       | `/shop/1`   | `{ slug: '1' }`           |
+| `app/shop/[tag]/[item]/icon.js` | `/shop/1/2` | `{ tag: '1', item: '2' }` |
+
+### 戻り値
+
+デフォルトエクスポート関数は、`Blob` | `ArrayBuffer` | `TypedArray` | `DataView` | `ReadableStream` | `Response` を返す必要があります。
+
+> **補足**: `ImageResponse` はこの戻り値の型を満たします。
+
+### 設定のエクスポート
+
+`icon` または `apple-icon` ルートから `size` と `contentType` 変数をエクスポートすることで、アイコンのメタデータをオプションで設定できます。
+
+| オプション                     | 型                                                                                                              |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| [`size`](#size)                | `{ width: number; height: number }`                                                                             |
+| [`contentType`](#contenttype)  | `string` - [画像 MIME タイプ](https://developer.mozilla.org/docs/Web/HTTP/Basics_of_HTTP/MIME_types#image_types) |
+
+#### `size`
+
+```tsx filename="icon.tsx | apple-icon.tsx" switcher
+export const size = { width: 32, height: 32 }
+
+export default function Icon() {}
+```
+
+```jsx filename="icon.js | apple-icon.js" switcher
+export const size = { width: 32, height: 32 }
+
+export default function Icon() {}
+```
+
+```html filename="<head> の出力"
+<link rel="icon" sizes="32x32" />
+```
+
+#### `contentType`
+
+```tsx filename="icon.tsx | apple-icon.tsx" switcher
+export const contentType = 'image/png'
+
+export default function Icon() {}
+```
+
+```jsx filename="icon.js | apple-icon.js" switcher
+export const contentType = 'image/png'
+
+export default function Icon() {}
+```
+
+```html filename="<head> 出力"
+<link rel="icon" type="image/png" />
+```
+
+#### ルートセグメント設定
+
+`icon` と `apple-icon` は、Pages やレイアウトと同じ[ルートセグメント設定](/docs/app/api-reference/file-conventions/route-segment-config)オプションを使用できる特殊な[ルートハンドラー](/docs/app/building-your-application/routing/route-handlers)です。
+
+## バージョン履歴
+
+| バージョン | 変更点 |
+| --------- | -------------------------------------- |
+| `v13.3.0` | 導入時期：`favicon`、`icon`、`apple-icon` |

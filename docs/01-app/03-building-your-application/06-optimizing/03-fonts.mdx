@@ -1,37 +1,37 @@
 ---
 title: フォント最適化
 nav_title: フォント
-description: 組み込みの `next/font` ローダーでアプリケーションのウェブフォントを最適化します。
+description: 組み込みの `next/font` ローダーを使用してアプリケーションのWebフォントを最適化します。
 related:
   title: APIリファレンス
-  description: next/fontのAPIについてさらに詳しく学びます。
+  description: next/font APIについて詳しく学びましょう。
   links:
     - app/api-reference/components/font
 slug: /docs/app/building-your-application/optimizing/fonts
 ---
 
-{/* このドキュメントの内容は、appとpagesルーターの間で共有されます。`<PagesOnly>Content</PagesOnly>` コンポーネントを使用して、Pagesルーター特有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+{/* このドキュメントの内容はappルーターとpagesルーター間で共有されています。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター特有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
 
-[**`next/font`**](/docs/app/api-reference/components/font) は自動的にフォント（カスタムフォントを含む）を最適化し、プライバシーとパフォーマンスを向上させるための外部ネットワークリクエストを削除します。
+[**`next/font`**](/docs/app/api-reference/components/font)は自動的にフォントを最適化し（カスタムフォントを含む）、プライバシーとパフォーマンス向上のための外部ネットワークリクエストを排除します。
 
-> **🎥 動画：** `next/font` の使用について詳しく学ぶ → [YouTube (6分)](https://www.youtube.com/watch?v=L8_98i_bMMA)。
+> **🎥 視聴する：** `next/font`の使用方法について詳しく学ぶ → [YouTube（6分）](https://www.youtube.com/watch?v=L8_98i_bMMA)。
 
-`next/font` には、_あらゆる_ フォントファイルに対する **組み込みの自動セルフホスティング** が含まれています。これにより、使用される基盤のCSS `size-adjust` プロパティのおかげで、レイアウトシフトなしで最適にウェブフォントを読み込むことができます。
+`next/font`には**任意の**フォントファイルに対する**組み込みの自動セルフホスティング**機能が含まれています。これにより、基盤となるCSS `size-adjust`プロパティのおかげで、レイアウトシフトなしでウェブフォントを最適にロードできます。
 
-この新しいフォントシステムでは、パフォーマンスとプライバシーを考慮して、すべてのGoogle Fontsを便利に使用できます。CSSとフォントファイルはビルド時にダウンロードされ、他の静的アセットと一緒にセルフホストされます。**ブラウザからGoogleへのリクエストは送信されません。**
+この新しいフォントシステムでは、パフォーマンスとプライバシーを考慮しながら、すべてのGoogleフォントを便利に使用することもできます。CSSとフォントファイルはビルド時にダウンロードされ、他の静的アセットとともにセルフホストされます。**ブラウザからGoogleへのリクエストは一切送信されません。**
 
-## Google Fonts
+## Googleフォント
 
-任意のGoogle Fontを自動的にセルフホストします。フォントはデプロイメントに含まれ、デプロイメントと同じドメインから提供されます。**ブラウザからGoogleへのリクエストは送信されません。**
+任意のGoogleフォントを自動的にセルフホストします。フォントはデプロイメントに含まれ、デプロイメントと同じドメインから配信されます。**ブラウザからGoogleへのリクエストは一切送信されません。**
 
-使用したいフォントを `next/font/google` から関数としてインポートすることで始めます。最高のパフォーマンスと柔軟性を得るために、[可変フォント](https://fonts.google.com/variablefonts)の使用をお勧めします。
+使用したいフォントを`next/font/google`から関数としてインポートすることから始めましょう。最高のパフォーマンスと柔軟性のために[可変フォント](https://fonts.google.com/variablefonts)を使用することをお勧めします。
 
 <AppOnly>
 
 ```tsx filename="app/layout.tsx" switcher
 import { Inter } from 'next/font/google'
 
-// 可変フォントを読み込む場合、フォントウェイトを指定する必要はありません
+// 可変フォントを読み込む場合、フォントの太さを指定する必要はありません
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -53,7 +53,7 @@ export default function RootLayout({
 ```jsx filename="app/layout.js" switcher
 import { Inter } from 'next/font/google'
 
-// 可変フォントを読み込む場合、フォントウェイトを指定する必要はありません
+// 可変フォントを読み込む場合、フォントの太さを指定する必要はありません
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -68,7 +68,7 @@ export default function RootLayout({ children }) {
 }
 ```
 
-可変フォントを使用できない場合、**ウェイトを指定する必要があります**：
+可変フォントを使用できない場合は、**weight（太さ）を指定する必要があります**：
 
 ```tsx filename="app/layout.tsx" switcher
 import { Roboto } from 'next/font/google'
@@ -114,12 +114,12 @@ export default function RootLayout({ children }) {
 
 <PagesOnly>
 
-すべてのページでフォントを使用するには、以下に示すように `/pages` 配下の [`_app.js` ファイル](/docs/pages/building-your-application/routing/custom-app)に追加します：
+すべてのページでフォントを使用するには、`/pages`の下にある[`_app.js`ファイル](/docs/pages/building-your-application/routing/custom-app)に以下のように追加します：
 
 ```jsx filename="pages/_app.js"
 import { Inter } from 'next/font/google'
 
-// 可変フォントを読み込む場合、フォントウェイトを指定する必要はありません
+// 可変フォントを読み込む場合、フォントの太さを指定する必要はありません
 const inter = Inter({ subsets: ['latin'] })
 
 export default function MyApp({ Component, pageProps }) {
@@ -131,7 +131,7 @@ export default function MyApp({ Component, pageProps }) {
 }
 ```
 
-可変フォントを使用できない場合、**ウェイトを指定する必要があります**：
+可変フォントを使用できない場合は、**weight（太さ）を指定する必要があります**：
 
 ```jsx filename="pages/_app.js"
 import { Roboto } from 'next/font/google'
@@ -163,13 +163,13 @@ const roboto = Roboto({
 })
 ```
 
-> **補足**: 複数の単語からなるフォント名には、アンダースコア（_）を使用します。例：`Roboto Mono` は `Roboto_Mono` としてインポートします。
+> **補足**：複数の単語からなるフォント名にはアンダースコア（_）を使用します。例：`Roboto Mono`は`Roboto_Mono`としてインポートします。
 
 <PagesOnly>
 
-### `<head>` にフォントを適用する
+### フォントを`<head>`に適用する
 
-ラッパーと `className` を使用せずに、以下のように `<head>` 内にフォントを挿入することもできます：
+以下のように、ラッパーや`className`を使わずに`<head>`内にフォントを注入することもできます：
 
 ```jsx filename="pages/_app.js"
 import { Inter } from 'next/font/google'
@@ -192,7 +192,7 @@ export default function MyApp({ Component, pageProps }) {
 
 ### 単一ページでの使用
 
-特定のページでフォントを使用するには、以下に示すように、そのページに追加します：
+特定のページだけでフォントを使用するには、以下のように追加します：
 
 ```jsx filename="pages/index.js"
 import { Inter } from 'next/font/google'
@@ -212,7 +212,7 @@ export default function Home() {
 
 ### サブセットの指定
 
-Google Fontsは自動的に[サブセット化](https://fonts.google.com/knowledge/glossary/subsetting)されます。これによりフォントファイルのサイズが縮小され、パフォーマンスが向上します。プリロードするサブセットを定義する必要があります。[`preload`](/docs/app/api-reference/components/font#preload)が `true` の場合にサブセットを指定しないと、警告が表示されます。
+Googleフォントは自動的に[サブセット化](https://fonts.google.com/knowledge/glossary/subsetting)されます。これによりフォントファイルのサイズが縮小され、パフォーマンスが向上します。使用するサブセットを定義する必要があります。[`preload`](/docs/app/api-reference/components/font#preload)が`true`の場合にサブセットを指定しないと警告が表示されます。
 
 これは関数呼び出しに追加することで行えます：
 
@@ -236,13 +236,13 @@ const inter = Inter({ subsets: ['latin'] })
 
 </PagesOnly>
 
-詳細については、[フォントAPIリファレンス](/docs/app/api-reference/components/font)を参照してください。
+詳細については[フォントAPIリファレンス](/docs/app/api-reference/components/font)を参照してください。
 
 ### 複数のフォントの使用
 
-アプリケーション内で複数のフォントをインポートして使用できます。アプローチは2つあります。
+アプリケーションで複数のフォントをインポートして使用できます。2つのアプローチがあります。
 
-最初のアプローチは、フォントをエクスポートするユーティリティ関数を作成し、それをインポートして必要な場所に `className` を適用することです。これにより、レンダリングされた場合にのみフォントがプリロードされます：
+1つ目のアプローチは、フォントをエクスポートするユーティリティ関数を作成し、それをインポートして必要な場所で`className`を適用することです。これにより、フォントはレンダリングされたときにのみプリロードされます：
 
 ```ts filename="app/fonts.ts" switcher
 import { Inter, Roboto_Mono } from 'next/font/google'
@@ -328,9 +328,9 @@ export default function Page() {
 
 </AppOnly>
 
-上記の例では、`Inter`がグローバルに適用され、`Roboto Mono`は必要に応じてインポートおよび適用できます。
+上記の例では、`Inter`がグローバルに適用され、`Roboto Mono`が必要に応じてインポートして適用できます。
 
-別の方法として、[CSSの変数](/docs/app/api-reference/components/font#variable)を作成し、お好みのCSSソリューションで使用することもできます：
+あるいは、[CSS変数](/docs/app/api-reference/components/font#variable)を作成し、お好みのCSSソリューションで使用することもできます：
 
 <AppOnly>
 
@@ -405,13 +405,13 @@ h1 {
 }
 ```
 
-上記の例では、`Inter`がグローバルに適用され、すべての`<h1>`タグが`Roboto Mono`でスタイル設定されます。
+上記の例では、`Inter`がグローバルに適用され、すべての`<h1>`タグは`Roboto Mono`でスタイリングされます。
 
-> **推奨事項**：各新しいフォントはクライアントがダウンロードする必要がある追加リソースであるため、複数のフォントは控えめに使用してください。
+> **推奨事項**：新しいフォントはそれぞれクライアントがダウンロードする追加リソースとなるため、複数のフォントの使用は控えめにしましょう。
 
 ## ローカルフォント
 
-`next/font/local`をインポートし、ローカルフォントファイルの`src`を指定します。最高のパフォーマンスと柔軟性のために、[可変フォント](https://fonts.google.com/variablefonts)の使用をお勧めします。
+`next/font/local`をインポートし、ローカルフォントファイルの`src`を指定します。最高のパフォーマンスと柔軟性のために[可変フォント](https://fonts.google.com/variablefonts)を使用することをお勧めします。
 
 <AppOnly>
 
@@ -476,7 +476,7 @@ export default function MyApp({ Component, pageProps }) {
 
 </PagesOnly>
 
-1つのフォントファミリーに複数のファイルを使用する場合、`src`は配列にできます：
+単一のフォントファミリーに複数のファイルを使用したい場合、`src`は配列にすることができます：
 
 ```js
 const roboto = localFont({
@@ -505,13 +505,15 @@ const roboto = localFont({
 })
 ```
 
-詳細については、[Font API リファレンス](/docs/app/api-reference/components/font)をご覧ください。
+詳細については[フォントAPIリファレンス](/docs/app/api-reference/components/font)を参照してください。
 
-## Tailwind CSSと共に
+## Tailwind CSSとの連携
 
-`next/font`は、[CSSの変数](/docs/app/api-reference/components/font#css-variables)を通じて[Tailwind CSS](https://tailwindcss.com/)で使用できます。
+`next/font`は[CSS変数](/docs/app/api-reference/components/font#css-variables)を使って[Tailwind CSS](https://tailwindcss.com/)とシームレスに統合できます。
 
-以下の例では、`next/font/google`から`Inter`フォントを使用します（Google またはローカルフォントから任意のフォントを使用できます）。`variable`オプションでCSSの変数名を定義し、`inter`に割り当てます。次に、`inter.variable`を使用してHTMLドキュメントにCSSの変数を追加します。
+以下の例では、`next/font/google`から`Inter`と`Roboto_Mono`フォントを使用しています（任意のGoogleフォントまたはローカルフォントを使用できます）。`variable`オプションを使用してCSS変数名を定義し、それぞれのフォントに対して`inter`と`roboto_mono`のような名前を付けます。次に、`inter.variable`と`roboto_mono.variable`を適用して、HTMLドキュメントにCSS変数を含めます。
+
+> **補足**：これらの変数は、お好みやスタイリングのニーズ、プロジェクトの要件に応じて、`<html>`または`<body>`タグに追加できます。
 
 <AppOnly>
 
@@ -536,7 +538,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${roboto_mono.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${roboto_mono.variable} antialiased`}
+    >
       <body>{children}</body>
     </html>
   )
@@ -560,7 +565,10 @@ const roboto_mono = Roboto_Mono({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${roboto_mono.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${roboto_mono.variable} antialiased`}
+    >
       <body>{children}</body>
     </html>
   )
@@ -579,9 +587,15 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+const roboto_mono = Roboto_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-roboto-mono',
+})
+
 export default function MyApp({ Component, pageProps }) {
   return (
-    <main className={`${inter.variable} font-sans`}>
+    <main className={`${inter.variable} ${roboto_mono.variable} font-sans`}>
       <Component {...pageProps} />
     </main>
   )
@@ -590,7 +604,22 @@ export default function MyApp({ Component, pageProps }) {
 
 </PagesOnly>
 
-最後に、CSSの変数を[Tailwind CSS の設定](/docs/app/building-your-application/styling/tailwind-css#configuring-tailwind)に追加します：
+最後に、[Tailwind CSS設定](/docs/app/building-your-application/styling/tailwind-css#configuring-tailwind)にCSS変数を追加します：
+
+### Tailwind CSS v4
+
+[Tailwind v4](https://tailwindcss.com/blog/tailwindcss-v4)では、デフォルトで設定は必要ありません。Tailwindを設定する必要がある場合は、グローバルCSSファイルを設定するための[公式ドキュメント](https://tailwindcss.com/blog/tailwindcss-v4#css-first-configuration)に従ってください。
+
+```js filename="global.css"
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-roboto-mono);
+}
+```
+
+### Tailwind CSS v3
 
 ```js filename="tailwind.config.js"
 /** @type {import('tailwindcss').Config} */
@@ -612,32 +641,37 @@ module.exports = {
 }
 ```
 
-これで、`font-sans`と`font-mono`のユーティリティクラスを使用して、要素にフォントを適用できます。
+これで`font-sans`と`font-mono`のユーティリティクラスを使用して、要素にフォントを適用できます。
+
+```
+<p class="font-sans ...">The quick brown fox ...</p>
+<p class="font-mono ...">The quick brown fox ...</p>
+```
 
 ## プリロード
 
 <AppOnly>
-サイトのページでフォント関数が呼び出されると、それはグローバルに利用可能になったり、すべてのルートで事前読み込みされるわけではありません。むしろ、フォントは使用されているファイルの種類に基づいて関連するルートで事前読み込みされます：
+フォント関数がサイトのページで呼び出された場合、そのフォントはグローバルに利用可能になったり、すべてのルートでプリロードされたりするわけではありません。むしろ、フォントは使用されているファイルのタイプに基づいて、関連するルートでのみプリロードされます：
 
-- [固有のページ](/docs/app/api-reference/file-conventions/page)の場合、そのページの固有のルートで事前読み込みされます。
-- [レイアウト](/docs/app/building-your-application/routing/layouts-and-templates#layouts)の場合、そのレイアウトでラップされているすべてのルートで事前読み込みされます。
-- [ルートレイアウト](/docs/app/building-your-application/routing/layouts-and-templates#root-layout-required)の場合、すべてのルートで事前読み込みされます。
+- [個別のページ](/docs/app/api-reference/file-conventions/page)の場合、そのページの固有ルートでプリロードされます。
+- [レイアウト](/docs/app/building-your-application/routing/layouts-and-templates#layouts)の場合、そのレイアウトにラップされたすべてのルートでプリロードされます。
+- [ルートレイアウト](/docs/app/building-your-application/routing/layouts-and-templates#root-layout-required)の場合、すべてのルートでプリロードされます。
 
 </AppOnly>
 
 <PagesOnly>
 
-サイトのページでフォント関数が呼び出されると、それはグローバルに利用可能になったり、すべてのルートで事前読み込みされるわけではありません。むしろ、フォントは使用されているファイルの種類に基づいて関連するルートで事前読み込みされます：
+フォント関数がサイトのページで呼び出された場合、そのフォントはグローバルに利用可能になったり、すべてのルートでプリロードされたりするわけではありません。むしろ、フォントは使用されているファイルのタイプに基づいて、関連するルートでのみプリロードされます：
 
-- [固有のページ](/docs/pages/building-your-application/routing/pages-and-layouts)の場合、そのページの固有のルートで事前読み込みされます
-- [カスタムApp](/docs/pages/building-your-application/routing/custom-app)の場合、`/pages`下のサイトのすべてのルートで事前読み込みされます
+- [個別のページ](/docs/pages/building-your-application/routing/pages-and-layouts)の場合、そのページの固有ルートでプリロードされます
+- [カスタムApp](/docs/pages/building-your-application/routing/custom-app)内にある場合、`/pages`の下のサイトのすべてのルートでプリロードされます
 
 </PagesOnly>
 
 ## フォントの再利用
 
-`localFont`またはGoogleフォント関数を呼び出すたびに、そのフォントはアプリケーション内で1つのインスタンスとしてホストされます。したがって、複数のファイルで同じフォント関数を読み込むと、同じフォントの複数のインスタンスがホストされます。このような状況では、以下をお勧めします：
+`localFont`またはGoogleフォント関数を呼び出すたびに、そのフォントはアプリケーション内の1つのインスタンスとしてホストされます。したがって、同じフォント関数を複数のファイルでロードすると、同じフォントの複数のインスタンスがホストされることになります。このような状況では、次のことをお勧めします：
 
 - フォントローダー関数を1つの共有ファイルで呼び出す
 - それを定数としてエクスポートする
-- このフォントを使用したい各ファイルでその定数をインポートする
+- このフォントを使用したい各ファイルに定数をインポートする

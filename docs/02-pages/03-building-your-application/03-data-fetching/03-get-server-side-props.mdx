@@ -1,0 +1,109 @@
+---
+title: getServerSideProps
+description: リクエスト時に`getServerSideProps`でデータをフェッチする
+slug: /docs/pages/building-your-application/data-fetching/get-server-side-props
+---
+
+`getServerSideProps`は、リクエスト時にデータをフェッチし、ページのコンテンツをレンダリングできるNext.jsの関数です。
+
+## 例
+
+`getServerSideProps`は、ページコンポーネントからエクスポートすることで使用できます。以下の例では、`getServerSideProps`でサードパーティのAPIからデータをフェッチし、そのデータをpropsとしてページに渡す方法を示しています：
+
+```tsx filename="pages/index.tsx" switcher
+import type { InferGetServerSidePropsType, GetServerSideProps } from 'next'
+
+type Repo = {
+  name: string
+  stargazers_count: number
+}
+
+export const getServerSideProps = (async () => {
+  // 外部APIからデータをフェッチ
+  const res = await fetch('https://api.github.com/repos/vercel/next.js')
+  const repo: Repo = await res.json()
+  // propsを通じてページにデータを渡す
+  return { props: { repo } }
+}) satisfies GetServerSideProps<{ repo: Repo }>
+
+export default function Page({
+  repo,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  return (
+    <main>
+      <p>{repo.stargazers_count}</p>
+    </main>
+  )
+}
+```
+
+```jsx filename="pages/index.js" switcher
+export async function getServerSideProps() {
+  // 外部APIからデータをフェッチ
+  const res = await fetch('https://api.github.com/repos/vercel/next.js')
+  const repo = await res.json()
+  // propsを通じてページにデータを渡す
+  return { props: { repo } }
+}
+
+export default function Page({ repo }) {
+  return (
+    <main>
+      <p>{repo.stargazers_count}</p>
+    </main>
+  )
+}
+```
+
+## `getServerSideProps`をいつ使用すべきか
+
+個人化されたユーザーデータや、リクエスト時にのみ知ることができる情報に依存するページをレンダリングする必要がある場合は、`getServerSideProps`を使用する必要があります。例えば、`authorization`ヘッダーや位置情報などです。
+
+リクエスト時にデータをフェッチする必要がない場合、またはデータをキャッシュしてプリレンダリングされたHTMLを使用したい場合は、[`getStaticProps`](/docs/pages/building-your-application/data-fetching/get-static-props)の使用をお勧めします。
+
+## 動作
+
+- `getServerSideProps`はサーバー上で実行されます。
+- `getServerSideProps`は**ページ**からのみエクスポートできます。
+- `getServerSideProps`はJSONを返します。
+- ユーザーがページを訪れると、`getServerSideProps`がリクエスト時にデータをフェッチし、そのデータを使用してページの初期HTMLをレンダリングします。
+- ページコンポーネントに渡される`props`は、初期HTMLの一部としてクライアント側で表示できます。これは、ページを正しく[ハイドレーション](https://react.dev/reference/react-dom/hydrate)できるようにするためです。`props`に、クライアント側に公開すべきではない機密情報を渡さないように注意してください。
+- ユーザーが[`next/link`](/docs/pages/api-reference/components/link)または[`next/router`](/docs/pages/api-reference/functions/use-router)を通じてページを訪れると、Next.jsはサーバーにAPIリクエストを送信し、`getServerSideProps`を実行します。
+- `getServerSideProps`を使用する場合、関数がサーバー上で実行されるため、データをフェッチするためにNext.jsの[APIルート](/docs/pages/building-your-application/routing/api-routes)を呼び出す必要はありません。代わりに、`getServerSideProps`の内部から直接CMS、データベース、またはその他のサードパーティAPIを呼び出すことができます。
+
+> **補足：** 
+>
+> - `getServerSideProps`で使用できるパラメーターとpropsについては、[`getServerSideProps` APIリファレンス](/docs/pages/api-reference/functions/get-server-side-props)を参照してください。
+> - クライアント側のバンドルから何が削除されるかを確認するには、[next-code-elimination tool](https://next-code-elimination.vercel.app/)を使用できます。
+
+## エラーハンドリング
+
+`getServerSideProps`内でエラーがスローされた場合、`pages/500.js`ファイルが表示されます。作成方法については、[500ページ](/docs/pages/building-your-application/routing/custom-error#500-page)のドキュメントを確認してください。開発中は、このファイルは使用されず、代わりに開発エラーオーバーレイが表示されます。
+
+## エッジケース
+
+### サーバーサイドレンダリング（SSR）とキャッシング
+
+`getServerSideProps`内でキャッシュヘッダー（`Cache-Control`）を使用して、動的レスポンスをキャッシュできます。例えば、[`stale-while-revalidate`](https://web.dev/stale-while-revalidate/)を使用します。
+
+```jsx
+// この値は10秒間（s-maxage=10）フレッシュとみなされます。
+// リクエストが次の10秒以内に繰り返された場合、以前にキャッシュされた値は
+// まだフレッシュです。59秒前にリクエストが繰り返された場合、
+// キャッシュされた値は古くなりますが、まだレンダリングされます（stale-while-revalidate=59）。
+//
+// バックグラウンドでは、キャッシュをフレッシュな値で更新するために
+// 再検証リクエストが行われます。ページを更新すると、新しい値が表示されます。
+export async function getServerSideProps({ req, res }) {
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=10, stale-while-revalidate=59'
+  )
+
+  return {
+    props: {},
+  }
+}
+```
+
+ただし、`cache-control`に頼る前に、ユースケースに[`getStaticProps`](/docs/pages/building-your-application/data-fetching/get-static-props)と[ISR](/docs/pages/building-your-application/data-fetching/incremental-static-regeneration)がより適しているかどうかを確認することをお勧めします。

@@ -1,0 +1,249 @@
+---
+title: Next.jsアプリケーションにコンテンツセキュリティポリシー（CSP）を設定する方法
+nav_title: コンテンツセキュリティポリシー
+description: Next.jsアプリケーションにコンテンツセキュリティポリシー（CSP）を設定する方法を学びます。
+related:
+  links:
+    - app/building-your-application/routing/middleware
+    - app/api-reference/functions/headers
+slug: /docs/app/guides/content-security-policy
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されています。Pagesルーター特有の内容を追加するには、`<PagesOnly>Content</PagesOnly>`コンポーネントを使用できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+[コンテンツセキュリティポリシー（CSP）](https://developer.mozilla.org/docs/Web/HTTP/CSP)は、クロスサイトスクリプティング（XSS）、クリックジャッキング、その他のコード注入攻撃などのさまざまなセキュリティ脅威からNext.jsアプリケーションを保護するために重要です。
+
+CSPを使用することで、開発者はコンテンツソース、スクリプト、スタイルシート、画像、フォント、オブジェクト、メディア（音声、動画）、iframe などについて、許可するオリジンを指定できます。
+
+<details>
+  <summary>例</summary>
+
+- [厳格なCSP](https://github.com/vercel/next.js/tree/canary/examples/with-strict-csp)
+
+</details>
+
+## ノンス
+
+[ノンス](https://developer.mozilla.org/docs/Web/HTML/Global_attributes/nonce)は、一度限りの使用のために作成された一意のランダムな文字列です。CSPと併用して、特定のインラインスクリプトやスタイルの実行を選択的に許可し、厳格なCSPディレクティブをバイパスするために使用されます。
+
+### ノンスを使用する理由
+
+CSPは悪意のあるスクリプトをブロックするように設計されていますが、インラインスクリプトが必要な正当なシナリオもあります。そのような場合、ノンスは正しいノンスを持つスクリプトの実行を許可する方法を提供します。
+
+### ミドルウェアでノンスを追加する
+
+[ミドルウェア](/docs/app/building-your-application/routing/middleware)を使用すると、ページのレンダリング前にヘッダーの追加とノンスの生成が可能になります。
+
+ページが表示されるたびに、新しいノンスを生成する必要があります。つまり、ノンスを追加するには**動的レンダリングを使用する必要があります**。
+
+例：
+
+```ts filename="middleware.ts" switcher
+import { NextRequest, NextResponse } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'nonce-${nonce}';
+    img-src 'self' blob: data:;
+    font-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+`
+  // 改行文字とスペースを置換
+  const contentSecurityPolicyHeaderValue = cspHeader
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+
+  requestHeaders.set(
+    'Content-Security-Policy',
+    contentSecurityPolicyHeaderValue
+  )
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
+  response.headers.set(
+    'Content-Security-Policy',
+    contentSecurityPolicyHeaderValue
+  )
+
+  return response
+}
+```
+
+```js filename="middleware.js" switcher
+import { NextResponse } from 'next/server'
+
+export function middleware(request) {
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'nonce-${nonce}';
+    img-src 'self' blob: data:;
+    font-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+`
+  // 改行文字とスペースを置換
+  const contentSecurityPolicyHeaderValue = cspHeader
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set(
+    'Content-Security-Policy',
+    contentSecurityPolicyHeaderValue
+  )
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
+  response.headers.set(
+    'Content-Security-Policy',
+    contentSecurityPolicyHeaderValue
+  )
+
+  return response
+}
+```
+
+デフォルトでは、ミドルウェアはすべてのリクエストで実行されます。[`matcher`](/docs/app/building-your-application/routing/middleware#matcher)を使用して、特定のパスでミドルウェアを実行するようにフィルタリングできます。
+
+CSPヘッダーが不要な(`next/link`からの)プリフェッチや静的アセットへのマッチングを除外することをお勧めします。
+
+```ts filename="middleware.ts" switcher
+export const config = {
+  matcher: [
+    /*
+     * 以下で始まるリクエストパス以外のすべてのパスにマッチ：
+     * - api (APIルート)
+     * - _next/static (静的ファイル)
+     * - _next/image (画像最適化ファイル)
+     * - favicon.ico (ファビコンファイル)
+     */
+    {
+      source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
+  ],
+}
+```
+
+```js filename="middleware.js" switcher
+export const config = {
+  matcher: [
+    /*
+     * 以下で始まるリクエストパス以外のすべてのパスにマッチ：
+     * - api (APIルート)
+     * - _next/static (静的ファイル)
+     * - _next/image (画像最適化ファイル)
+     * - favicon.ico (ファビコンファイル)
+     */
+    {
+      source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
+  ],
+}
+```
+
+### ノンスの読み取り
+
+[`headers`](/docs/app/api-reference/functions/headers)を使用して、[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)からノンスを読み取ることができます：
+
+```tsx filename="app/page.tsx" switcher
+import { headers } from 'next/headers'
+import Script from 'next/script'
+
+export default async function Page() {
+  const nonce = (await headers()).get('x-nonce')
+
+  return (
+    <Script
+      src="https://www.googletagmanager.com/gtag/js"
+      strategy="afterInteractive"
+      nonce={nonce}
+    />
+  )
+}
+```
+
+```jsx filename="app/page.jsx" switcher
+import { headers } from 'next/headers'
+import Script from 'next/script'
+
+export default async function Page() {
+  const nonce = (await headers()).get('x-nonce')
+
+  return (
+    <Script
+      src="https://www.googletagmanager.com/gtag/js"
+      strategy="afterInteractive"
+      nonce={nonce}
+    />
+  )
+}
+```
+
+## ノンスを使用しない場合
+
+ノンスを必要としないアプリケーションでは、[`next.config.js`](/docs/app/api-reference/config/next-config-js)ファイルで直接CSPヘッダーを設定できます：
+
+```js filename="next.config.js"
+const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'unsafe-eval' 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' blob: data:;
+    font-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+`
+
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: cspHeader.replace(/\n/g, ''),
+          },
+        ],
+      },
+    ]
+  },
+}
+```
+
+## バージョン履歴
+
+ノンスを適切に処理して適用するには、Next.jsの`v13.4.20+`を使用することをお勧めします。

@@ -1,0 +1,28 @@
+---
+title: バージョン10へのアップグレード方法
+nav_title: バージョン10
+description: Next.jsアプリケーションをバージョン9からバージョン10にアップグレードします。
+slug: /docs/pages/guides/upgrading/version-10
+---
+
+バージョン9と10の間に破壊的変更はありませんでした。
+
+バージョン10にアップグレードするには、以下のコマンドを実行してください：
+
+```bash filename="Terminal"
+npm i next@10
+```
+
+```bash filename="Terminal"
+yarn add next@10
+```
+
+```bash filename="Terminal"
+pnpm up next@10
+```
+
+```bash filename="Terminal"
+bun add next@10
+```
+
+> **補足**: TypeScriptを使用している場合は、`@types/react`と`@types/react-dom`も対応するバージョンにアップグレードしてください。

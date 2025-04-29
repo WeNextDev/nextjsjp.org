@@ -1,0 +1,46 @@
+---
+title: public フォルダ
+nav_title: public
+description: Next.jsでは、画像などの静的ファイルをpublicディレクトリで提供できます。その仕組みについてここで学ぶことができます。
+slug: /docs/app/api-reference/file-conventions/public-folder
+---
+
+{/* この文書の内容はappルーターとpagesルーターで共有されています。`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用して、Pagesルーター特有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+Next.jsでは、ルートディレクトリの`public`というフォルダ内の画像などの静的ファイルを提供できます。`public`内のファイルは、ベースURL（`/`）から始まるコードで参照できます。
+
+例えば、`public/avatars/me.png`ファイルは、`/avatars/me.png`パスにアクセスすることで表示できます。その画像を表示するコードは次のようになります：
+
+```jsx filename="avatar.js"
+import Image from 'next/image'
+
+export function Avatar({ id, alt }) {
+  return <Image src={`/avatars/${id}.png`} alt={alt} width="64" height="64" />
+}
+
+export function AvatarOfMe() {
+  return <Avatar id="me" alt="A portrait of me" />
+}
+```
+
+## キャッシング
+
+Next.jsは`public`フォルダ内のアセットを安全にキャッシュできません。なぜならそれらは変更される可能性があるためです。適用されるデフォルトのキャッシュヘッダーは次のとおりです：
+
+```jsx
+Cache-Control: public, max-age=0
+```
+
+## Robots、ファビコン、その他
+
+<PagesOnly>
+
+このフォルダは`robots.txt`、`favicon.ico`、Google Site Verification、およびその他の静的ファイル（`.html`を含む）にも役立ちます。ただし、`pages/`ディレクトリ内のファイルと同じ名前の静的ファイルを持たないようにしてください。これはエラーの原因となります。[詳細はこちら](/docs/messages/conflicting-public-file-page)。
+
+</PagesOnly>
+
+<AppOnly>
+
+`robots.txt`、`favicon.ico`などの静的メタデータファイルについては、`app`フォルダ内の[特別なメタデータファイル](/docs/app/api-reference/file-conventions/metadata)を使用する必要があります。
+
+</AppOnly>

@@ -62,7 +62,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   // ルートパラメータを読み取る
-  const id = (await params).id
+  const { id } = await params
 
   // データを取得
   const product = await fetch(`https://.../${id}`).then((res) => res.json())
@@ -84,7 +84,7 @@ export default function Page({ params, searchParams }: Props) {}
 ```jsx filename="app/products/[id]/page.js" switcher
 export async function generateMetadata({ params, searchParams }, parent) {
   // ルートパラメータを読み取る
-  const id = (await params).id
+  const { id } = await params
 
   // データを取得
   const product = await fetch(`https://.../${id}`).then((res) => res.json())
@@ -108,7 +108,7 @@ export default function Page({ params, searchParams }) {}
 > **補足**:
 >
 > - 静的メタデータと `generateMetadata` による動的メタデータは、**サーバーコンポーネントでのみサポート**されます。
-> - `fetch` リクエストは、`generateMetadata`、`generateStaticParams`、レイアウト、ページ、サーバーコンポーネント間で同じデータに対して自動的に[メモ化](/docs/app/building-your-application/caching#request-memoization)されます。`fetch` が利用できない場合は、React [`cache`](/docs/app/building-your-application/caching#react-cache-function) を使用できます。
+> - `fetch` リクエストは、`generateMetadata`、`generateStaticParams`、レイアウト、ページ、サーバーコンポーネント間で同じデータに対して自動的に[メモ化](/docs/app/deep-dive/caching#request-memoization)されます。`fetch` が利用できない場合は、React [`cache`](/docs/app/deep-dive/caching#react-cache-function) を使用できます。
 > - Next.js は、`generateMetadata` 内のデータ取得が完了するまで待機してから、クライアントに UI をストリーミングします。これにより、[ストリーミングされたレスポンス](/docs/app/building-your-application/routing/loading-ui-and-streaming)の最初の部分に `<head>` タグが含まれることが保証されます。
 
 ## ファイルベースのメタデータ
@@ -250,10 +250,10 @@ export const metadata = {
 
 使用するには、`next/og` から `ImageResponse` をインポートします：
 
-```jsx filename="app/about/route.js"
+```jsx filename="app/about/opengraph-image.js"
 import { ImageResponse } from 'next/og'
 
-export async function GET() {
+export default function OG() {
   return new ImageResponse(
     (
       <div
@@ -299,7 +299,8 @@ JSON-LDの現在の推奨事項は、`layout.js` または `page.js` コンポ�
 
 ```tsx filename="app/products/[id]/page.tsx" switcher
 export default async function Page({ params }) {
-  const product = await getProduct((await params).id)
+  const { id } = await params
+  const product = await getProduct(id)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -324,7 +325,8 @@ export default async function Page({ params }) {
 
 ```jsx filename="app/products/[id]/page.js" switcher
 export default async function Page({ params }) {
-  const product = await getProduct((await params).id)
+  const { id } = await params
+  const product = await getProduct(id)
 
   const jsonLd = {
     '@context': 'https://schema.org',

@@ -1,0 +1,80 @@
+---
+title: userAgent
+description: userAgentヘルパーはWeb Request APIを拡張し、リクエストからユーザーエージェントオブジェクトを操作するための追加のプロパティとメソッドを提供します。
+slug: /docs/app/api-reference/functions/userAgent
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されています。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター特有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+`userAgent`ヘルパーは[Web Request API](https://developer.mozilla.org/docs/Web/API/Request)を拡張し、リクエストからユーザーエージェントオブジェクトを操作するための追加のプロパティとメソッドを提供します。
+
+```ts filename="middleware.ts" switcher
+import { NextRequest, NextResponse, userAgent } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const url = request.nextUrl
+  const { device } = userAgent(request)
+
+  // device.typeは 'mobile'、'tablet'、'console'、'smarttv'、
+  // 'wearable'、'embedded'、または undefined（デスクトップブラウザの場合）になります
+  const viewport = device.type || 'desktop'
+
+  url.searchParams.set('viewport', viewport)
+  return NextResponse.rewrite(url)
+}
+```
+
+```js filename="middleware.js" switcher
+import { NextResponse, userAgent } from 'next/server'
+
+export function middleware(request) {
+  const url = request.nextUrl
+  const { device } = userAgent(request)
+
+  // device.typeは 'mobile'、'tablet'、'console'、'smarttv'、
+  // 'wearable'、'embedded'、または undefined（デスクトップブラウザの場合）になります
+  const viewport = device.type || 'desktop'
+
+  url.searchParams.set('viewport', viewport)
+  return NextResponse.rewrite(url)
+}
+```
+
+## `isBot`
+
+リクエストが既知のボットからのものかどうかを示すブール値です。
+
+## `browser`
+
+リクエストで使用されているブラウザに関する情報を含むオブジェクトです。
+
+- `name`: ブラウザの名前を表す文字列、または識別できない場合は`undefined`。
+- `version`: ブラウザのバージョンを表す文字列、または`undefined`。
+
+## `device`
+
+リクエストで使用されているデバイスに関する情報を含むオブジェクトです。
+
+- `model`: デバイスのモデルを表す文字列、または`undefined`。
+- `type`: デバイスのタイプを表す文字列。`console`、`mobile`、`tablet`、`smarttv`、`wearable`、`embedded`、または`undefined`などの値があります。
+- `vendor`: デバイスのベンダーを表す文字列、または`undefined`。
+
+## `engine`
+
+ブラウザのエンジンに関する情報を含むオブジェクトです。
+
+- `name`: エンジンの名前を表す文字列。可能な値は次のとおりです：`Amaya`、`Blink`、`EdgeHTML`、`Flow`、`Gecko`、`Goanna`、`iCab`、`KHTML`、`Links`、`Lynx`、`NetFront`、`NetSurf`、`Presto`、`Tasman`、`Trident`、`w3m`、`WebKit`または`undefined`。
+- `version`: エンジンのバージョンを表す文字列、または`undefined`。
+
+## `os`
+
+オペレーティングシステムに関する情報を含むオブジェクトです。
+
+- `name`: OSの名前を表す文字列、または`undefined`。
+- `version`: OSのバージョンを表す文字列、または`undefined`。
+
+## `cpu`
+
+CPU アーキテクチャに関する情報を含むオブジェクトです。
+
+- `architecture`: CPUのアーキテクチャを表す文字列。可能な値は次のとおりです：`68k`、`amd64`、`arm`、`arm64`、`armhf`、`avr`、`ia32`、`ia64`、`irix`、`irix64`、`mips`、`mips64`、`pa-risc`、`ppc`、`sparc`、`sparc64`または`undefined`

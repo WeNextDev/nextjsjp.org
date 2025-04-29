@@ -54,7 +54,7 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const id = (await params).id
+  const { id } = await params
   const post: Post = await fetch(`https://api.vercel.app/blog/${id}`).then(
     (res) => res.json()
   )
@@ -540,11 +540,7 @@ export async function getStaticProps({ params }) {
 
 ### キャッシュの場所のカスタマイズ
 
-ページのキャッシュと再検証（インクリメンタル静的再生成を使用）は、同じ共有キャッシュを使用します。[Vercelにデプロイする](https://vercel.com/docs/incremental-static-regeneration?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)場合、ISRキャッシュは自動的に永続ストレージに保存されます。
-
-セルフホスティングの場合、ISRキャッシュはNext.jsサーバーのファイルシステム（ディスク）に保存されます。これはPagesとApp Routerの両方を使用してセルフホスティングする際に自動的に機能します。
-
-キャッシュされたページとデータを永続ストレージに保存したい場合や、Next.jsアプリケーションの複数のコンテナまたはインスタンス間でキャッシュを共有したい場合は、Next.jsのキャッシュの場所を設定できます。[詳細はこちら](/docs/app/building-your-application/deploying#caching-and-isr)をご覧ください。
+キャッシュされたページやデータを永続的なストレージに保存したい場合や、Next.jsアプリケーションの複数のコンテナやインスタンス間でキャッシュを共有したい場合は、Next.jsのキャッシュの場所を設定できます。[詳細はこちら](/docs/app/guides/self-hosting#caching-and-isr)。
 
 ## トラブルシューティング
 
@@ -579,8 +575,8 @@ NEXT_PRIVATE_DEBUG_CACHE=1
 <AppOnly>
 
 - ISRはNode.jsランタイム（デフォルト）を使用する場合のみサポートされています。
-- [Static Export](/docs/app/building-your-application/deploying/static-exports)を作成する場合、ISRはサポートされていません。
-- 静的にレンダリングされたルート内に複数の`fetch`リクエストがあり、それぞれが異なる`revalidate`頻度を持っている場合、ISRには最も短い時間が使用されます。ただし、それらの再検証頻度は[データキャッシュ](/docs/app/building-your-application/caching#data-cache)によって尊重されます。
+- [Static Export](/docs/app/guides/static-exports)を作成する場合、ISRはサポートされていません。
+- 静的にレンダリングされたルート内に複数の`fetch`リクエストがあり、それぞれが異なる`revalidate`頻度を持っている場合、ISRには最も短い時間が使用されます。ただし、それらの再検証頻度は[データキャッシュ](/docs/app/deep-dive/caching#data-cache)によって尊重されます。
 - ルートで使用される`fetch`リクエストのいずれかが`revalidate`時間が`0`または明示的な`no-store`を持っている場合、そのルートは[動的にレンダリング](/docs/app/building-your-application/rendering/server-components#dynamic-rendering)されます。
 - オンデマンドISRリクエストに対してミドルウェアは実行されません。つまり、ミドルウェアのパスの書き換えやロジックは適用されません。正確なパスを再検証していることを確認してください。例えば、書き換えられた`/post-1`ではなく、`/post/1`を使用してください。
 
@@ -589,7 +585,7 @@ NEXT_PRIVATE_DEBUG_CACHE=1
 <PagesOnly>
 
 - ISRはNode.jsランタイム（デフォルト）を使用する場合のみサポートされています。
-- [Static Export](/docs/app/building-your-application/deploying/static-exports)を作成する場合、ISRはサポートされていません。
+- [Static Export](/docs/app/guides/static-exports)を作成する場合、ISRはサポートされていません。
 - オンデマンドISRリクエストに対してミドルウェアは実行されません。つまり、ミドルウェアのパスの書き換えやロジックは適用されません。正確なパスを再検証していることを確認してください。例えば、書き換えられた`/post-1`ではなく、`/post/1`を使用してください。
 
 </PagesOnly>

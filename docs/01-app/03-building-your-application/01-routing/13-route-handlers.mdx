@@ -279,13 +279,13 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const slug = (await params).slug // 'a'、'b'、または'c'
+  const { slug } = await params // 'a', 'b', or 'c'
 }
 ```
 
 ```js filename="app/items/[slug]/route.js" switcher
 export async function GET(request, { params }) {
-  const slug = (await params).slug // 'a'、'b'、または'c'
+  const { slug } = await params // 'a', 'b', or 'c'
 }
 ```
 
@@ -297,7 +297,7 @@ export async function GET(request, { params }) {
 
 ### URLクエリパラメータ
 
-Route Handlerに渡されるリクエストオブジェクトは`NextRequest`インスタンスであり、クエリパラメータをより簡単に処理するための[追加の便利なメソッド](/docs/app/api-reference/functions/next-request#nexturl)がいくつかあります。
+リクエストハンドラに渡されるリクエストオブジェクトは `NextRequest` インスタンスであり、クエリパラメータをより簡単に処理するためのものなど、[いくつかの便利なメソッド](/docs/app/api-reference/functions/next-request#nexturl)が含まれています。
 
 ```ts filename="app/api/search/route.ts" switcher
 import { type NextRequest } from 'next/server'

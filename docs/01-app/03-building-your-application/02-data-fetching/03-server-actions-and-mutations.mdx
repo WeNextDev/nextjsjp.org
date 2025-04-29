@@ -121,7 +121,7 @@ export default function ClientComponent({ updateItemAction }) {
   - クライアントコンポーネントでは、サーバーアクションを呼び出すフォームはJavaScriptがまだ読み込まれていない場合、クライアントハイドレーションを優先して送信をキューに入れます。
   - ハイドレーション後、フォーム送信時にブラウザは更新されません。
 - サーバーアクションは`<form>`に限定されず、イベントハンドラー、`useEffect`、サードパーティライブラリ、および`<button>`などの他のフォーム要素からも呼び出すことができます。
-- サーバーアクションはNext.jsの[キャッシングと再検証](/docs/app/building-your-application/caching)アーキテクチャと統合されています。アクションが呼び出されると、Next.jsは更新されたUIと新しいデータを1回のサーバーラウンドトリップで返すことができます。
+- サーバーアクションはNext.jsの[キャッシングと再検証](/docs/app/deep-dive/caching)アーキテクチャと統合されています。アクションが呼び出されると、Next.jsは更新されたUIと新しいデータを1回のサーバーラウンドトリップで返すことができます。
 - 内部的に、アクションは`POST`メソッドを使用し、このHTTPメソッドのみがアクションを呼び出すことができます。
 - サーバーアクションの引数と戻り値はReactによってシリアライズ可能でなければなりません。[シリアライズ可能な引数と値](https://react.dev/reference/react/use-server#serializable-parameters-and-return-values)のリストについては、Reactのドキュメントを参照してください。
 - サーバーアクションは関数です。つまり、アプリケーションのどこでも再利用できます。
@@ -174,7 +174,7 @@ export default function Page() {
 }
 ```
 
-> **補足：**
+> **補足：** 
 >
 > - 例：[読み込み状態とエラー状態を持つフォーム](https://github.com/vercel/next.js/tree/canary/examples/next-forms)
 > - 多くのフィールドを持つフォームを扱う場合は、JavaScriptの[`Object.fromEntries()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/fromEntries)と[`entries()`](https://developer.mozilla.org/en-US/docs/Web/API/FormData/entries)メソッドの使用を検討するとよいでしょう。例：`const rawFormData = Object.fromEntries(formData)`。ただし、`formData`には追加の`$ACTION_`プロパティが含まれることに注意してください。
@@ -232,7 +232,7 @@ export async function updateUser(userId: string, formData: FormData) {}
 export async function updateUser(userId, formData) {}
 ```
 
-> **補足：**
+> **補足：** 
 >
 > - もう一つの方法は、引数を隠しフィールドとしてフォームに渡すことです（例：`<input type="hidden" name="userId" value={userId} />`）。ただし、この値はレンダリングされたHTMLの一部となり、エンコードされません。
 > - `.bind`はサーバーコンポーネントとクライアントコンポーネントの両方で動作します。また、プログレッシブエンハンスメントもサポートしています。
@@ -718,13 +718,13 @@ export default function ViewCount({ initialViews }: { initialViews: number }) {
 
 エラーがスローされると、クライアント上の最も近い`error.js`または`<Suspense>`境界によってキャッチされます。詳細については、[エラー処理](/docs/app/building-your-application/routing/error-handling)を参照してください。
 
-> **補足：**
+> **補足：** 
 >
 > - エラーをスローする以外に、`useActionState`で処理されるオブジェクトを返すこともできます。[サーバー側のバリデーションとエラー処理](#server-side-form-validation)を参照してください。
 
 ### データの再検証
 
-サーバーアクション内で[`revalidatePath`](/docs/app/api-reference/functions/revalidatePath) APIを使用して、[Next.jsキャッシュ](/docs/app/building-your-application/caching)を再検証できます：
+サーバーアクション内で[`revalidatePath`](/docs/app/api-reference/functions/revalidatePath) APIを使用して、[Next.jsキャッシュ](/docs/app/deep-dive/caching)を再検証できます：
 
 ```ts filename="app/actions.ts" switcher
 'use server'
@@ -886,7 +886,7 @@ export async function exampleAction() {
 - **安全なアクションID：** Next.jsは、クライアントがサーバーアクションを参照して呼び出すことができるように、暗号化された非決定論的なIDを作成します。これらのIDはセキュリティを強化するために、ビルド間で定期的に再計算されます。
 - **デッドコード除去：** 未使用のサーバーアクション（IDで参照される）はクライアントバンドルから削除され、サードパーティによる公開アクセスを防ぎます。
 
-> **補足：**
+> **補足：** 
 >
 > IDはコンパイル時に作成され、最大14日間キャッシュされます。新しいビルドが開始されるか、ビルドキャッシュが無効化されると、IDは再生成されます。
 > このセキュリティ向上により、認証レイヤーが欠けている場合のリスクが軽減されます。ただし、サーバーアクションをパブリックなHTTPエンドポイントのように扱うべきです。

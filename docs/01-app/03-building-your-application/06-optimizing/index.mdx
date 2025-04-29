@@ -1,34 +1,34 @@
 ---
 title: 最適化
 nav_title: 最適化
-description: 最高のパフォーマンスとユーザーエクスペリエンスのためにNext.jsアプリケーションを最適化します。
+description: Next.jsアプリケーションを最高のパフォーマンスとユーザー体験のために最適化します。
 slug: /docs/app/building-your-application/optimizing
 ---
 
-{/* このドキュメントの内容は、appルーターとpagesルーターで共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用してPages Router固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+{/* このドキュメントの内容はappルーターとpagesルーター間で共有されています。Pagesルーター特有のコンテンツを追加するには、`<PagesOnly>コンテンツ</PagesOnly>`コンポーネントを使用できます。共有コンテンツはコンポーネントでラップしないでください。 */}
 
-Next.jsには、アプリケーションの速度と[Core Web Vitals](https://web.dev/vitals/)を改善するための様々な組み込みの最適化が用意されています。このガイドでは、ユーザーエクスペリエンスを向上させるために活用できる最適化について説明します。
+Next.jsには、アプリケーションの速度と[Core Web Vitals](https://web.dev/vitals/)を向上させるための様々な組み込みの最適化機能が付属しています。このガイドでは、ユーザー体験を向上させるために活用できる最適化について説明します。
 
 ## 組み込みコンポーネント
 
-組み込みコンポーネントは、一般的なUIの最適化を実装する複雑さを抽象化します。これらのコンポーネントは：
+組み込みコンポーネントは、一般的なUI最適化の実装の複雑さを抽象化します。これらのコンポーネントは以下の通りです：
 
-- **Images**：ネイティブの`<img>`要素をベースにしています。Imageコンポーネントは、遅延読み込みと、デバイスサイズに基づく自動画像リサイズにより、画像のパフォーマンスを最適化します。
-- **Link**：ネイティブの`<a>`タグをベースにしています。Linkコンポーネントは、ページを背景で先読みし、より高速でスムーズなページ遷移を実現します。
-- **Scripts**：ネイティブの`<script>`タグをベースにしています。Scriptコンポーネントは、サードパーティスクリプトの読み込みと実行を制御できます。
+- **Images**: ネイティブの`<img>`要素をベースにしています。ImageコンポーネントはLazy loadingやデバイスサイズに基づいた自動リサイズにより、パフォーマンスのために画像を最適化します。
+- **Link**: ネイティブの`<a>`タグをベースにしています。Linkコンポーネントはバックグラウンドでページをプリフェッチし、より速くスムーズなページ遷移を実現します。
+- **Scripts**: ネイティブの`<script>`タグをベースにしています。Scriptコンポーネントはサードパーティスクリプトの読み込みと実行を制御できます。
 
 ## メタデータ
 
-メタデータは、検索エンジンがコンテンツをより良く理解するのに役立ち（これによりSEOが改善される可能性があります）、ソーシャルメディア上でのコンテンツの表示をカスタマイズできるため、さまざまなプラットフォーム間でより魅力的で一貫したユーザーエクスペリエンスを作成できます。
+メタデータは検索エンジンがコンテンツをより理解しやすくし（SEO向上につながります）、ソーシャルメディア上でのコンテンツの表示方法をカスタマイズできるため、様々なプラットフォーム間でより魅力的で一貫性のあるユーザー体験を作成できます。
 
 <AppOnly>
 
-Next.jsのMetadata APIを使用すると、ページの`<head>`要素を変更できます。メタデータは2つの方法で設定できます：
+Next.jsのMetadata APIを使用すると、ページの`<head>`要素を変更できます。メタデータは次の2つの方法で設定できます：
 
-- **構成ベースのメタデータ**：`layout.js`または`page.js`ファイルで、静的な`metadata`オブジェクトまたは動的な[`generateMetadata`関数](/docs/app/api-reference/functions/generate-metadata#generatemetadata-function)をエクスポートします。
-- **ファイルベースのメタデータ**：ルートセグメントに静的または動的に生成された特殊ファイルを追加します。
+- **構成ベースのメタデータ**: `layout.js`または`page.js`ファイルで[静的な`metadata`オブジェクト](/docs/app/api-reference/functions/generate-metadata#metadata-object)または動的な[`generateMetadata`関数](/docs/app/api-reference/functions/generate-metadata#generatemetadata-function)をエクスポートします。
+- **ファイルベースのメタデータ**: ルートセグメントに静的または動的に生成される特殊ファイルを追加します。
 
-さらに、[imageResponse](/docs/app/api-reference/functions/image-response)コンストラクターを使用して、JSXとCSSで動的なオープングラフ画像を作成できます。
+さらに、[imageResponse](/docs/app/api-reference/functions/image-response)コンストラクタを使用して、JSXとCSSで動的なOpen Graph画像を作成できます。
 
 </AppOnly>
 
@@ -40,8 +40,8 @@ Next.jsのHeadコンポーネントを使用すると、ページの`<head>`を�
 
 ## 静的アセット
 
-Next.jsの`/public`フォルダを使用して、画像、フォント、その他のファイルなどの静的アセットを提供できます。`/public`内のファイルは、CDNプロバイダーによってキャッシュされ、効率的に配信されます。
+Next.jsの`/public`フォルダは、画像、フォント、その他のファイルなどの静的アセットを提供するために使用できます。`/public`内のファイルはCDNプロバイダによってキャッシュされ、効率的に配信されます。
 
-## 分析と監視
+## 分析とモニタリング
 
-大規模なアプリケーションでは、Next.jsは人気の分析およびモニタリングツールと統合され、アプリケーションのパフォーマンスを理解するのに役立ちます。詳細は<PagesOnly>[分析](/docs/app/building-your-application/optimizing/analytics)、</PagesOnly>[OpenTelemetry](/docs/pages/building-your-application/optimizing/open-telemetry)<PagesOnly>、</PagesOnly>[インストゥルメンテーション](/docs/pages/building-your-application/optimizing/instrumentation)ガイドを参照してください。
+大規模なアプリケーションでは、Next.jsは人気の分析・モニタリングツールと統合し、アプリケーションのパフォーマンスを理解するのに役立ちます。詳細は<PagesOnly>[Analytics](/docs/app/guides/analytics)、</PagesOnly>[OpenTelemetry](/docs/pages/guides/open-telemetry)<PagesOnly>、</PagesOnly>および[Instrumentation](/docs/pages/guides/instrumentation)ガイドを参照してください。

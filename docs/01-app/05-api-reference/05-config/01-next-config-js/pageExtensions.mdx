@@ -1,0 +1,58 @@
+---
+title: pageExtensions
+description: Pages Routerでページを解決する際に、Next.jsのデフォルトのページ拡張子を拡張します。
+slug: /docs/app/api-reference/config/next-config-js/pageExtensions
+---
+
+{/* このドキュメントの内容はアプリとページのルーターで共有されます。Pages Routerに固有の内容には`<PagesOnly>Content</PagesOnly>`コンポーネントを使用できます。共有コンテンツは、コンポーネントでラップしないでください。 */}
+
+<AppOnly>
+
+デフォルトでは、Next.jsは`.tsx`、`.ts`、`.jsx`、`.js`の拡張子を持つファイルを受け入れます。これをマークダウン（`.md`、`.mdx`）などの他の拡張子を許可するように変更できます。
+
+```js filename="next.config.js"
+const withMDX = require('@next/mdx')()
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+}
+
+module.exports = withMDX(nextConfig)
+```
+
+</AppOnly>
+
+<PagesOnly>
+
+Next.jsで使用されるデフォルトのページ拡張子（`.tsx`、`.ts`、`.jsx`、`.js`）を拡張できます。`next.config.js`内で、`pageExtensions`の設定を追加します：
+
+```js filename="next.config.js"
+module.exports = {
+  pageExtensions: ['mdx', 'md', 'jsx', 'js', 'tsx', 'ts'],
+}
+```
+
+これらの値を変更すると、以下を含むすべてのNext.jsページに影響します：
+
+- [`middleware.js`](/docs/pages/building-your-application/routing/middleware)
+- [`instrumentation.js`](/docs/pages/guides/instrumentation)
+- `pages/_document.js`
+- `pages/_app.js`
+- `pages/api/`
+
+例えば、`.ts`のページ拡張子を`.page.ts`に再構成する場合、`middleware.page.ts`、`instrumentation.page.ts`、`_app.page.ts`のようにページの名前を変更する必要があります。
+
+## `pages`ディレクトリ内の非ページファイルを含める
+
+`pages`ディレクトリ内にテストファイルやコンポーネントが使用する他のファイルを共存させることができます。`next.config.js`内で、`pageExtensions`の設定を追加します：
+
+```js filename="next.config.js"
+module.exports = {
+  pageExtensions: ['page.tsx', 'page.ts', 'page.jsx', 'page.js'],
+}
+```
+
+そして、ページの拡張子に`.page`を含むように名前を変更します（例：`MyPage.tsx`を`MyPage.page.tsx`に名前変更）。上記のファイルを含むすべてのNext.jsページの名前を確実に変更してください。
+
+</PagesOnly>

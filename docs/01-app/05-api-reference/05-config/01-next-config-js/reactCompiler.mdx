@@ -1,0 +1,96 @@
+---
+title: reactCompiler
+description: React Compilerを有効にして、コンポーネントのレンダリングを自動的に最適化します。
+version: experimental
+slug: /docs/app/api-reference/config/next-config-js/reactCompiler
+---
+
+Next.jsは[React Compiler](https://react.dev/learn/react-compiler)をサポートしています。これはコンポーネントのレンダリングを自動的に最適化してパフォーマンスを向上させるツールです。これにより、`useMemo`や`useCallback`を使用した手動のメモ化の必要性が軽減されます。
+
+Next.jsにはSWCで書かれたカスタムパフォーマンス最適化が含まれており、React Compilerをより効率的に使用できます。すべてのファイルでコンパイラを実行する代わりに、Next.jsはプロジェクトを分析し、関連するファイルにのみReact Compilerを適用します。これにより不要な処理を避け、Babelプラグインを単独で使用する場合と比較して、より高速なビルドが可能になります。
+
+## 仕組み
+
+React CompilerはBabelプラグインを通して実行されます。ビルドを高速に保つために、Next.jsはカスタムSWC最適化を使用し、JSXやReactフックを含むファイルなど、関連するファイルにのみReact Compilerを適用します。
+
+これにより、すべてを一律にコンパイルすることを避け、パフォーマンスコストを最小限に抑えます。デフォルトのRustベースのコンパイラと比較すると、ビルドが若干遅くなる場合がありますが、その影響は小さく、限定的です。
+
+使用するには、`babel-plugin-react-compiler`をインストールします：
+
+```bash filename="Terminal"
+npm install babel-plugin-react-compiler
+```
+
+次に、`next.config.js`に`experimental.reactCompiler`オプションを追加します：
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    reactCompiler: true,
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    reactCompiler: true,
+  },
+}
+
+module.exports = nextConfig
+```
+
+## アノテーション
+
+コンパイラを「オプトイン」モードで実行するように設定できます：
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    reactCompiler: {
+      compilationMode: 'annotation',
+    },
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    reactCompiler: {
+      compilationMode: 'annotation',
+    },
+  },
+}
+
+module.exports = nextConfig
+```
+
+その後、特定のコンポーネントやフックをオプトインするために、Reactの`"use memo"`ディレクティブでアノテーションを付けることができます：
+
+```ts filename="app/page.tsx" switcher
+export default function Page() {
+  'use memo'
+  // ...
+}
+```
+
+```js filename="app/page.js" switcher
+export default function Page() {
+  'use memo'
+  // ...
+}
+```
+
+> **注意:** 逆の効果を得るために、Reactの`"use no memo"`ディレクティブを使用してコンポーネントやフックをオプトアウトすることもできます。

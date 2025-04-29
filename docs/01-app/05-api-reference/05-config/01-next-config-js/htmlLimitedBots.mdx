@@ -1,0 +1,35 @@
+---
+title: htmlLimitedBots
+description: ブロッキングメタデータを受け取るべきユーザーエージェントのリストを指定します。
+slug: /docs/app/api-reference/config/next-config-js/htmlLimitedBots
+---
+
+`htmlLimitedBots` 設定では、[ストリーミングメタデータ](/docs/app/api-reference/functions/generate-metadata#streaming-metadata)の代わりにブロッキングメタデータを受け取るべきユーザーエージェントのリストを指定できます。
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const config: NextConfig = {
+  htmlLimitedBots: 'MySpecialBot|MyAnotherSpecialBot|SimpleCrawler',
+}
+
+export default config
+```
+
+```js filename="next.config.js" switcher
+module.exports = {
+  htmlLimitedBots: 'MySpecialBot|MyAnotherSpecialBot|SimpleCrawler',
+}
+```
+
+## デフォルトリスト
+
+Next.jsには[HTMLが制限されたボットのデフォルトリスト](https://github.com/vercel/next.js/blob/canary/packages/next/src/shared/lib/router/utils/html-bots.ts)が含まれています。
+
+`htmlLimitedBots` 設定を指定すると、Next.jsのデフォルトリストが上書きされ、この動作を適用するユーザーエージェントを完全に制御できるようになります。ただし、これは高度な動作であり、ほとんどの場合はデフォルト設定で十分です。
+
+## バージョン履歴
+
+| バージョン | 変更内容                             |
+| ------- | ------------------------------------ |
+| 15.2.0  | 導入時期：`htmlLimitedBots` オプション |

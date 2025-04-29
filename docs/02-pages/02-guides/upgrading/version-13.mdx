@@ -1,0 +1,89 @@
+---
+title: バージョン13へのアップグレード方法
+nav_title: バージョン13
+description: Next.jsアプリケーションをバージョン12から13にアップグレードします。
+slug: /docs/pages/guides/upgrading/version-13
+---
+
+## 12から13へのアップグレード
+
+Next.jsバージョン13にアップデートするには、任意のパッケージマネージャーを使用して以下のコマンドを実行してください：
+
+```bash filename="Terminal"
+npm i next@13 react@latest react-dom@latest eslint-config-next@13
+```
+
+```bash filename="Terminal"
+yarn add next@13 react@latest react-dom@latest eslint-config-next@13
+```
+
+```bash filename="Terminal"
+pnpm i next@13 react@latest react-dom@latest eslint-config-next@13
+```
+
+```bash filename="Terminal"
+bun add next@13 react@latest react-dom@latest eslint-config-next@13
+```
+
+> **補足:** TypeScriptを使用している場合は、`@types/react`と`@types/react-dom`も最新バージョンにアップグレードしてください。
+
+### v13の概要
+
+- [サポートされるブラウザ](/docs/architecture/supported-browsers)が変更され、Internet Explorerのサポートが廃止され、モダンブラウザを対象としています。
+- 最小Node.jsバージョンが12.22.0から16.14.0に引き上げられました。これは12.xと14.xがサポート終了に達したためです。
+- 最小Reactバージョンが17.0.2から18.2.0に引き上げられました。
+- `swcMinify`設定プロパティが`false`から`true`に変更されました。詳細は[Next.jsコンパイラ](/docs/architecture/nextjs-compiler)をご覧ください。
+- `next/image`インポートが`next/legacy/image`に名前が変更されました。`next/future/image`インポートは`next/image`に名前が変更されました。インポートを安全かつ自動的に名前変更するための[コードモッド](/docs/pages/guides/upgrading/codemods#next-image-to-legacy-image)が利用可能です。
+- `next/link`の子要素に`<a>`を使用できなくなりました。従来の動作を使用するには`legacyBehavior`プロパティを追加するか、アップグレードするには`<a>`を削除してください。コードを自動的にアップグレードするための[コードモッド](/docs/pages/guides/upgrading/codemods#new-link)が利用可能です。
+- `target`設定プロパティが削除され、[Output File Tracing](/docs/pages/api-reference/config/next-config-js/output)に置き換えられました。
+
+## 共有機能の移行
+
+Next.js 13では、新機能と規則を備えた新しい[`app`ディレクトリ](/docs/app/building-your-application/routing)が導入されました。ただし、Next.js 13へのアップグレードでは、新しい`app`ルーターを使用する**必要はありません**。
+
+更新された[Imageコンポーネント](#imageコンポーネント)、[Linkコンポーネント](#linkコンポーネント)、[Scriptコンポーネント](#scriptコンポーネント)、[フォント最適化](#フォント最適化)など、両方のディレクトリで動作する新機能を使用しながら、引き続き`pages`を使用できます。
+
+### `<Image/>` コンポーネント
+
+Next.js 12では、一時的なインポート`next/future/image`による多くの改善がImageコンポーネントに導入されました。これらの改善には、クライアントサイドJavaScriptの削減、画像の拡張とスタイル設定の容易化、アクセシビリティの向上、ネイティブブラウザの遅延読み込みなどが含まれます。
+
+Next.js 13からは、この新しい動作が`next/image`のデフォルトになりました。
+
+新しいImageコンポーネントへの移行を支援するための2つのコードモッドがあります：
+
+- [next-image-to-legacy-image](/docs/pages/guides/upgrading/codemods#next-image-to-legacy-image)：このコードモッドは、Next.js 12と同じ動作を維持するために、`next/image`インポートを安全かつ自動的に`next/legacy/image`に名前変更します。このコードモッドを実行して、自動的にNext.js 13にアップデートすることをお勧めします。
+- [next-image-experimental](/docs/pages/guides/upgrading/codemods#next-image-experimental)：前のコードモッドを実行した後、このオプションの実験的コードモッドを実行して、`next/legacy/image`を新しい`next/image`にアップグレードできます。これにより、未使用のプロパティが削除され、インラインスタイルが追加されます。このコードモッドは実験的なものであり、静的な使用法（例：`<Image src={img} layout="responsive" />`）のみをカバーし、動的な使用法（例：`<Image {...props} />`）はカバーしていないことに注意してください。
+
+または、[移行ガイド](/docs/pages/guides/upgrading/codemods#next-image-experimental)に従って手動で更新することもでき、[レガシー比較](/docs/pages/api-reference/components/image-legacy#comparison)も確認できます。
+
+### `<Link>` コンポーネント
+
+[`<Link>`コンポーネント](/docs/pages/api-reference/components/link)では、子要素として`<a>`タグを手動で追加する必要がなくなりました。この動作は[バージョン12.2](https://nextjs.org/blog/next-12-2)で実験的オプションとして追加され、現在はデフォルトになっています。Next.js 13では、`<Link>`は常に`<a>`をレンダリングし、基礎となるタグにプロパティを転送できます。
+
+例：
+
+```jsx
+import Link from 'next/link'
+
+// Next.js 12: `<a>`を入れ子にする必要があり、そうでなければ除外される
+<Link href="/about">
+  <a>About</a>
+</Link>
+
+// Next.js 13: `<Link>`は内部で常に`<a>`をレンダリングする
+<Link href="/about">
+  About
+</Link>
+```
+
+リンクをNext.js 13にアップグレードするには、[`new-link`コードモッド](/docs/pages/guides/upgrading/codemods#new-link)を使用できます。
+
+### `<Script>` コンポーネント
+
+[`next/script`](/docs/pages/api-reference/components/script)の動作が更新され、`pages`と`app`の両方をサポートするようになりました。`app`を段階的に採用する場合は、[アップグレードガイド](/docs/pages/guides/upgrading)をお読みください。
+
+### フォント最適化
+
+以前、Next.jsはフォントCSSをインライン化することでフォントの最適化を支援していました。バージョン13では、優れたパフォーマンスとプライバシーを確保しながら、フォントの読み込み方法をカスタマイズできる新しい[`next/font`](/docs/pages/building-your-application/optimizing/fonts)モジュールが導入されました。
+
+`next/font`の使用方法については、[フォントの最適化](/docs/pages/building-your-application/optimizing/fonts)をご覧ください。

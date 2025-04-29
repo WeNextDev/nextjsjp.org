@@ -33,7 +33,7 @@ Fast Refreshは編集中のコンポーネントのローカルReact状態を保
 - ローカル状態はクラスコンポーネントでは保持されません（関数コンポーネントとHooksのみが状態を保持します）。
 - 編集中のファイルに、Reactコンポーネント以外の他のエクスポートがある可能性があります。
 - 場合によっては、ファイルが`HOC(WrappedComponent)`のような高階コンポーネントの呼び出し結果をエクスポートすることがあります。返されたコンポーネントがクラスの場合、その状態はリセットされます。
-- `export default () => <div />;`のような無名アロー関数は、Fast Refreshがローカルコンポーネントの状態を保持しません。大規模なコードベースでは、[`name-default-component` codemod](/docs/pages/building-your-application/upgrading/codemods#name-default-component)を使用できます。
+- `export default () => <div />;`のような無名アロー関数は、Fast Refreshがローカルコンポーネントの状態を保持しません。大規模なコードベースでは、[`name-default-component` codemod](/docs/pages/guides/upgrading/codemods#name-default-component)を使用できます。
 
 コードベースがさらに関数コンポーネントとHooksに移行するにつれ、より多くのケースで状態が保持されることが期待できます。
 

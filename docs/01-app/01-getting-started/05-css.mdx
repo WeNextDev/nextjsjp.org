@@ -1,32 +1,30 @@
 ---
 title: アプリケーションでCSSを使用する方法
 nav_title: CSS
-slug: /docs/app/getting-started/css
-description: CSSモジュール、グローバルCSS、Tailwind CSSなど、アプリケーションにCSSを追加するさまざまな方法について学びます。
+description: CSS Modules、グローバルCSS、Tailwind CSSなど、アプリケーションにCSSを追加するさまざまな方法について学びましょう。
 related:
-  title: APIリファレンス
-  description: このページで説明されている機能について詳しく知るには、APIリファレンスをお読みください。
+  title: 次のステップ
+  description: このページで紹介された機能について詳しく学びましょう。
   links:
-    - app/api-reference/config/next-config-js/sassOptions
-    - architecture/nextjs-compiler
+    - app/guides/sass
+    - app/guides/css-in-js
+slug: /docs/app/getting-started/css
 ---
 
-Next.jsでは、アプリケーションでCSSを使用するための複数の方法が提供されています：
+Next.jsではアプリケーションでCSSを使用するための複数の方法が提供されています：
 
-- [CSSモジュール](#css-modules)
+- [CSS Modules](#css-modules)
 - [グローバルCSS](#global-css)
 - [Tailwind CSS](#tailwind-css)
-- [Sass](#sass)
-- [CSS-in-JS](#css-in-js)
+- [Sass](/docs/app/guides/sass)
+- [CSS-in-JS](/docs/app/guides/css-in-js)
 - [外部スタイルシート](#external-stylesheets)
 
-このページでは、これらのアプローチの使用方法についてご案内します。
+## CSS Modules
 
-## CSSモジュール
+CSS Modulesは、一意のクラス名を生成することでCSSをローカルにスコープします。これにより、異なるファイルで同じクラス名を使用しても、名前の衝突を心配する必要がありません。
 
-CSSモジュールは、一意のクラス名を生成することでCSSをローカルにスコープします。これにより、異なるファイルで同じクラスを使用しても、衝突を心配する必要がありません。
-
-CSSモジュールを使い始めるには、`.module.css`拡張子を持つ新しいファイルを作成し、`app`ディレクトリ内の任意のコンポーネントにインポートします：
+CSS Modulesを使い始めるには、`.module.css`拡張子を持つ新しいファイルを作成し、それを`app`ディレクトリ内の任意のコンポーネントにインポートします：
 
 ```css filename="app/blog/styles.module.css"
 .blog {
@@ -54,7 +52,7 @@ export default function Page({ children }) {
 
 グローバルCSSを使用して、アプリケーション全体にスタイルを適用できます。
 
-グローバルスタイルを使用するには、例えば`app/global.css`のような新しいCSSファイルを作成します：
+グローバルスタイルを使用するには、`app/global.css`ファイルを作成し、ルートレイアウトにインポートして、アプリケーションの**すべてのルート**にスタイルを適用します：
 
 ```css filename="app/global.css"
 body {
@@ -63,8 +61,6 @@ body {
   margin: 0 auto;
 }
 ```
-
-ルートレイアウト（`app/layout.js`）でファイルをインポートして、アプリケーションの**すべてのルート**にスタイルを適用します：
 
 ```tsx filename="app/layout.tsx" switcher
 // これらのスタイルはアプリケーションのすべてのルートに適用されます
@@ -96,18 +92,18 @@ export default function RootLayout({ children }) {
 }
 ```
 
-> **補足:** グローバルスタイルは`app`ディレクトリ内の任意のレイアウト、ページ、またはコンポーネントにインポートできます。ただし、Next.jsはSuspenseと統合するためにReactの組み込みスタイルシートサポートを使用しています。この組み込みサポートは現在、ルート間のナビゲーション時にスタイルシートを削除しません。そのため、_真に_グローバルなCSSにはグローバルスタイルを使用し、スコープされたCSSには[CSSモジュール](#css-modules)を使用することをお勧めします。
+> **補足**：グローバルスタイルは`app`ディレクトリ内の任意のレイアウト、ページ、またはコンポーネントにインポートできます。ただし、Next.jsはSuspenseと統合するためにReactの組み込みスタイルシートサポートを使用しているため、現在はルート間のナビゲーション時にスタイルシートが削除されず、競合が発生する可能性があります。_真に_グローバルなCSS用にはグローバルスタイルを使用し、スコープされたCSSには[CSS Modules](#css-modules)を使用することをお勧めします。
 
 ## Tailwind CSS
 
-[Tailwind CSS](https://tailwindcss.com/)はユーティリティファーストのCSSフレームワークで、Next.jsとシームレスに統合されます。
+[Tailwind CSS](https://tailwindcss.com/)はユーティリティファーストのCSSフレームワークで、Next.jsとシームレスに統合できます。
 
 ### Tailwindのインストール
 
-Tailwindの使用を開始するには、必要なTailwind CSSパッケージをインストールします：
+Tailwindを使い始めるには、必要なTailwind CSSパッケージをインストールします：
 
 ```bash filename="Terminal"
-npm install -D tailwindcss @tailwindcss/postcss postcss
+npm install tailwindcss @tailwindcss/postcss postcss
 ```
 
 ### Tailwindの設定
@@ -125,7 +121,7 @@ export default {
 
 ### Tailwindの使用
 
-[グローバルスタイルシート](#global-css)に[Tailwindディレクティブ](https://tailwindcss.com/docs/functions-and-directives#directives)を追加します：
+[Tailwindディレクティブ](https://tailwindcss.com/docs/functions-and-directives#directives)を[グローバルスタイルシート](#global-css)に追加します：
 
 ```css filename="app/globals.css"
 @import 'tailwindcss';
@@ -135,7 +131,6 @@ export default {
 
 ```tsx filename="app/layout.tsx" switcher
 import type { Metadata } from 'next'
-
 // これらのスタイルはアプリケーションのすべてのルートに適用されます
 import './globals.css'
 
@@ -175,7 +170,7 @@ export default function RootLayout({ children }) {
 }
 ```
 
-最後に、アプリケーションでTailwindのユーティリティクラスを使い始めることができます。
+これで、アプリケーションでTailwindのユーティリティクラスを使用できるようになります。
 
 ```tsx filename="app/page.tsx" switcher
 export default function Page() {
@@ -189,295 +184,9 @@ export default function Page() {
 }
 ```
 
-## Sass
-
-Next.jsは[Sass](https://sass-lang.com/)と統合しており、[`.scss`](https://sass-lang.com/documentation/syntax/#scss)と[`.sass`](https://sass-lang.com/documentation/syntax#the-indented-syntax)の両方の拡張子と構文をサポートしています。
-
-また、`.module.scss`または`.module.sass`拡張子を使用した[CSSモジュール](#css-modules)によるコンポーネントレベルのSassも使用できます。
-
-### Sassのインストール
-
-Sassの使用を開始するには、`sass`パッケージをインストールします：
-
-```bash filename="Terminal"
-npm install --save-dev sass
-```
-
-### Sassオプションのカスタマイズ
-
-Sassオプションを設定したい場合は、`next.config.js`で[`sassOptions`](/docs/app/api-reference/config/next-config-js/sassOptions)オプションを使用します。
-
-```ts filename="next.config.ts" switcher
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  sassOptions: {
-    additionalData: `$var: red;`,
-  },
-}
-
-export default nextConfig
-```
-
-```js filename="next.config.mjs" switcher
-/** @type {import('next').NextConfig} */
-
-const nextConfig = {
-  sassOptions: {
-    additionalData: `$var: red;`,
-  },
-}
-
-export default nextConfig
-```
-
-## CSS-in-JS
-
-> **注意:** ランタイムJavaScriptを必要とするCSS-in-JSライブラリは、現在React Server Componentsではサポートされていません。Server ComponentsやStreamingなどの新しいReact機能でCSS-in-JSを使用するには、ライブラリ作者がReactの最新バージョンをサポートする必要があります。
-
-`app`ディレクトリの**クライアントコンポーネント**では、以下のライブラリがサポートされています（アルファベット順）：
-
-- [`ant-design`](https://ant.design/docs/react/use-with-next#using-app-router)
-- [`chakra-ui`](https://chakra-ui.com/getting-started/nextjs-app-guide)
-- [`@fluentui/react-components`](https://react.fluentui.dev/?path=/docs/concepts-developer-server-side-rendering-next-js-appdir-setup--page)
-- [`kuma-ui`](https://kuma-ui.com)
-- [`@mui/material`](https://mui.com/material-ui/guides/next-js-app-router/)
-- [`@mui/joy`](https://mui.com/joy-ui/integrations/next-js-app-router/)
-- [`pandacss`](https://panda-css.com)
-- [`styled-jsx`](#styled-jsx)
-- [`styled-components`](#styled-components)
-- [`stylex`](https://stylexjs.com)
-- [`tamagui`](https://tamagui.dev/docs/guides/next-js#server-components)
-- [`tss-react`](https://tss-react.dev/)
-- [`vanilla-extract`](https://vanilla-extract.style)
-
-以下は現在サポートに取り組んでいます：
-
-- [`emotion`](https://github.com/emotion-js/emotion/issues/2928)
-
-Server Componentsのスタイルを設定する場合は、[CSSモジュール](#css-modules)や[Tailwind CSS](#tailwind-css)などのCSSファイルを出力する他のソリューションを使用することをお勧めします。
-
-### CSS-in-JSの設定
-
-CSS-in-JSを設定するには、以下が必要です：
-
-1. レンダリング中にすべてのCSSルールを収集する**スタイルレジストリ**を作成します。
-2. `useServerInsertedHTML`フックを使用して、それらを使用する可能性のあるコンテンツの前にルールを挿入します。
-3. 初期サーバーサイドレンダリング中にスタイルレジストリでアプリをラップするクライアントコンポーネントを作成します。
-
-#### `styled-jsx`
-
-アプリケーション用に`styled-jsx`を設定するには、新しいレジストリを作成します：
-
-```tsx filename="app/registry.tsx" switcher
-'use client'
-
-import React, { useState } from 'react'
-import { useServerInsertedHTML } from 'next/navigation'
-import { StyleRegistry, createStyleRegistry } from 'styled-jsx'
-
-export default function StyledJsxRegistry({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  // 遅延初期状態を使用して、スタイルシートを一度だけ作成します
-  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
-  const [jsxStyleRegistry] = useState(() => createStyleRegistry())
-
-  useServerInsertedHTML(() => {
-    const styles = jsxStyleRegistry.styles()
-    jsxStyleRegistry.flush()
-    return <>{styles}</>
-  })
-
-  return <StyleRegistry registry={jsxStyleRegistry}>{children}</StyleRegistry>
-}
-```
-
-```jsx filename="app/registry.js" switcher
-'use client'
-
-import React, { useState } from 'react'
-import { useServerInsertedHTML } from 'next/navigation'
-import { StyleRegistry, createStyleRegistry } from 'styled-jsx'
-
-export default function StyledJsxRegistry({ children }) {
-  // 遅延初期状態を使用して、スタイルシートを一度だけ作成します
-  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
-  const [jsxStyleRegistry] = useState(() => createStyleRegistry())
-
-  useServerInsertedHTML(() => {
-    const styles = jsxStyleRegistry.styles()
-    jsxStyleRegistry.flush()
-    return <>{styles}</>
-  })
-
-  return <StyleRegistry registry={jsxStyleRegistry}>{children}</StyleRegistry>
-}
-```
-
-次に、[ルートレイアウト](/docs/app/api-reference/file-conventions/layout#root-layouts)をレジストリでラップします：
-
-```tsx filename="app/layout.tsx" switcher
-import StyledJsxRegistry from './registry'
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html>
-      <body>
-        <StyledJsxRegistry>{children}</StyledJsxRegistry>
-      </body>
-    </html>
-  )
-}
-```
-
-```jsx filename="app/layout.js" switcher
-import StyledJsxRegistry from './registry'
-
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <StyledJsxRegistry>{children}</StyledJsxRegistry>
-      </body>
-    </html>
-  )
-}
-```
-
-#### `styled-components`
-
-`styled-components`を使用するには、`next.config.js`で有効にします：
-
-```ts filename="next.config.ts" switcher
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  compiler: {
-    styledComponents: true,
-  },
-}
-
-export default nextConfig
-```
-
-```js filename="next.config.mjs" switcher
-/** @type {import('next').NextConfig} */
-
-const nextConfig = {
-  compiler: {
-    styledComponents: true,
-  },
-}
-
-export default nextConfig
-```
-
-次に、`styled-components`のAPIを使用して、レンダリング中に生成されたすべてのCSSスタイルルールを収集するグローバルレジストリコンポーネントと、それらのルールを返す関数を作成します。そして、`useServerInsertedHTML`フックを使用して、ルートレイアウトの`<head>` HTMLタグにレジストリで収集したスタイルを挿入します。
-
-```tsx filename="lib/registry.tsx" switcher
-'use client'
-
-import React, { useState } from 'react'
-import { useServerInsertedHTML } from 'next/navigation'
-import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
-
-export default function StyledComponentsRegistry({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  // 遅延初期状態を使用して、スタイルシートを一度だけ作成します
-  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
-  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet())
-
-  useServerInsertedHTML(() => {
-    const styles = styledComponentsStyleSheet.getStyleElement()
-    styledComponentsStyleSheet.instance.clearTag()
-    return <>{styles}</>
-  })
-
-  if (typeof window !== 'undefined') return <>{children}</>
-
-  return (
-    <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
-      {children}
-    </StyleSheetManager>
-  )
-}
-```
-
-```jsx filename="lib/registry.js" switcher
-'use client'
-
-import React, { useState } from 'react'
-import { useServerInsertedHTML } from 'next/navigation'
-import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
-
-export default function StyledComponentsRegistry({ children }) {
-  // 遅延初期状態を使用して、スタイルシートを一度だけ作成します
-  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
-  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet())
-
-  useServerInsertedHTML(() => {
-    const styles = styledComponentsStyleSheet.getStyleElement()
-    styledComponentsStyleSheet.instance.clearTag()
-    return <>{styles}</>
-  })
-
-  if (typeof window !== 'undefined') return <>{children}</>
-
-  return (
-    <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
-      {children}
-    </StyleSheetManager>
-  )
-}
-```
-
-ルートレイアウトの`children`をスタイルレジストリコンポーネントでラップします：
-
-```tsx filename="app/layout.tsx" switcher
-import StyledComponentsRegistry from './lib/registry'
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html>
-      <body>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
-      </body>
-    </html>
-  )
-}
-```
-
-```jsx filename="app/layout.js" switcher
-import StyledComponentsRegistry from './lib/registry'
-
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
-      </body>
-    </html>
-  )
-}
-```
-
 ## 外部スタイルシート
 
-外部パッケージから公開されたスタイルシートは、コロケーションされたコンポーネントを含む`app`ディレクトリのどこでもインポートできます：
+外部パッケージで公開されているスタイルシートは、コロケーションされたコンポーネントを含め、`app`ディレクトリのどこでもインポートできます：
 
 ```tsx filename="app/layout.tsx" switcher
 import 'bootstrap/dist/css/bootstrap.css'
@@ -507,4 +216,4 @@ export default function RootLayout({ children }) {
 }
 ```
 
-外部スタイルシートは、npmパッケージから直接インポートするか、ダウンロードしてコードベースと共に配置する必要があります。`<link rel="stylesheet" />`は使用できません。
+外部スタイルシートは、npmパッケージから直接インポートするか、ダウンロードしてコードベースと一緒に配置する必要があります。`<link rel="stylesheet" />`は使用できません。

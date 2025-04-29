@@ -346,22 +346,22 @@ export const config = {
 
 詳細については[Middleware](/docs/app/building-your-application/routing/middleware)のドキュメントを参照してください。
 
-## 大規模なリダイレクトの管理（高度）
+## 大規模なリダイレクトの管理（上級者向け）
 
-大量のリダイレクト（1000以上）を管理するには、Middlewareを使用してカスタムソリューションを作成することを検討してください。これにより、アプリケーションを再デプロイすることなくプログラムでリダイレクトを処理できます。
+多数のリダイレクト（1000以上）を管理する場合は、Middlewareを使用したカスタムソリューションの作成を検討するとよいでしょう。これにより、アプリケーションを再デプロイすることなくプログラムによってリダイレクトを処理できます。
 
-そのためには、以下を検討する必要があります：
+実現するためには、以下の点を考慮する必要があります：
 
 1. リダイレクトマップの作成と保存
 2. データ検索パフォーマンスの最適化
 
-> **Next.jsの例**: 以下の推奨事項の実装例については、[Bloom filterを使用したMiddleware](https://redirects-bloom-filter.vercel.app/)の例を参照してください。
+> **Next.jsの例**: 以下の推奨事項の実装例として、[Bloomフィルターを使用したMiddleware](https://redirects-bloom-filter.vercel.app/)の例をご覧ください。
 
 ### 1. リダイレクトマップの作成と保存
 
 リダイレクトマップは、データベース（通常はキーバリューストア）またはJSONファイルに保存できるリダイレクトのリストです。
 
-以下のデータ構造を考えてみましょう：
+以下のようなデータ構造を考えてみましょう：
 
 ```json
 {
@@ -376,7 +376,7 @@ export const config = {
 }
 ```
 
-[Middleware](/docs/app/building-your-application/routing/middleware)では、Vercelの[Edge Config](https://vercel.com/docs/storage/edge-config/get-started?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)や[Redis](https://vercel.com/docs/storage/vercel-kv?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)などのデータベースから読み取り、受信リクエストに基づいてユーザーをリダイレクトできます：
+[Middleware](/docs/app/building-your-application/routing/middleware)では、Vercelの[Edge Config](https://vercel.com/docs/edge-config/get-started)や[Redis](https://vercel.com/docs/redis)などのデータベースから読み取り、受信リクエストに基づいてユーザーをリダイレクトできます：
 
 ```ts filename="middleware.ts" switcher
 import { NextResponse, NextRequest } from 'next/server'
@@ -397,7 +397,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectEntry.destination, statusCode)
   }
 
-  // リダイレクトが見つからない場合は、リダイレクトせずに続行
+  // リダイレクトが見つからない場合、リダイレクトせずに続行
   return NextResponse.next()
 }
 ```
@@ -416,21 +416,21 @@ export async function middleware(request) {
     return NextResponse.redirect(redirectEntry.destination, statusCode)
   }
 
-  // リダイレクトが見つからない場合は、リダイレクトせずに続行
+  // リダイレクトが見つからない場合、リダイレクトせずに続行
   return NextResponse.next()
 }
 ```
 
 ### 2. データ検索パフォーマンスの最適化
 
-すべての受信リクエストに対して大きなデータセットを読み取ることは遅くてコストがかかる可能性があります。データ検索パフォーマンスを最適化するには2つの方法があります：
+すべての受信リクエストに対して大規模なデータセットを読み込むことは、遅く高コストになる可能性があります。データ検索パフォーマンスを最適化するには、次の2つの方法があります：
 
-- [Vercel Edge Config](https://vercel.com/docs/storage/edge-config/get-started?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)や[Redis](https://vercel.com/docs/storage/vercel-kv?utm_source=next-site&utm_medium=docs&utm_campaign=next-website)など、高速な読み取りに最適化されたデータベースを使用する。
-- より大きなリダイレクトファイルやデータベースを読み取る**前に**、リダイレクトが存在するかどうかを効率的にチェックするために[Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter)などのデータ検索戦略を使用する。
+- 高速な読み取りに最適化されたデータベースを使用する
+- より大きなリダイレクトファイルやデータベースを読み取る**前に**、リダイレクトが存在するかどうかを効率的にチェックするために[Bloomフィルター](https://en.wikipedia.org/wiki/Bloom_filter)などのデータ検索戦略を使用する
 
-前の例を考慮して、生成されたBloom filterファイルをMiddlewareにインポートし、受信リクエストのパス名がBloom filterに存在するかどうかをチェックできます。
+前の例を考慮すると、生成されたBloomフィルターファイルをMiddlewareにインポートし、受信リクエストのパス名がBloomフィルターに存在するかどうかを確認できます。
 
-存在する場合は、リクエストを<AppOnly>[Route Handler](/docs/app/building-your-application/routing/route-handlers)</AppOnly><PagesOnly>[API Routes](/docs/pages/building-your-application/routing/api-routes)</PagesOnly>に転送し、実際のファイルをチェックしてユーザーを適切なURLにリダイレクトします。これにより、大きなリダイレクトファイルをMiddlewareにインポートすることを回避でき、すべての受信リクエストが遅くなるのを防ぎます。
+存在する場合は、リクエストを<AppOnly>[Route Handler](/docs/app/building-your-application/routing/route-handlers)</AppOnly><PagesOnly>[API Routes](/docs/pages/building-your-application/routing/api-routes)</PagesOnly>に転送し、実際のファイルをチェックしてユーザーを適切なURLにリダイレクトします。これにより、大きなリダイレクトファイルをMiddlewareにインポートする必要がなくなり、すべての受信リクエストが遅くなるのを防ぐことができます。
 
 ```ts filename="middleware.ts" switcher
 import { NextResponse, NextRequest } from 'next/server'

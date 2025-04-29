@@ -1,0 +1,227 @@
+---
+title: useLinkStatus
+description: useLinkStatusフックのAPIリファレンス。
+related:
+  title: 次のステップ
+  description: このページで言及されている機能の詳細については、APIリファレンスをお読みください。
+  links:
+    - app/api-reference/components/link
+    - app/api-reference/file-conventions/loading
+slug: /docs/app/api-reference/functions/use-link-status
+---
+
+`useLinkStatus` フックは `<Link>` の**pending**（保留中）状態を追跡できます。これを使用して、新しいルートへのナビゲーションが完了するまでの間、ユーザーにインラインの視覚的フィードバック（スピナーやテキストのきらめきなど）を表示できます。
+
+`useLinkStatus` は以下の場合に役立ちます：
+
+- [プリフェッチ](/docs/app/building-your-application/routing/linking-and-navigating#2-prefetching)が無効またはプリフェッチが進行中でナビゲーションがブロックされている場合。
+- 宛先ルートが動的**かつ**即時ナビゲーションを可能にする[`loading.js`](/docs/app/api-reference/file-conventions/loading)ファイルを含まない場合。
+
+```tsx filename="app/loading-indicator.tsx" switcher
+'use client'
+
+import { useLinkStatus } from 'next/link'
+
+export default function LoadingIndicator() {
+  const { pending } = useLinkStatus()
+  return pending ? (
+    <div role="status" aria-label="Loading" className="spinner" />
+  ) : null
+}
+```
+
+```jsx filename="app/loading-indicator.js" switcher
+'use client'
+
+import { useLinkStatus } from 'next/link'
+
+export default function LoadingIndicator() {
+  const { pending } = useLinkStatus()
+  return pending ? (
+    <div role="status" aria-label="Loading" className="spinner" />
+  ) : null
+}
+```
+
+```tsx filename="app/header.tsx" switcher
+import Link from 'next/link'
+import LoadingIndicator from './loading-indicator'
+
+export default function Header() {
+  return (
+    <header>
+      <Link href="/dashboard" prefetch={false}>
+        Dashboard <LoadingIndicator />
+      </Link>
+    </header>
+  )
+}
+```
+
+```jsx filename="app/header.js" switcher
+import Link from 'next/link'
+import LoadingIndicator from './loading-indicator'
+
+export default function Header() {
+  return (
+    <header>
+      <Link href="/dashboard" prefetch={false}>
+        Dashboard <LoadingIndicator />
+      </Link>
+    </header>
+  )
+}
+```
+
+> **補足**:
+>
+> - `useLinkStatus` は `Link` コンポーネントの子孫コンポーネント内で使用する必要があります
+> - このフックは `Link` コンポーネントに `prefetch={false}` が設定されている場合に最も役立ちます
+> - リンク先のルートがプリフェッチされている場合、pending状態はスキップされます
+> - 複数のリンクを素早く連続してクリックした場合、最後のリンクのpending状態のみが表示されます
+> - このフックはPages Routerではサポートされておらず、常に `{ pending: false }` を返します
+
+## パラメータ
+
+```tsx
+const { pending } = useLinkStatus()
+```
+
+`useLinkStatus` はパラメータを受け取りません。
+
+## 戻り値
+
+`useLinkStatus` は単一のプロパティを持つオブジェクトを返します：
+
+| プロパティ | 型      | 説明                                               |
+| ---------- | ------- | -------------------------------------------------- |
+| pending    | boolean | 履歴が更新される前は `true`、更新後は `false` になります |
+
+## 例
+
+### インラインローディングインジケータ
+
+ユーザーがプリフェッチが完了する前にリンクをクリックした場合、ナビゲーションが行われていることを視覚的にフィードバックするのに役立ちます。
+
+```tsx filename="app/components/loading-indicator.tsx" switcher
+'use client'
+
+import { useLinkStatus } from 'next/link'
+
+export default function LoadingIndicator() {
+  const { pending } = useLinkStatus()
+  return pending ? (
+    <div role="status" aria-label="Loading" className="spinner" />
+  ) : null
+}
+```
+
+```jsx filename="app/components/loading-indicator.js" switcher
+'use client'
+
+import { useLinkStatus } from 'next/link'
+
+export default function LoadingIndicator() {
+  const { pending } = useLinkStatus()
+  return pending ? (
+    <div role="status" aria-label="Loading" className="spinner" />
+  ) : null
+}
+```
+
+```tsx filename="app/shop/layout.tsx" switcher
+import Link from 'next/link'
+import LoadingIndicator from './components/loading-indicator'
+
+const links = [
+  { href: '/shop/electronics', label: 'Electronics' },
+  { href: '/shop/clothing', label: 'Clothing' },
+  { href: '/shop/books', label: 'Books' },
+]
+
+function Menubar() {
+  return (
+    <div>
+      {links.map((link) => (
+        <Link key={link.label} href={link.href}>
+          {link.label} <LoadingIndicator />
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <Menubar />
+      {children}
+    </div>
+  )
+}
+```
+
+```jsx filename="app/shop/layout.js" switcher
+import Link from 'next/link'
+import LoadingIndicator from './components/loading-indicator'
+
+const links = [
+  { href: '/shop/electronics', label: 'Electronics' },
+  { href: '/shop/clothing', label: 'Clothing' },
+  { href: '/shop/books', label: 'Books' },
+]
+
+function Menubar() {
+  return (
+    <div>
+      {links.map((link) => (
+        <Link key={link.label} href={link.href}>
+          {link.label} <LoadingIndicator />
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+export default function Layout({ children }) {
+  return (
+    <div>
+      <Menubar />
+      {children}
+    </div>
+  )
+}
+```
+
+## 高速ナビゲーションの優雅な処理
+
+新しいルートへのナビゲーションが速い場合、ユーザーは不必要なローディングインジケータのフラッシュを見ることがあります。ユーザー体験を向上させ、ナビゲーションに時間がかかる場合にのみローディングインジケータを表示する方法の一つは、初期アニメーション遅延（例：100ms）を追加し、アニメーションを不可視（例：`opacity: 0`）で開始することです。
+
+```css filename="app/styles/global.css"
+.spinner {
+  /* ... */
+  opacity: 0;
+  animation:
+    fadeIn 500ms 100ms forwards,
+    rotate 1s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+```
+
+| バージョン | 変更点                        |
+| ---------- | ---------------------------- |
+| `v15.3.0`  | 導入時期：`useLinkStatus`。    |

@@ -1,0 +1,59 @@
+---
+title: devIndicators
+description: 開発中に表示される、現在閲覧しているルートについてのコンテキストを提供する画面上のインジケーターの設定オプション。
+slug: /docs/app/api-reference/config/next-config-js/devIndicators
+---
+
+`devIndicators` では、開発中に現在閲覧しているルートについてのコンテキストを提供する画面上のインジケーターを設定できます。
+
+```ts filename="Types"
+  devIndicators: false | {
+    position?: 'bottom-right'
+    | 'bottom-left'
+    | 'top-right'
+    | 'top-left', // デフォルトは 'bottom-left'
+  },
+```
+
+`devIndicators` を `false` に設定するとインジケーターは非表示になりますが、Next.jsはビルドやランタイムで発生したエラーを引き続き表示します。
+
+## トラブルシューティング
+
+### インジケーターがルートを静的としてマークしない
+
+ルートが静的であると予想しているのにインジケーターが動的としてマークしている場合、そのルートが静的レンダリングをオプトアウトしている可能性があります。
+
+ルートが[静的](/docs/app/building-your-application/rendering/server-components#static-rendering-default)か[動的](/docs/app/building-your-application/rendering/server-components#dynamic-rendering)かを確認するには、`next build --debug` を使用してアプリケーションをビルドし、ターミナルの出力を確認してください。静的（またはプリレンダリング）ルートには `○` 記号が表示され、動的ルートには `ƒ` 記号が表示されます。例：
+
+```bash filename="Build Output"
+Route (app)                              Size     First Load JS
+┌ ○ /_not-found                          0 B               0 kB
+└ ƒ /products/[id]                       0 B               0 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+<AppOnly>
+
+ルートが静的レンダリングをオプトアウトする理由は主に2つあります：
+
+- 実行時の情報に依存する[動的API](/docs/app/building-your-application/rendering/server-components#dynamic-apis)の存在。
+- ORMやデータベースドライバーの呼び出しなど、[キャッシュされていないデータリクエスト](/docs/app/building-your-application/data-fetching/fetching)。
+
+ルートにこれらの条件がないか確認し、静的にレンダリングできない場合は、[`loading.js`](/docs/app/api-reference/file-conventions/loading)や[`<Suspense />`](https://react.dev/reference/react/Suspense)を使用して[ストリーミング](/docs/app/building-your-application/routing/loading-ui-and-streaming#what-is-streaming)を活用することを検討してください。
+
+</AppOnly>
+
+<PagesOnly>
+
+ページから[`getServerSideProps`](/docs/pages/building-your-application/data-fetching/get-server-side-props)や[`getInitialProps`](/docs/pages/api-reference/functions/get-initial-props)をエクスポートすると、そのページは動的としてマークされます。
+
+</PagesOnly>
+
+## バージョン履歴
+
+| バージョン | 変更内容                                                                                                                               |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `v15.2.0` | 新しい `position` オプションで改良された画面上のインジケーター。`appIsrStatus`、`buildActivity`、`buildActivityPosition` オプションは非推奨となりました。 |
+| `v15.0.0` | 導入時期：`appIsrStatus` オプションを備えた静的な画面上のインジケーター。                                                                   |

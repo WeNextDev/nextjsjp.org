@@ -1,0 +1,151 @@
+---
+title: バージョン11へのアップグレード方法
+nav_title: バージョン11
+description: Next.jsアプリケーションをバージョン10からバージョン11にアップグレードします。
+slug: /docs/pages/guides/upgrading/version-11
+---
+
+バージョン11にアップグレードするには、以下のコマンドを実行してください：
+
+```bash filename="Terminal"
+npm i next@11 react@17 react-dom@17
+```
+
+```bash filename="Terminal"
+yarn add next@11 react@17 react-dom@17
+```
+
+```bash filename="Terminal"
+pnpm up next@11 react@17 react-dom@17
+```
+
+```bash filename="Terminal"
+bun add next@11 react@17 react-dom@17
+```
+
+> **補足:** TypeScriptを使用している場合は、`@types/react`と`@types/react-dom`も対応するバージョンにアップグレードしてください。
+
+### Webpack 5
+
+Webpack 5がすべてのNext.jsアプリケーションのデフォルトになりました。カスタムのwebpack設定を持っていない場合、あなたのアプリケーションはすでにwebpack 5を使用しています。カスタムのwebpack設定を持っている場合は、アップグレードガイダンスについて[Next.js webpack 5ドキュメント](/docs/messages/webpack5)を参照してください。
+
+### `distDir`のクリーニングがデフォルトになりました
+
+ビルド出力ディレクトリ（デフォルトは`.next`）は、Next.jsのキャッシュを除いてデフォルトでクリアされるようになりました。詳細については[`distDir`クリーニングに関するRFC](https://github.com/vercel/next.js/discussions/6009)を参照してください。
+
+以前にアプリケーションがこの動作に依存していた場合は、`next.config.js`に`cleanDistDir: false`フラグを追加することで、新しいデフォルト動作を無効にできます。
+
+### `next dev`と`next start`で`PORT`がサポートされるようになりました
+
+Next.js 11では、アプリケーションが実行されるポートを設定するために`PORT`環境変数をサポートしています。`-p`/`--port`の使用が引き続き推奨されますが、何らかの理由で`-p`の使用が禁止されている場合は、代わりに`PORT`を使用できるようになりました：
+
+例：
+
+```
+PORT=4000 next start
+```
+
+### 画像をインポートするための`next.config.js`カスタマイズ
+
+Next.js 11では、`next/image`を使った静的画像インポートをサポートしています。この新機能は、画像インポートを処理できることに依存しています。以前に`next-images`または`next-optimized-images`パッケージを追加した場合は、`next/image`を使用する新しい組み込みサポートに移行するか、この機能を無効にすることができます：
+
+```js filename="next.config.js"
+module.exports = {
+  images: {
+    disableStaticImages: true,
+  },
+}
+```
+
+### `pages/_app.js`から`super.componentDidCatch()`を削除する
+
+Next.js 9で`next/app`コンポーネントの`componentDidCatch`は不要になり、非推奨となりました。Next.js 11では完全に削除されました。
+
+`pages/_app.js`にカスタムの`componentDidCatch`メソッドがある場合は、`super.componentDidCatch`が不要になったため削除できます。
+
+### `pages/_app.js`から`Container`を削除する
+
+このエクスポートはNext.js 9で非推奨となり、開発中に警告と共に実質的に機能しなくなっていました。Next.js 11では削除されました。
+
+`pages/_app.js`が`next/app`から`Container`をインポートしている場合は、削除されたため`Container`を削除できます。詳細は[ドキュメント](/docs/messages/app-container-deprecated)を参照してください。
+
+### ページコンポーネントから`props.url`の使用を削除する
+
+このプロパティはNext.js 4で非推奨となり、開発中に警告が表示されるようになりました。`getStaticProps`/`getServerSideProps`の導入により、これらのメソッドでは既に`props.url`の使用が禁止されていました。Next.js 11では完全に削除されました。
+
+詳細は[ドキュメント](/docs/messages/url-deprecated)を参照してください。
+
+### `next/image`から`unsized`プロパティを削除する
+
+`next/image`の`unsized`プロパティはNext.js 10.0.1で非推奨となりました。代わりに`layout="fill"`を使用できます。Next.js 11では`unsized`が削除されました。
+
+### `next/dynamic`から`modules`プロパティを削除する
+
+`next/dynamic`の`modules`および`render`オプションはNext.js 9.5で非推奨となりました。これは`next/dynamic` APIを`React.lazy`に近づけるために行われました。Next.js 11では、`modules`および`render`オプションが削除されました。
+
+このオプションはNext.js 8以降のドキュメントでは言及されていないため、アプリケーションがこれを使用している可能性は低いでしょう。
+
+アプリケーションが`modules`と`render`を使用している場合は、[ドキュメント](/docs/messages/next-dynamic-modules)を参照してください。
+
+### `Head.rewind`を削除する
+
+`Head.rewind`はNext.js 9.5以降、何も実行しない関数となっており、Next.js 11では削除されました。`Head.rewind`の使用は安全に削除できます。
+
+### Moment.jsのロケールはデフォルトで除外されるようになりました
+
+Moment.jsはデフォルトで多くのロケールの翻訳を含んでいます。Next.jsはMoment.jsを使用するアプリケーションのバンドルサイズを最適化するために、これらのロケールをデフォルトで自動的に除外するようになりました。
+
+特定のロケールを読み込むには、次のスニペットを使用してください：
+
+```js
+import moment from 'moment'
+import 'moment/locale/ja'
+
+moment.locale('ja')
+```
+
+この新しいデフォルト動作を望まない場合は、`next.config.js`に`excludeDefaultMomentLocales: false`を追加してオプトアウトできますが、Moment.jsのサイズを大幅に削減するこの最適化を無効にしないことを強く推奨します。
+
+### `router.events`の使用方法を更新する
+
+レンダリング中に`router.events`にアクセスしている場合、Next.js 11ではプリレンダリング中に`router.events`が提供されなくなりました。`router.events`へのアクセスは`useEffect`内で行うようにしてください：
+
+```js
+useEffect(() => {
+  const handleRouteChange = (url, { shallow }) => {
+    console.log(
+      `App is changing to ${url} ${
+        shallow ? 'with' : 'without'
+      } shallow routing`
+    )
+  }
+
+  router.events.on('routeChangeStart', handleRouteChange)
+
+  // コンポーネントがアンマウントされた場合、
+  // `off`メソッドでイベントの登録を解除します：
+  return () => {
+    router.events.off('routeChangeStart', handleRouteChange)
+  }
+}, [router])
+```
+
+アプリケーションが内部プロパティで公開されていなかった`router.router.events`を使用している場合は、`router.events`を使用するように変更してください。
+
+## React 16から17へ
+
+React 17では、新しい[JSX Transform](https://reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)が導入され、長い間Next.jsの機能だったものがより広いReactエコシステムに取り入れられました：JSXを使用する際に`import React from 'react'`が不要になりました。React 17を使用する場合、Next.jsは自動的に新しいトランスフォームを使用します。このトランスフォームは`React`変数をグローバルにしません（これは以前のNext.js実装の意図せぬ副作用でした）。`React`をインポートせずに誤って使用した場合を自動的に修正する[コードモッド](/docs/pages/guides/upgrading/codemods#add-missing-react-import)が利用可能です。
+
+ほとんどのアプリケーションはすでに最新バージョンのReactを使用していますが、Next.js 11では最小Reactバージョンが17.0.2に更新されました。
+
+アップグレードするには、以下のコマンドを実行できます：
+
+```
+npm install react@latest react-dom@latest
+```
+
+または`yarn`を使用する場合：
+
+```
+yarn add react@latest react-dom@latest
+```

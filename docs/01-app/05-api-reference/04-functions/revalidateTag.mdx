@@ -1,0 +1,78 @@
+---
+title: revalidateTag
+description: revalidateTag 関数の API リファレンス。
+slug: /docs/app/api-reference/functions/revalidateTag
+---
+
+`revalidateTag` は、特定のキャッシュタグの [キャッシュデータ](/docs/app/deep-dive/caching) を必要に応じて消去できます。
+
+> **補足**:
+>
+> - `revalidateTag` は、パスが次に訪問されたときにのみキャッシュを無効化します。つまり、動的なルートセグメントで `revalidateTag` を呼び出しても、一度に多くの再検証が即座にトリガーされるわけではありません。無効化は、パスが次に訪問されたときにのみ発生します。
+
+## パラメータ
+
+```tsx
+revalidateTag(tag: string): void;
+```
+
+- `tag`: 再検証したいデータに関連付けられたキャッシュタグを表す文字列。256文字以下である必要があります。この値は大文字と小文字を区別します。
+
+`fetch` にタグを追加するには、次のようにします：
+
+```tsx
+fetch(url, { next: { tags: [...] } });
+```
+
+## 戻り値
+
+`revalidateTag` は値を返しません。
+
+## 例
+
+### サーバーアクション
+
+```ts filename="app/actions.ts" switcher
+'use server'
+
+import { revalidateTag } from 'next/cache'
+
+export default async function submit() {
+  await addPost()
+  revalidateTag('posts')
+}
+```
+
+```js filename="app/actions.js" switcher
+'use server'
+
+import { revalidateTag } from 'next/cache'
+
+export default async function submit() {
+  await addPost()
+  revalidateTag('posts')
+}
+```
+
+### ルートハンドラ
+
+```ts filename="app/api/revalidate/route.ts" switcher
+import type { NextRequest } from 'next/server'
+import { revalidateTag } from 'next/cache'
+
+export async function GET(request: NextRequest) {
+  const tag = request.nextUrl.searchParams.get('tag')
+  revalidateTag(tag)
+  return Response.json({ revalidated: true, now: Date.now() })
+}
+```
+
+```js filename="app/api/revalidate/route.js" switcher
+import { revalidateTag } from 'next/cache'
+
+export async function GET(request) {
+  const tag = request.nextUrl.searchParams.get('tag')
+  revalidateTag(tag)
+  return Response.json({ revalidated: true, now: Date.now() })
+}
+```

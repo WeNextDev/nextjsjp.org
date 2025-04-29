@@ -28,14 +28,14 @@ export default async function Page({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const slug = (await params).slug
+  const { slug } = await params
   return <div>My Post: {slug}</div>
 }
 ```
 
 ```jsx filename="app/blog/[slug]/page.js" switcher
 export default async function Page({ params }) {
-  const slug = (await params).slug
+  const { slug } = await params
   return <div>My Post: {slug}</div>
 }
 ```
@@ -78,9 +78,9 @@ export async function generateStaticParams() {
 }
 ```
 
-`generateStaticParams`関数の主な利点は、データの賢明な取得です。`generateStaticParams`関数内で`fetch`リクエストを使用してコンテンツを取得する場合、リクエストは[自動的にメモ化](/docs/app/building-your-application/caching#request-memoization)されます。これは、複数の`generateStaticParams`、レイアウト、ページ間で同じ引数を持つ`fetch`リクエストが1回しか行われないことを意味し、ビルド時間を短縮します。
+`generateStaticParams`関数の主な利点は、データの賢明な取得です。`generateStaticParams`関数内で`fetch`リクエストを使用してコンテンツを取得する場合、リクエストは[自動的にメモ化](/docs/app/deep-dive/caching#request-memoization)されます。これは、複数の`generateStaticParams`、レイアウト、ページ間で同じ引数を持つ`fetch`リクエストが1回しか行われないことを意味し、ビルド時間を短縮します。
 
-`pages`ディレクトリから移行する場合は、[移行ガイド](/docs/app/building-your-application/upgrading/app-router-migration#dynamic-paths-getstaticpaths)を使用してください。
+`pages`ディレクトリから移行する場合は、[移行ガイド](/docs/app/guides/migrating/app-router-migration#dynamic-paths-getstaticpaths)を使用してください。
 
 詳細情報と高度な使用例については、[`generateStaticParams`サーバー関数のドキュメント](/docs/app/api-reference/functions/generate-static-params)を参照してください。
 

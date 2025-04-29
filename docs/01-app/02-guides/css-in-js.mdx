@@ -1,0 +1,325 @@
+---
+title: CSS-in-JSライブラリの使用方法
+nav_title: CSS-in-JS
+description: Next.jsでCSS-in-JSライブラリを使用する
+slug: /docs/app/guides/css-in-js
+---
+
+{/* このドキュメントの内容はappルーターとpagesルーターで共有されています。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用して、Pagesルーター特有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+<AppOnly>
+
+> **警告:** サーバーコンポーネントやストリーミングなどの新しいReact機能とCSS-in-JSを一緒に使用するには、ライブラリ開発者が[concurrent rendering](https://react.dev/blog/2022/03/29/react-v18#what-is-concurrent-react)を含む最新バージョンのReactをサポートしている必要があります。
+
+以下のライブラリは`app`ディレクトリのクライアントコンポーネントでサポートされています（アルファベット順）：
+
+- [`ant-design`](https://ant.design/docs/react/use-with-next#using-app-router)
+- [`chakra-ui`](https://chakra-ui.com/getting-started/nextjs-app-guide)
+- [`@fluentui/react-components`](https://react.fluentui.dev/?path=/docs/concepts-developer-server-side-rendering-next-js-appdir-setup--page)
+- [`kuma-ui`](https://kuma-ui.com)
+- [`@mui/material`](https://mui.com/material-ui/guides/next-js-app-router/)
+- [`@mui/joy`](https://mui.com/joy-ui/integrations/next-js-app-router/)
+- [`pandacss`](https://panda-css.com)
+- [`styled-jsx`](#styled-jsx)
+- [`styled-components`](#styled-components)
+- [`stylex`](https://stylexjs.com)
+- [`tamagui`](https://tamagui.dev/docs/guides/next-js#server-components)
+- [`tss-react`](https://tss-react.dev/)
+- [`vanilla-extract`](https://vanilla-extract.style)
+
+以下はサポートに向けて現在作業中です：
+
+- [`emotion`](https://github.com/emotion-js/emotion/issues/2928)
+
+> **補足**: 私たちは様々なCSS-in-JSライブラリをテストしており、React 18の機能や`app`ディレクトリをサポートするライブラリについて、さらに多くの例を追加していく予定です。
+
+サーバーコンポーネントにスタイルを適用したい場合は、[CSS Modules](/docs/app/building-your-application/styling/css)や、PostCSSや[Tailwind CSS](/docs/app/building-your-application/styling/tailwind-css)などのCSSファイルを出力する他のソリューションを使用することをお勧めします。
+
+## `app`でCSS-in-JSを設定する
+
+CSS-in-JSの設定は、以下の3つのステップからなるオプトインプロセスです：
+
+1. レンダリング時にすべてのCSSルールを収集する**スタイルレジストリ**
+2. それらを使用するコンテンツの前にルールを挿入するための新しい`useServerInsertedHTML`フック
+3. 初期サーバーサイドレンダリング中にアプリをスタイルレジストリでラップするクライアントコンポーネント
+
+### `styled-jsx`
+
+クライアントコンポーネントで`styled-jsx`を使用するには、`v5.1.0`以上が必要です。まず、新しいレジストリを作成します：
+
+```tsx filename="app/registry.tsx" switcher
+'use client'
+
+import React, { useState } from 'react'
+import { useServerInsertedHTML } from 'next/navigation'
+import { StyleRegistry, createStyleRegistry } from 'styled-jsx'
+
+export default function StyledJsxRegistry({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // 遅延初期状態でスタイルシートを一度だけ作成
+  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
+  const [jsxStyleRegistry] = useState(() => createStyleRegistry())
+
+  useServerInsertedHTML(() => {
+    const styles = jsxStyleRegistry.styles()
+    jsxStyleRegistry.flush()
+    return <>{styles}</>
+  })
+
+  return <StyleRegistry registry={jsxStyleRegistry}>{children}</StyleRegistry>
+}
+```
+
+```jsx filename="app/registry.js" switcher
+'use client'
+
+import React, { useState } from 'react'
+import { useServerInsertedHTML } from 'next/navigation'
+import { StyleRegistry, createStyleRegistry } from 'styled-jsx'
+
+export default function StyledJsxRegistry({ children }) {
+  // 遅延初期状態でスタイルシートを一度だけ作成
+  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
+  const [jsxStyleRegistry] = useState(() => createStyleRegistry())
+
+  useServerInsertedHTML(() => {
+    const styles = jsxStyleRegistry.styles()
+    jsxStyleRegistry.flush()
+    return <>{styles}</>
+  })
+
+  return <StyleRegistry registry={jsxStyleRegistry}>{children}</StyleRegistry>
+}
+```
+
+次に、[ルートレイアウト](/docs/app/building-your-application/routing/layouts-and-templates#root-layout-required)をレジストリでラップします：
+
+```tsx filename="app/layout.tsx" switcher
+import StyledJsxRegistry from './registry'
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html>
+      <body>
+        <StyledJsxRegistry>{children}</StyledJsxRegistry>
+      </body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+import StyledJsxRegistry from './registry'
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <StyledJsxRegistry>{children}</StyledJsxRegistry>
+      </body>
+    </html>
+  )
+}
+```
+
+[こちらで例を確認できます](https://github.com/vercel/app-playground/tree/main/app/styling/styled-jsx)。
+
+### Styled Components
+
+以下は`styled-components@6`以降の設定方法の例です：
+
+まず、`next.config.js`でstyled-componentsを有効にします。
+
+```js filename="next.config.js"
+module.exports = {
+  compiler: {
+    styledComponents: true,
+  },
+}
+```
+
+次に、`styled-components` APIを使用してレンダリング中に生成されたすべてのCSSスタイルルールを収集するグローバルレジストリコンポーネントと、それらのルールを返す関数を作成します。その後、`useServerInsertedHTML`フックを使用して、レジストリで収集されたスタイルをルートレイアウトの`<head>` HTMLタグに挿入します。
+
+```tsx filename="lib/registry.tsx" switcher
+'use client'
+
+import React, { useState } from 'react'
+import { useServerInsertedHTML } from 'next/navigation'
+import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
+
+export default function StyledComponentsRegistry({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // 遅延初期状態でスタイルシートを一度だけ作成
+  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
+  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet())
+
+  useServerInsertedHTML(() => {
+    const styles = styledComponentsStyleSheet.getStyleElement()
+    styledComponentsStyleSheet.instance.clearTag()
+    return <>{styles}</>
+  })
+
+  if (typeof window !== 'undefined') return <>{children}</>
+
+  return (
+    <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
+      {children}
+    </StyleSheetManager>
+  )
+}
+```
+
+```jsx filename="lib/registry.js" switcher
+'use client'
+
+import React, { useState } from 'react'
+import { useServerInsertedHTML } from 'next/navigation'
+import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
+
+export default function StyledComponentsRegistry({ children }) {
+  // 遅延初期状態でスタイルシートを一度だけ作成
+  // 参考: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
+  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet())
+
+  useServerInsertedHTML(() => {
+    const styles = styledComponentsStyleSheet.getStyleElement()
+    styledComponentsStyleSheet.instance.clearTag()
+    return <>{styles}</>
+  })
+
+  if (typeof window !== 'undefined') return <>{children}</>
+
+  return (
+    <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
+      {children}
+    </StyleSheetManager>
+  )
+}
+```
+
+ルートレイアウトの`children`をスタイルレジストリコンポーネントでラップします：
+
+```tsx filename="app/layout.tsx" switcher
+import StyledComponentsRegistry from './lib/registry'
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html>
+      <body>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+      </body>
+    </html>
+  )
+}
+```
+
+```jsx filename="app/layout.js" switcher
+import StyledComponentsRegistry from './lib/registry'
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+      </body>
+    </html>
+  )
+}
+```
+
+[こちらで例を確認できます](https://github.com/vercel/app-playground/tree/main/app/styling/styled-components)。
+
+> **補足**:
+>
+> - サーバーレンダリング中、スタイルはグローバルレジストリに抽出され、HTMLの`<head>`にフラッシュされます。これにより、スタイルルールがそれらを使用する可能性のあるコンテンツの前に配置されることが保証されます。将来的には、スタイルを挿入する場所を決定するために、Reactの今後の機能を使用する可能性があります。
+> - ストリーミング中、各チャンクからのスタイルが収集され、既存のスタイルに追加されます。クライアントサイドのハイドレーションが完了すると、`styled-components`が通常通り引き継ぎ、さらなる動的スタイルを挿入します。
+> - スタイルレジストリ用のクライアントコンポーネントをツリーのトップレベルで特に使用するのは、この方法でCSSルールを抽出する方が効率的だからです。これにより、後続のサーバーレンダリングでスタイルを再生成する必要がなくなり、それらがサーバーコンポーネントのペイロードに送信されるのを防ぎます。
+> - styled-componentsのコンパイルの個々のプロパティを設定する必要がある高度なユースケースでは、[Next.js styled-components APIリファレンス](/docs/architecture/nextjs-compiler#styled-components)で詳細を確認できます。
+
+</AppOnly>
+
+<PagesOnly>
+
+<details>
+  <summary>例</summary>
+
+- [Styled JSX](https://github.com/vercel/next.js/tree/canary/examples/with-styled-jsx)
+- [Styled Components](https://github.com/vercel/next.js/tree/canary/examples/with-styled-components)
+- [Emotion](https://github.com/vercel/next.js/tree/canary/examples/with-emotion)
+- [Linaria](https://github.com/vercel/next.js/tree/canary/examples/with-linaria)
+- [Styletron](https://github.com/vercel/next.js/tree/canary/examples/with-styletron)
+- [Cxs](https://github.com/vercel/next.js/tree/canary/examples/with-cxs)
+- [Fela](https://github.com/vercel/next.js/tree/canary/examples/with-fela)
+- [Stitches](https://github.com/vercel/next.js/tree/canary/examples/with-stitches)
+
+</details>
+
+既存のCSS-in-JSソリューションを使用することは可能です。最もシンプルなものはインラインスタイルです：
+
+```jsx
+function HiThere() {
+  return <p style={{ color: 'red' }}>hi there</p>
+}
+
+export default HiThere
+```
+
+私たちは分離されたスコープCSSのサポートを提供するために[styled-jsx](https://github.com/vercel/styled-jsx)をバンドルしています。
+目的は、Web Componentsに似た「シャドウCSS」をサポートすることですが、残念ながら[これらはサーバーレンダリングをサポートせず、JSのみです](https://github.com/w3c/webcomponents/issues/71)。
+
+他の一般的なCSS-in-JSソリューション（Styled Componentsなど）については、上記の例をご覧ください。
+
+`styled-jsx`を使用するコンポーネントは次のようになります：
+
+```jsx
+function HelloWorld() {
+  return (
+    <div>
+      Hello world
+      <p>scoped!</p>
+      <style jsx>{`
+        p {
+          color: blue;
+        }
+        div {
+          background: red;
+        }
+        @media (max-width: 600px) {
+          div {
+            background: blue;
+          }
+        }
+      `}</style>
+      <style global jsx>{`
+        body {
+          background: black;
+        }
+      `}</style>
+    </div>
+  )
+}
+
+export default HelloWorld
+```
+
+より多くの例については、[styled-jsxのドキュメント](https://github.com/vercel/styled-jsx)をご覧ください。
+
+### JavaScriptの無効化
+
+はい、JavaScriptを無効にしても、本番ビルド（`next start`）ではCSSは読み込まれます。開発中は、[Fast Refresh](https://nextjs.org/blog/next-9-4#fast-refresh)で最高の開発者体験を提供するために、JavaScriptを有効にする必要があります。
+
+</PagesOnly>

@@ -12,8 +12,8 @@ slug: /docs/app/building-your-application/rendering/partial-prerendering
 
 <Image
   alt="部分的にプリレンダリングされた商品ページ。静的なナビゲーションと商品情報、動的なカートとおすすめ商品を表示"
-  srcLight="/light/thinking-in-ppr.png"
-  srcDark="/dark/thinking-in-ppr.png"
+  srcLight="/learn/light/thinking-in-ppr.png"
+  srcDark="/learn/dark/thinking-in-ppr.png"
   width="1600"
   height="632"
 />
@@ -220,3 +220,16 @@ export async function Table({ searchParams }) {
   return '...'
 }
 ```
+
+## プラットフォームサポート
+
+> **注意:** 部分的プリレンダリング（Partial Prerendering）は**実験的**機能であり、canaryでのみ利用可能で変更される可能性があります。本番環境での使用は推奨されません。
+
+| デプロイオプション                                                         | サポート状況     |
+| ------------------------------------------------------------------------- | --------------- |
+| [Node.jsサーバー](/docs/app/getting-started/deploying#nodejs-server)       | はい            |
+| [Dockerコンテナ](/docs/app/getting-started/deploying#docker)              | はい            |
+| [静的エクスポート](/docs/app/getting-started/deploying#static-export)      | いいえ          |
+| [アダプター](/docs/app/getting-started/deploying#adapters)                | プラットフォーム依存 |
+
+Next.jsをセルフホスティングする際の[PPRの設定方法](/docs/app/guides/self-hosting#partial-prerendering)をご覧ください。

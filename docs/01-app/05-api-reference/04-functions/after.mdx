@@ -1,0 +1,183 @@
+---
+title: after
+description: after関数のAPIリファレンス。
+slug: /docs/app/api-reference/functions/after
+---
+
+`after`を使用すると、レスポンス（またはプリレンダリング）が完了した後に実行される処理をスケジュールすることができます。これはロギングや分析など、レスポンスをブロックすべきではないタスクやその他の副作用に便利です。
+
+この関数は[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)（[`generateMetadata`](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)を含む）、[サーバーアクション](/docs/app/building-your-application/data-fetching/server-actions-and-mutations)、[ルートハンドラー](/docs/app/building-your-application/routing/route-handlers)、および[ミドルウェア](/docs/app/building-your-application/routing/middleware)で使用できます。
+
+この関数はレスポンス（またはプリレンダリング）の完了後に実行されるコールバックを受け取ります：
+
+```tsx filename="app/layout.tsx" switcher
+import { after } from 'next/server'
+// カスタムロギング関数
+import { log } from '@/app/utils'
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  after(() => {
+    // レイアウトがレンダリングされ、ユーザーに送信された後に実行
+    log()
+  })
+  return <>{children}</>
+}
+```
+
+```jsx filename="app/layout.jsx" switcher
+import { after } from 'next/server'
+// カスタムロギング関数
+import { log } from '@/app/utils'
+
+export default function Layout({ children }) {
+  after(() => {
+    // レイアウトがレンダリングされ、ユーザーに送信された後に実行
+    log()
+  })
+  return <>{children}</>
+}
+```
+
+> **補足:** `after`は[動的API](/docs/app/building-your-application/rendering/server-components#dynamic-apis)ではなく、これを呼び出してもルートが動的になることはありません。静的ページ内で使用される場合、コールバックはビルド時、またはページが再検証されるときに実行されます。
+
+## リファレンス
+
+### パラメータ
+
+- レスポンス（またはプリレンダリング）の完了後に実行されるコールバック関数。
+
+### 実行時間
+
+`after`はプラットフォームのデフォルトまたは設定されたルートの最大実行時間まで実行されます。プラットフォームがサポートしている場合は、[`maxDuration`](/docs/app/api-reference/file-conventions/route-segment-config#maxduration)ルートセグメント設定を使用してタイムアウト制限を設定できます。
+
+## 補足
+
+- `after`はレスポンスが正常に完了しなかった場合でも実行されます。これにはエラーがスローされた場合や、`notFound`または`redirect`が呼び出された場合も含まれます。
+- React `cache`を使用して`after`内で呼び出される関数を重複排除できます。
+- `after`は他の`after`呼び出し内にネストできます。例えば、追加機能を追加するために`after`呼び出しをラップするユーティリティ関数を作成できます。
+
+## 例
+
+### リクエストAPIとの併用
+
+[サーバーアクション](/docs/app/building-your-application/data-fetching/server-actions-and-mutations)や[ルートハンドラー](/docs/app/api-reference/file-conventions/route)で`after`内で[`cookies`](/docs/app/api-reference/functions/cookies)や[`headers`](/docs/app/api-reference/functions/headers)などのリクエストAPIを使用することができます。これはミューテーション後のアクティビティを記録するのに便利です。例えば：
+
+```ts filename="app/api/route.ts" highlight={2,7-9} switcher
+import { after } from 'next/server'
+import { cookies, headers } from 'next/headers'
+import { logUserAction } from '@/app/utils'
+
+export async function POST(request: Request) {
+  // ミューテーションを実行
+  // ...
+
+  // 分析のためのユーザーアクティビティのログ記録
+  after(async () => {
+    const userAgent = (await headers().get('user-agent')) || 'unknown'
+    const sessionCookie =
+      (await cookies().get('session-id'))?.value || 'anonymous'
+
+    logUserAction({ sessionCookie, userAgent })
+  })
+
+  return new Response(JSON.stringify({ status: 'success' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+```
+
+```js filename="app/api/route.js" highlight={2,7-9} switcher
+import { after } from 'next/server'
+import { cookies, headers } from 'next/headers'
+import { logUserAction } from '@/app/utils'
+
+export async function POST(request) {
+  // ミューテーションを実行
+  // ...
+
+  // 分析のためのユーザーアクティビティのログ記録
+  after(async () => {
+    const userAgent = (await headers().get('user-agent')) || 'unknown'
+    const sessionCookie =
+      (await cookies().get('session-id'))?.value || 'anonymous'
+
+    logUserAction({ sessionCookie, userAgent })
+  })
+
+  return new Response(JSON.stringify({ status: 'success' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+```
+
+ただし、[サーバーコンポーネント](/docs/app/building-your-application/rendering/server-components)内の`after`でこれらのリクエストAPIを使用することはできません。これは、Next.jsが[部分的プリレンダリング](/docs/app/building-your-application/rendering/partial-prerendering)をサポートするためにリクエストAPIにアクセスするツリーのどの部分かを把握する必要があるためですが、`after`はReactのレンダリングライフサイクルの後に実行されます。
+
+## プラットフォームサポート
+
+| デプロイオプション                                                     | サポート状況      |
+| ------------------------------------------------------------------- | --------------- |
+| [Node.jsサーバー](/docs/app/getting-started/deploying#nodejs-server) | あり             |
+| [Dockerコンテナ](/docs/app/getting-started/deploying#docker)         | あり             |
+| [静的エクスポート](/docs/app/getting-started/deploying#static-export) | なし             |
+| [アダプター](/docs/app/getting-started/deploying#adapters)           | プラットフォーム依存 |
+
+Next.jsをセルフホスティングする際の[`after`の設定方法](/docs/app/guides/self-hosting#after)について学びましょう。
+
+<details id="after-serverless">
+  <summary>リファレンス: サーバーレスプラットフォームでの`after`のサポート</summary>
+  サーバーレスコンテキストで`after`を使用するには、レスポンスが送信された後に非同期タスクが完了するのを待機する必要があります。Next.jsとVercelでは、これは`waitUntil(promise)`というプリミティブを使用して、[`waitUntil`](https://vercel.com/docs/functions/functions-api-reference#waituntil)に渡されたすべてのプロミスが解決されるまでサーバーレス呼び出しの寿命を延長することで実現されます。
+
+ユーザーが`after`を実行できるようにするには、同様の方法で動作する`waitUntil`の実装を提供する必要があります。
+
+`after`が呼び出されると、Next.jsは次のように`waitUntil`にアクセスします：
+
+```jsx
+const RequestContext = globalThis[Symbol.for('@next/request-context')]
+const contextValue = RequestContext?.get()
+const waitUntil = contextValue?.waitUntil
+```
+
+つまり、`globalThis[Symbol.for('@next/request-context')]`には以下のようなオブジェクトが含まれることが期待されます：
+
+```tsx
+type NextRequestContext = {
+  get(): NextRequestContextValue | undefined
+}
+
+type NextRequestContextValue = {
+  waitUntil?: (promise: Promise<any>) => void
+}
+```
+
+以下は実装の例です。
+
+```tsx
+import { AsyncLocalStorage } from 'node:async_hooks'
+
+const RequestContextStorage = new AsyncLocalStorage<NextRequestContextValue>()
+
+// Next.jsが使用するアクセサーを定義して注入
+const RequestContext: NextRequestContext = {
+  get() {
+    return RequestContextStorage.getStore()
+  },
+}
+globalThis[Symbol.for('@next/request-context')] = RequestContext
+
+const handler = (req, res) => {
+  const contextValue = { waitUntil: YOUR_WAITUNTIL }
+  // 値を提供
+  return RequestContextStorage.run(contextValue, () => nextJsHandler(req, res))
+}
+```
+
+</details>
+
+## バージョン履歴
+
+| バージョン履歴   | 説明                           |
+| --------------- | ------------------------------ |
+| `v15.1.0`       | `after`が安定版になりました。    |
+| `v15.0.0-rc`    | `unstable_after`が導入されました。|

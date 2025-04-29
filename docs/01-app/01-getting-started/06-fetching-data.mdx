@@ -56,7 +56,7 @@ export default async function Page() {
 
 #### ORMまたはデータベースを使用する場合
 
-ORMまたはデータベースを使用してデータをフェッチするには、コンポーネントを非同期関数に変換し、呼び出しを待機します：
+サーバーコンポーネントはサーバー上でレンダリングされるため、ORMやデータベースクライアントを使用してデータベースクエリを安全に実行できます。コンポーネントを非同期関数に変更し、呼び出しを await してください：
 
 ```tsx filename="app/blog/page.tsx" switcher
 import { db, posts } from '@/lib/db'

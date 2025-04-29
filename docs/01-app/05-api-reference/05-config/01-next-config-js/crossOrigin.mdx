@@ -1,0 +1,20 @@
+---
+title: crossOrigin
+description: next/script で生成される`script`タグに`crossOrigin`オプションを追加します。
+slug: /docs/app/api-reference/config/next-config-js/crossOrigin
+---
+
+{/* このドキュメントの内容はアプリとページルーターの間で共有されます。`<PagesOnly>Content</PagesOnly>`コンポーネントを使用してPages Router固有のコンテンツを追加できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+`crossOrigin`オプションを使用して、<AppOnly>[`next/script`](/docs/app/guides/scripts)コンポーネント</AppOnly> <PagesOnly>[`next/script`](/docs/pages/guides/scripts)と[`next/head`](/docs/pages/api-reference/components/head)コンポーネント</PagesOnly>によって生成されるすべての`<script>`タグに[`crossOrigin`属性](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin)を追加し、クロスオリジンリクエストの処理方法を定義します。
+
+```js filename="next.config.js"
+module.exports = {
+  crossOrigin: 'anonymous',
+}
+```
+
+## オプション
+
+- `'anonymous'`: [`crossOrigin="anonymous"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin#anonymous)属性を追加します。
+- `'use-credentials'`: [`crossOrigin="use-credentials"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin#use-credentials)属性を追加します。

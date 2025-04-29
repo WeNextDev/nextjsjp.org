@@ -1,0 +1,185 @@
+---
+title: リンクとナビゲーション
+description: Next.jsでのナビゲーションの仕組みと、Linkコンポーネントと`useRouter`フックの使用方法を学びます。
+slug: /docs/pages/building-your-application/routing/linking-and-navigating
+---
+
+Next.jsのルーターは、シングルページアプリケーションと同様に、ページ間のクライアントサイドルート遷移を可能にします。
+
+クライアントサイドルート遷移を行うために、`Link`という名前のReactコンポーネントが提供されています。
+
+```jsx
+import Link from 'next/link'
+
+function Home() {
+  return (
+    <ul>
+      <li>
+        <Link href="/">ホーム</Link>
+      </li>
+      <li>
+        <Link href="/about">会社概要</Link>
+      </li>
+      <li>
+        <Link href="/blog/hello-world">ブログ投稿</Link>
+      </li>
+    </ul>
+  )
+}
+
+export default Home
+```
+
+上記の例では、複数のリンクを使用しています。それぞれのリンクは、既知のページにパス（`href`）をマッピングしています：
+
+- `/` → `pages/index.js`
+- `/about` → `pages/about.js`
+- `/blog/hello-world` → `pages/blog/[slug].js`
+
+ビューポート内の任意の`<Link />`は、[静的生成](/docs/pages/building-your-application/data-fetching/get-static-props)を使用するページでは、デフォルトで（対応するデータとともに）プリフェッチされます。[サーバーサイドレンダリング](/docs/pages/building-your-application/data-fetching/get-server-side-props)されるルートの対応するデータは、`<Link />`がクリックされた場合にのみフェッチされます。
+
+## 動的パスへのリンク
+
+補間を使用してパスを作成することもできます。これは、[動的ルートセグメント](/docs/pages/building-your-application/routing/dynamic-routes)に便利です。例えば、コンポーネントにプロップとして渡された投稿のリストを表示するには：
+
+```jsx
+import Link from 'next/link'
+
+function Posts({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>
+          <Link href={`/blog/${encodeURIComponent(post.slug)}`}>
+            {post.title}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export default Posts
+```
+
+> パスをUTF-8互換にするために、この例では[`encodeURIComponent`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)を使用しています。
+
+または、URLオブジェクトを使用する方法：
+
+```jsx
+import Link from 'next/link'
+
+function Posts({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>
+          <Link
+            href={{
+              pathname: '/blog/[slug]',
+              query: { slug: post.slug },
+            }}
+          >
+            {post.title}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export default Posts
+```
+
+今回は、パスを作成するために補間を使用する代わりに、`href`でURLオブジェクトを使用しています：
+
+- `pathname`は`pages`ディレクトリ内のページ名です。この場合は`/blog/[slug]`。
+- `query`は動的セグメントを持つオブジェクトです。この場合は`slug`。
+
+## ルーターの注入
+
+Reactコンポーネントで[`router`オブジェクト](/docs/pages/api-reference/functions/use-router#router-object)にアクセスするには、[`useRouter`](/docs/pages/api-reference/functions/use-router)または[`withRouter`](/docs/pages/api-reference/functions/use-router#withrouter)を使用します。
+
+一般的に、[`useRouter`](/docs/pages/api-reference/functions/use-router)の使用をお勧めします。
+
+## 命令的ルーティング
+
+[`next/link`](/docs/pages/api-reference/components/link)がほとんどのルーティングニーズをカバーできますが、クライアントサイドのナビゲーションを行わずに、[`next/router`のドキュメント](/docs/pages/api-reference/functions/use-router)を参照してください。
+
+以下の例は、[`useRouter`](/docs/pages/api-reference/functions/use-router)を使用した基本的なページナビゲーションを示しています：
+
+```jsx
+import { useRouter } from 'next/router'
+
+export default function ReadMore() {
+  const router = useRouter()
+
+  return (
+    <button onClick={() => router.push('/about')}>
+      詳細を読むにはここをクリック
+    </button>
+  )
+}
+```
+
+## シャローRouting
+
+<details>
+  <summary>例</summary>
+
+- [シャローRouting](https://github.com/vercel/next.js/tree/canary/examples/with-shallow-routing)
+
+</details>
+
+シャローRoutingにより、データフェッチメソッドを再実行せずにURLを変更できます。これには[`getServerSideProps`](/docs/pages/building-your-application/data-fetching/get-server-side-props)、[`getStaticProps`](/docs/pages/building-your-application/data-fetching/get-static-props)、[`getInitialProps`](/docs/pages/api-reference/functions/get-initial-props)が含まれます。
+
+[`useRouter`](/docs/pages/api-reference/functions/use-router)または[`withRouter`](/docs/pages/api-reference/functions/use-router#withrouter)によって追加された[`router`オブジェクト](/docs/pages/api-reference/functions/use-router#router-object)を介して、状態を失うことなく、更新された`pathname`と`query`を受け取ります。
+
+シャローRoutingを有効にするには、`shallow`オプションを`true`に設定します。以下の例を考えてみましょう：
+
+```jsx
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+
+// 現在のURLは'/'
+function Page() {
+  const router = useRouter()
+
+  useEffect(() => {
+    // 最初のレンダリング後に常にナビゲーションを行う
+    router.push('/?counter=10', undefined, { shallow: true })
+  }, [])
+
+  useEffect(() => {
+    // カウンターが変更された！
+  }, [router.query.counter])
+}
+
+export default Page
+```
+
+URLは`/?counter=10`に更新され、ページは置き換えられず、ルートの状態のみが変更されます。
+
+また、以下のように[`componentDidUpdate`](https://react.dev/reference/react/Component#componentdidupdate)を介してURLの変更を監視することもできます：
+
+```jsx
+componentDidUpdate(prevProps) {
+  const { pathname, query } = this.props.router
+  // 無限ループを避けるために、プロップが変更されたことを確認
+  if (query.counter !== prevProps.router.query.counter) {
+    // 新しいクエリに基づいてデータをフェッチ
+  }
+}
+```
+
+### 注意点
+
+シャローRouting**のみ**が、現在のページのURL変更で機能します。例えば、`pages/about.js`という別のページがあり、以下を実行するとします：
+
+```js
+router.push('/?counter=10', '/about?counter=10', { shallow: true })
+```
+
+これは新しいページであるため、現在のページをアンロードし、新しいページをロードし、シャローRoutingを要求したにもかかわらず、データフェッチを待機します。
+
+ミドルウェアでシャローRoutingを使用する場合、以前のミドルウェアなしの動作とは異なり、新しいページが現在のページと一致することを保証できません。これは、ミドルウェアが動的に書き換えることができ、シャローでスキップされるデータフェッチなしではクライアントサイドで検証できないためです。したがって、シャローなルート変更は常にシャローとして扱う必要があります。

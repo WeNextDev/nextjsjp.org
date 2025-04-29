@@ -183,3 +183,14 @@ Suspenseの詳細な例やユースケースについては、[Reactのドキュ
 ストリーミング時には、リクエストが成功したことを示す`200`ステータスコードが返されます。
 
 サーバーは、ストリーミングされるコンテンツ自体の中で、例えば[`redirect`](/docs/app/api-reference/functions/redirect)や[`notFound`](/docs/app/api-reference/functions/not-found)を使用する場合など、クライアントにエラーや問題を伝えることができます。レスポンスヘッダーはすでにクライアントに送信されているため、レスポンスのステータスコードを更新することはできません。これはSEOには影響しません。
+
+## プラットフォームサポート
+
+| デプロイオプション                                                       | サポート状況       |
+| --------------------------------------------------------------------- | ----------------- |
+| [Node.jsサーバー](/docs/app/getting-started/deploying#nodejs-server)    | Yes               |
+| [Dockerコンテナ](/docs/app/getting-started/deploying#docker)            | Yes               |
+| [静的エクスポート](/docs/app/getting-started/deploying#static-export)    | No                |
+| [アダプター](/docs/app/getting-started/deploying#adapters)               | プラットフォーム固有 |
+
+Next.jsをセルフホスティングする際の[ストリーミングの設定方法](/docs/app/guides/self-hosting#streaming-and-suspense)について学びましょう。

@@ -1,0 +1,47 @@
+---
+title: instrumentation-client.js
+description: Next.jsアプリケーションのフロントエンドパフォーマンスを追跡・監視するためのクライアントサイドインストゥルメンテーションの追加方法を学びます。
+slug: /docs/app/api-reference/file-conventions/instrumentation-client
+---
+
+`instrumentation-client.js|ts` ファイルを使用すると、アプリケーションのフロントエンドコードの実行が開始される前に実行される監視および分析コードを追加できます。これは、パフォーマンス追跡、エラー監視、またはその他のクライアントサイド可観測性ツールをセットアップするのに役立ちます。
+
+使用するには、このファイルをアプリケーションの**ルート**または`src`フォルダ内に配置します。
+
+## 使用方法
+
+[サーバーサイドインストゥルメンテーション](/docs/app/guides/instrumentation)とは異なり、特定の関数をエクスポートする必要はありません。監視コードをファイルに直接記述できます：
+
+```ts filename="instrumentation-client.ts" switcher
+// パフォーマンス監視をセットアップ
+performance.mark('app-init')
+
+// アナリティクスを初期化
+console.log('Analytics initialized')
+
+// エラー追跡をセットアップ
+window.addEventListener('error', (event) => {
+  // エラー追跡サービスに送信
+  reportError(event.error)
+})
+```
+
+```js filename="instrumentation-client.js" switcher
+// パフォーマンス監視をセットアップ
+performance.mark('app-init')
+
+// アナリティクスを初期化
+console.log('Analytics initialized')
+
+// エラー追跡をセットアップ
+window.addEventListener('error', (event) => {
+  // エラー追跡サービスに送信
+  reportError(event.error)
+})
+```
+
+## バージョン履歴
+
+| バージョン | 変更点                                 |
+| ------- | ----------------------------------- |
+| `v15.3` | 導入時期：`instrumentation-client`      |

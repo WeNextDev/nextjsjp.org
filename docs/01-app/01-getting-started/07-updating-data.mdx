@@ -1,50 +1,72 @@
 ---
 title: データの更新方法
 nav_title: データの更新
-slug: /docs/app/getting-started/updating-data
-description: Next.jsアプリケーションでデータを更新する方法を学びましょう。
+description: Next.jsアプリケーションでデータを更新する方法を学びます。
 related:
-  title: API リファレンス
-  description: このページで紹介された機能について詳しく知るには、APIリファレンスをご覧ください。
+  title: APIリファレンス
+  description: このページで言及されている機能について、APIリファレンスを読んで詳細を学びましょう。
   links:
     - app/api-reference/functions/revalidatePath
     - app/api-reference/functions/revalidateTag
     - app/api-reference/functions/redirect
+slug: /docs/app/getting-started/updating-data
 ---
 
-Next.jsでは、Reactの[サーバー関数](https://react.dev/reference/rsc/server-functions)を使用してデータを更新できます。このページでは、サーバー関数の[作成方法](#creating-server-functions)と[呼び出し方法](#invoking-server-functions)について説明します。
+Next.jsではReactの[Server Functions](https://react.dev/reference/rsc/server-functions)を使用してデータを更新できます。このページでは、Server Functionsの[作成方法](#creating-server-functions)と[呼び出し方法](#invoking-server-functions)について説明します。
 
-## サーバー関数の作成
+## Server Functionsの作成
 
-サーバー関数は[`use server`](https://react.dev/reference/rsc/use-server)ディレクティブを使用して定義できます。このディレクティブを**非同期**関数の先頭に配置してその関数をサーバー関数としてマークするか、別のファイルの先頭に配置してそのファイルのすべてのエクスポートをマークできます。ほとんどの場合、別のファイルを使用することをお勧めします。
+Server Functionは[`use server`](https://react.dev/reference/rsc/use-server)ディレクティブを使用して定義できます。このディレクティブを**非同期**関数の先頭に配置して関数をServer Functionとしてマークするか、別のファイルの先頭に配置してそのファイルのすべてのエクスポートをマークできます。
 
 ```ts filename="app/lib/actions.ts" switcher
-'use server'
+export async function createPost(formData: FormData) {
+  'use server'
+  const title = formData.get('title')
+  const content = formData.get('content')
 
-export async function createPost(formData: FormData) {}
+  // データ更新
+  // キャッシュの再検証
+}
 
-export async function deletePost(formData: FormData) {}
+export async function deletePost(formData: FormData) {
+  'use server'
+  const id = formData.get('id')
+
+  // データ更新
+  // キャッシュの再検証
+}
 ```
 
 ```js filename="app/lib/actions.js" switcher
-'use server'
+export async function createPost(formData) {
+  'use server'
+  const title = formData.get('title')
+  const content = formData.get('content')
 
-export async function createPost(formData) {}
+  // データ更新
+  // キャッシュの再検証
+}
 
-export async function deletePost(formData) {}
+export async function deletePost(formData) {
+  'use server'
+  const id = formData.get('id')
+
+  // データ更新
+  // キャッシュの再検証
+}
 ```
 
-### サーバーコンポーネント
+### Server Components
 
-サーバー関数は、関数本体の先頭に`"use server"`ディレクティブを追加することで、サーバーコンポーネント内にインライン化できます：
+Server ComponentsではServer Functionsを関数本体の先頭に`"use server"`ディレクティブを追加してインライン化できます：
 
 ```tsx filename="app/page.tsx" switcher
 export default function Page() {
   // Server Action
-  async function createPost() {
+  async function createPost(formData: FormData) {
     'use server'
-    // Update data
     // ...
+  }
 
   return <></>
 }
@@ -53,9 +75,8 @@ export default function Page() {
 ```jsx filename="app/page.js" switcher
 export default function Page() {
   // Server Action
-  async function createPost() {
+  async function createPost(formData: FormData) {
     'use server'
-    // Update data
     // ...
   }
 
@@ -220,6 +241,8 @@ export default function LikeButton({ initialLikes }) {
 }
 ```
 
+## 示例
+
 ### 処理中の状態を表示する
 
 サーバー関数を実行している間、Reactの[`useActionState`](https://react.dev/reference/react/useActionState)フックを使って読み込みインジケーターを表示できます。このフックは`pending`ブール値を返します：
@@ -265,11 +288,11 @@ export function Button() {
 更新を実行した後、サーバー関数内で[`revalidatePath`](/docs/app/api-reference/functions/revalidatePath)または[`revalidateTag`](/docs/app/api-reference/functions/revalidateTag)を呼び出すことで、Next.jsのキャッシュを再検証し、更新されたデータを表示できます：
 
 ```ts filename="app/lib/actions.ts" switcher
-'use server'
 
 import { revalidatePath } from 'next/cache'
 
 export async function createPost(formData: FormData) {
+'use server'
   // Update data
   // ...
 
@@ -278,11 +301,11 @@ export async function createPost(formData: FormData) {
 ```
 
 ```js filename="app/actions.js" switcher
-'use server'
 
 import { revalidatePath } from 'next/cache'
 
 export async function createPost(formData) {
+'use server'
   // Update data
   // ...
   revalidatePath('/posts')

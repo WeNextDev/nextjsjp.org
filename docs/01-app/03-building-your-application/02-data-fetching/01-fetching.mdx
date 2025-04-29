@@ -266,7 +266,7 @@ export default async function Page() {
 
 Next.jsでは、`page`でフェッチしたのと同じデータを使用する必要がある`generateMetadata`や`generateStaticParams`などのAPIを提供しています。
 
-`fetch`を使用している場合、`cache: 'force-cache'`を追加することでリクエストを[メモ化](/docs/app/building-your-application/caching#request-memoization)できます。これにより、同じURLと同じオプションで安全に呼び出すことができ、リクエストは1回だけ行われます。
+`fetch`を使用している場合、`cache: 'force-cache'`を追加することでリクエストを[メモ化](/docs/app/deep-dive/caching#request-memoization)できます。これにより、同じURLと同じオプションで安全に呼び出すことができ、リクエストは1回だけ行われます。
 
 > **補足:**
 >
@@ -412,7 +412,7 @@ export const getPost = cache(async (id) => {
 
 #### 逐次データフェッチ
 
-ネストされたコンポーネントがあり、各コンポーネントが独自のデータをフェッチする場合、そのデータリクエストが[メモ化](/docs/app/building-your-application/caching#request-memoization)されていないと、データフェッチは逐次的に行われます。
+ネストされたコンポーネントがあり、各コンポーネントが独自のデータをフェッチする場合、そのデータリクエストが[メモ化](/docs/app/deep-dive/caching#request-memoization)されていないと、データフェッチは逐次的に行われます。
 
 一方のフェッチが他方の結果に依存する場合には、このパターンが望ましい場合もあります。例えば、`Playlists`コンポーネントは`artistID` propに依存しているため、`Artist`コンポーネントがデータのフェッチを完了してからデータのフェッチを開始します：
 

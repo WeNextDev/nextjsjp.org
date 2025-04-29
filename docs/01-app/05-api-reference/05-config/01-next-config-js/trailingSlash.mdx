@@ -1,0 +1,34 @@
+---
+title: trailingSlash
+description: Next.jsのページが末尾のスラッシュありまたはなしで解決されるように設定する。
+slug: /docs/app/api-reference/config/next-config-js/trailingSlash
+---
+
+{/* このドキュメントの内容はappとpagesルーターの間で共有されています。Pages Routerに特有のコンテンツを追加するには`<PagesOnly>Content</PagesOnly>`コンポーネントを使用できます。共有コンテンツはコンポーネントでラップしないでください。 */}
+
+デフォルトでは、Next.jsは末尾にスラッシュがあるURLを末尾のスラッシュがない対応するURLにリダイレクトします。例えば、`/about/`は`/about`にリダイレクトされます。この動作を逆に設定することもでき、末尾にスラッシュがないURLが末尾にスラッシュがある対応するURLにリダイレクトされるようになります。
+
+`next.config.js`を開き、`trailingSlash`設定を追加します：
+
+```js filename="next.config.js"
+module.exports = {
+  trailingSlash: true,
+}
+```
+
+このオプションを設定すると、`/about`のようなURLは`/about/`にリダイレクトされます。
+
+`trailingSlash: true`を使用する場合、特定のURLは例外となり、末尾のスラッシュが追加されません：
+
+- 拡張子を持つファイルなどの静的ファイルURL。
+- `.well-known/`配下のパス。
+
+例えば、以下のURLは変更されません：`/file.txt`、`images/photos/picture.png`、`.well-known/subfolder/config.json`。
+
+[`output: "export"`](/docs/app/guides/static-exports)設定と一緒に使用すると、`/about`ページは（デフォルトの`/about.html`ではなく）`/about/index.html`として出力されます。
+
+## バージョン履歴
+
+| バージョン | 変更内容                |
+| -------- | ---------------------- |
+| `v9.5.0` | `trailingSlash`が導入されました。 |
